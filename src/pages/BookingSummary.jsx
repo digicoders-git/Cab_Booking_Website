@@ -179,21 +179,21 @@ const BookingSummary = () => {
                             <div className="space-y-4">
                                <div className="flex justify-between items-center p-4 hover:bg-gray-50 transition-colors rounded-2xl">
                                   <span className="text-sm font-bold text-gray-500">Base Fare ({bookingData.rideType})</span>
-                                  <span className="text-lg font-black text-[#111111]">${bookingData.fare.toFixed(2)}</span>
+                                  <span className="text-lg font-black text-[#111111]">₹{bookingData.fare.toFixed(2)}</span>
                                </div>
                                <div className="flex justify-between items-center p-4 hover:bg-gray-50 transition-colors rounded-2xl">
                                   <span className="text-sm font-bold text-gray-500">VAT / Service Tax (10%)</span>
-                                  <span className="text-lg font-black text-[#111111]">+${bookingData.tax.toFixed(2)}</span>
+                                  <span className="text-lg font-black text-[#111111]">+₹{bookingData.tax.toFixed(2)}</span>
                                </div>
                                <div className="flex justify-between items-center p-4 hover:bg-gray-50 transition-colors rounded-2xl">
                                   <span className="text-sm font-bold text-gray-500">Applied Discount</span>
-                                  <span className="text-lg font-black text-green-500">-${bookingData.discount.toFixed(2)}</span>
+                                  <span className="text-lg font-black text-green-500">-₹{bookingData.discount.toFixed(2)}</span>
                                </div>
                                
                                <div className="mx-4 mt-8 pt-8 border-t-2 border-[#111111] flex justify-between items-center">
                                   <div>
                                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">TOTAL PAYABLE</p>
-                                     <p className="text-5xl font-black text-[#111111] tracking-tighter">${bookingData.total.toFixed(2)}</p>
+                                     <p className="text-5xl font-black text-[#111111] tracking-tighter">₹{bookingData.total.toFixed(2)}</p>
                                   </div>
                                   <div className="w-24 h-24 bg-white p-2 rounded-2xl border-2 border-[#111111]/5 flex items-center justify-center hover:scale-105 transition-transform cursor-help">
                                      <FaQrcode className="text-5xl text-[#111111]" />
@@ -326,20 +326,20 @@ const BookingSummary = () => {
                               <h4 style={{ color: '#999999', fontSize: '10px', textTransform: 'uppercase', marginBottom: '20px' }}>Billing Summary</h4>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                                  <span style={{ fontSize: '13px', fontWeight: '600' }}>Amount</span>
-                                 <span style={{ fontSize: '13px', fontWeight: '800' }}>${bookingData.fare.toFixed(2)}</span>
+                                 <span style={{ fontSize: '13px', fontWeight: '800' }}>₹{bookingData.fare.toFixed(2)}</span>
                               </div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                                  <span style={{ fontSize: '13px', fontWeight: '600' }}>Tax (10%)</span>
-                                 <span style={{ fontSize: '13px', fontWeight: '800' }}>+${bookingData.tax.toFixed(2)}</span>
+                                 <span style={{ fontSize: '13px', fontWeight: '800' }}>+₹{bookingData.tax.toFixed(2)}</span>
                               </div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', color: '#10b981' }}>
                                  <span style={{ fontSize: '13px', fontWeight: '600' }}>Discount</span>
-                                 <span style={{ fontSize: '13px', fontWeight: '800' }}>-${bookingData.discount.toFixed(2)}</span>
+                                 <span style={{ fontSize: '13px', fontWeight: '800' }}>-₹{bookingData.discount.toFixed(2)}</span>
                               </div>
                               <div style={{ paddingTop: '20px', borderTop: '2px solid #111111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                  <div>
                                     <p style={{ fontSize: '9px', fontWeight: '900', margin: '0' }}>TOTAL PAID</p>
-                                    <p style={{ fontSize: '32px', fontWeight: '900', margin: '0', color: '#111111' }}>${bookingData.total.toFixed(2)}</p>
+                                    <p style={{ fontSize: '32px', fontWeight: '900', margin: '0', color: '#111111' }}>₹{bookingData.total.toFixed(2)}</p>
                                  </div>
                                  <FaQrcode style={{ fontSize: '50px', color: '#111111' }} />
                               </div>

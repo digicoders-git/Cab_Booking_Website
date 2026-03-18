@@ -11,7 +11,7 @@ const AdvancedPayment = () => {
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
           
           {/* Left: Payment Form */}
-          <div className="bg-white p-10 rounded-[40px] shadow-2xl">
+          <div className="bg-white p-6 sm:p-10 rounded-[40px] shadow-2xl">
              <div className="flex items-center justify-between mb-10">
                 <h3 className="text-2xl font-black text-[#111111] uppercase tracking-tighter">Payment Details</h3>
                 <div className="flex gap-2">
@@ -72,14 +72,14 @@ const AdvancedPayment = () => {
                 </div>
 
                 <button className="w-full bg-[#111111] text-white font-black py-5 rounded-2xl text-lg hover:bg-primary hover:text-[#111111] transition-all duration-300 shadow-xl">
-                   PAY $124.00 NOW
+                   PAY ₹124.00 NOW
                 </button>
              </form>
           </div>
 
           {/* Right: Summary */}
           <div className="p-4 flex flex-col justify-center">
-             <div className="bg-[#111111] p-10 rounded-[50px] text-white shadow-2xl relative overflow-hidden">
+             <div className="bg-[#111111] p-7 sm:p-10 rounded-[40px] sm:rounded-[50px] text-white shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[60px] -mr-16 -mt-16"></div>
                 
                 <h4 className="text-xl font-black mb-8 border-b border-white/10 pb-4 uppercase tracking-tighter">Booking Summary</h4>
@@ -111,15 +111,15 @@ const AdvancedPayment = () => {
                 <div className="pt-6 border-t border-white/10 space-y-3">
                    <div className="flex justify-between text-sm">
                       <span className="text-gray-500 font-bold uppercase tracking-widest">Base Fare</span>
-                      <span className="font-black">$120.00</span>
+                      <span className="font-black">₹120.00</span>
                    </div>
                    <div className="flex justify-between text-sm">
                       <span className="text-gray-500 font-bold uppercase tracking-widest">Service Fee</span>
-                      <span className="font-black">$4.00</span>
+                      <span className="font-black">₹4.00</span>
                    </div>
                    <div className="flex justify-between text-2xl font-black mt-6 pt-4 border-t border-white/5 text-primary">
                       <span>Total</span>
-                      <span>$124.00</span>
+                      <span>₹124.00</span>
                    </div>
                 </div>
              </div>

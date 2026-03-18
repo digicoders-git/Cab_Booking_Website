@@ -13,8 +13,8 @@ const AppDownload = () => {
             transition={{ duration: 0.8 }}
           >
             <span className="text-primary font-bold uppercase tracking-wider">Download App</span>
-            <h2 className="text-4xl font-bold mt-2 mb-6 text-secondary">
-              Get the Taxica App Now &<br />Save Up to 20%
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 mb-6 text-secondary">
+              Get the KwibCabs App Now &<br />Save Up to 20%
             </h2>
             <p className="text-gray-600 mb-8 leading-relaxed text-lg">
               Book your ride on the go with our user-friendly mobile app. Enjoy exclusive discounts, real-time tracking, and seamless payments all from your smartphone.
@@ -44,7 +44,7 @@ const AppDownload = () => {
             className="relative"
           >
             {/* Phone mockup placeholder */}
-            <div className="relative mx-auto w-[300px] h-[600px] bg-secondary rounded-[40px] border-[10px] border-secondary shadow-2xl overflow-hidden before:absolute before:w-1/2 before:h-[30px] before:bg-secondary before:top-0 before:left-1/4 before:rounded-b-2xl before:z-20">
+            <div className="relative mx-auto w-[240px] sm:w-[300px] h-[480px] sm:h-[600px] bg-secondary rounded-[40px] border-[10px] border-secondary shadow-2xl overflow-hidden before:absolute before:w-1/2 before:h-[30px] before:bg-secondary before:top-0 before:left-1/4 before:rounded-b-2xl before:z-20">
               <img 
                 src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=400" 
                 alt="App Dashboard" 

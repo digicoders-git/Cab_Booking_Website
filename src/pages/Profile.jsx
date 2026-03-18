@@ -12,7 +12,7 @@ const Profile = () => {
           
           {/* Left: Profile Card */}
           <div className="lg:col-span-1">
-             <div className="bg-[#111111] p-10 rounded-[50px] shadow-2xl relative overflow-hidden group">
+             <div className="bg-[#111111] p-7 sm:p-10 rounded-[40px] sm:rounded-[50px] shadow-2xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 blur-[60px] -mr-16 -mt-16"></div>
                 
                 <div className="relative z-10 text-center">
@@ -54,9 +54,9 @@ const Profile = () => {
 
           {/* Right: Profile Information */}
           <div className="lg:col-span-2 space-y-8">
-             <div className="bg-white p-10 md:p-14 rounded-[50px] shadow-xl border border-gray-100">
+             <div className="bg-white p-7 sm:p-10 md:p-14 rounded-[40px] sm:rounded-[50px] shadow-xl border border-gray-100">
                 <div className="flex items-center justify-between mb-12">
-                   <h4 className="text-2xl font-black text-[#111111] uppercase tracking-tighter">Account Settings</h4>
+                   <h4 className="text-xl sm:text-2xl font-black text-[#111111] uppercase tracking-tighter">Account Settings</h4>
                    <button className="text-primary font-black text-xs uppercase tracking-widest underline underline-offset-8">Edit Details</button>
                 </div>
 
@@ -94,7 +94,7 @@ const Profile = () => {
                    </div>
                 </div>
 
-                <div className="mt-16 pt-10 border-t border-gray-100 flex items-center justify-between">
+                <div className="mt-10 sm:mt-16 pt-8 sm:pt-10 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                    <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary"><FaKey /></div>
                       <div>
@@ -108,7 +108,7 @@ const Profile = () => {
                 </div>
              </div>
 
-             <div className="bg-primary/5 p-10 rounded-[50px] border-2 border-dashed border-primary/20 flex flex-col md:flex-row items-center justify-between gap-8">
+             <div className="bg-primary/5 p-7 sm:p-10 rounded-[40px] sm:rounded-[50px] border-2 border-dashed border-primary/20 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="text-center md:text-left">
                    <h4 className="text-xl font-black text-[#111111] uppercase tracking-tighter mb-2">Exclusive Benefits</h4>
                    <p className="text-gray-500 font-medium">As a platinum member, you get priority booking and 15% discount on all airport rides.</p>

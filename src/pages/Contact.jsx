@@ -17,7 +17,7 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert('Thank you for contacting Taxica! Your message has been received.');
+    alert('Thank you for contacting KwibCabs! Your message has been received.');
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
@@ -37,14 +37,14 @@ const Contact = () => {
     {
       icon: <FaEnvelope />,
       title: "Email Support",
-      desc: "info@taxica.com | support@taxica.com",
+      desc: "info@kwibcabs.com | support@kwibcabs.com",
       color: "from-emerald-400 to-teal-500"
     }
   ];
 
   return (
     <div className="bg-[#fcfcfc] min-h-screen">
-      <PageHeader title="Contact Us" subtitle="Get in touch with the world's most reliable taxi service" />
+      <PageHeader title="Contact Us" subtitle="Get in touch with KwibCabs — your most reliable cab service" />
       
       <section className="section-padding container mx-auto px-4 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -62,7 +62,7 @@ const Contact = () => {
                   <div className="inline-flex items-center gap-2 px-6 py-2 bg-primary/10 text-primary font-black text-xs uppercase tracking-widest rounded-full">
                      <FaTaxi /> Connect with us
                   </div>
-                  <h2 className="text-4xl md:text-5xl font-black text-[#111111] uppercase tracking-tighter leading-none">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-[#111111] uppercase tracking-tighter leading-none">
                      HAVE A QUESTION? <br />
                      <span className="text-primary">DROP US A LINE</span>
                   </h2>
@@ -79,7 +79,7 @@ const Contact = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.1 }}
                       viewport={{ once: true }}
-                      className="group bg-white p-8 rounded-[40px] shadow-xl border border-gray-50 flex items-center gap-6 hover:border-primary/20 transition-all duration-300"
+                      className="group bg-white p-5 sm:p-8 rounded-[40px] shadow-xl border border-gray-50 flex items-center gap-4 sm:gap-6 hover:border-primary/20 transition-all duration-300"
                     >
                        <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-primary text-2xl group-hover:bg-primary group-hover:text-[#111111] transition-all duration-300 shadow-inner">
                           {info.icon}
@@ -92,7 +92,7 @@ const Contact = () => {
                   ))}
                </div>
 
-               <div className="bg-[#111111] p-10 rounded-[50px] text-white flex items-center justify-between shadow-2xl relative overflow-hidden group">
+               <div className="bg-[#111111] p-7 sm:p-10 rounded-[40px] sm:rounded-[50px] text-white flex items-center justify-between shadow-2xl relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[60px] -mr-16 -mt-16"></div>
                   <div className="relative z-10">
                      <div className="flex items-center gap-3 mb-2">
@@ -113,7 +113,7 @@ const Contact = () => {
                  initial={{ opacity: 0, scale: 0.95 }}
                  whileInView={{ opacity: 1, scale: 1 }}
                  viewport={{ once: true }}
-                 className="bg-white p-10 md:p-16 rounded-[60px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-50 h-full"
+                 className="bg-white p-6 sm:p-10 md:p-16 rounded-[40px] sm:rounded-[60px] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.1)] border border-gray-50 h-full"
                >
                   <form onSubmit={handleSubmit} className="space-y-8">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

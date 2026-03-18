@@ -17,20 +17,20 @@ const BookingConfirmation = () => {
             className="bg-white rounded-[60px] shadow-2xl overflow-hidden border border-gray-100"
           >
              {/* Success Hero */}
-             <div className="bg-primary p-12 text-center relative overflow-hidden">
+             <div className="bg-primary p-7 sm:p-12 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-20 rounded-full blur-3xl -mr-32 -mt-32"></div>
                 <div className="relative z-10">
                    <div className="w-24 h-24 bg-[#111111] rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
                       <FaCheckCircle className="text-primary text-5xl" />
                    </div>
-                   <h2 className="text-[#111111] text-4xl font-black uppercase tracking-tighter mb-4">AWESOME! YOUR RIDE IS BOOKED</h2>
+                   <h2 className="text-[#111111] text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter mb-4">AWESOME! YOUR RIDE IS BOOKED</h2>
                    <p className="text-[#111111] font-bold text-lg max-w-lg mx-auto opacity-70">
                       We've received your request. A professional driver will pick you up at the scheduled time.
                    </p>
                 </div>
              </div>
 
-             <div className="p-10 md:p-16">
+             <div className="p-6 sm:p-10 md:p-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
                    <div className="space-y-8">
                       <div>

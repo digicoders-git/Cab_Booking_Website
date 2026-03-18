@@ -1,4 +1,3 @@
-import HeroSection from '../components/HeroSection';
 import BookingForm from '../components/BookingForm';
 import AboutSection from '../components/AboutSection';
 import ServicesSection from '../components/ServicesSection';
@@ -16,7 +15,6 @@ import CTASection from '../components/CTASection';
 const Home = () => {
   return (
     <>
-      <HeroSection />
       <BookingForm />
       <AboutSection />
       <ServicesSection />

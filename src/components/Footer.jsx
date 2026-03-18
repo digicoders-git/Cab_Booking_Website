@@ -1,202 +1,145 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaTaxi, FaFacebookF, FaTwitter, FaLinkedinIn, FaYoutube, 
-  FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaCaretRight, FaPaperPlane, FaArrowUp 
+import logo from '../assets/logo.png';
+import {
+  FaTaxi, FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram,
+  FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaCaretRight, FaPaperPlane, FaArrowUp
 } from 'react-icons/fa';
 
 const Footer = () => {
   const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
-    const checkScrollTop = () => {
-      if (!showScroll && window.pageYOffset > 400) {
-        setShowScroll(true);
-      } else if (showScroll && window.pageYOffset <= 400) {
-        setShowScroll(false);
-      }
-    };
-    window.addEventListener('scroll', checkScrollTop);
-    return () => window.removeEventListener('scroll', checkScrollTop);
-  }, [showScroll]);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+    const check = () => setShowScroll(window.pageYOffset > 400);
+    window.addEventListener('scroll', check);
+    return () => window.removeEventListener('scroll', check);
+  }, []);
 
   return (
-    <footer className="bg-[#111111] text-white pt-0 overflow-hidden relative">
-      
-      {/* Top Checkerboard Decor */}
-      <div className="w-full h-8 bg-primary">
-         <div className="w-full h-full bg-[radial-gradient(#111111_20%,transparent_20%)] bg-[length:15px_15px] opacity-20"></div>
-      </div>
-
+    <footer className="bg-[#080808] border-t border-white/8 text-white overflow-hidden relative">
       <div className="container mx-auto px-4 lg:px-8 pt-20 pb-0 2xl:max-w-[1400px]">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-20">
-          
-          {/* Logo & Info */}
-          <div className="space-y-8">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center">
-                 <FaTaxi className="text-[#111111] text-xl" />
-              </div>
-              <span className="text-3xl font-black text-white tracking-tighter">taxica</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+
+          {/* Brand */}
+          <div className="space-y-6">
+            <Link to="/" className="flex items-center ">
+              <img src={logo} alt="KwibCabs Logo" className="h-20 w-auto object-contain" />
             </Link>
-            <p className="text-gray-400 font-medium leading-[1.8] text-sm max-w-xs">
-              We are many variations of passages available but the majority have suffered alteration in some form by injected humour words believable.
+            <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+              Fast, safe, and reliable cab service available 24/7. Your comfort is our priority — KwibCabs.
             </p>
-            <div className="space-y-4">
-               <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-[#111111] shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                     <FaPhoneAlt size={14} />
-                  </div>
-                  <span className="text-sm font-bold text-gray-300">+2 123 654 7898</span>
-               </div>
-               <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-[#111111] shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                     <FaMapMarkerAlt size={14} />
-                  </div>
-                  <span className="text-sm font-bold text-gray-300">25/B Milford Road, New York</span>
-               </div>
-               <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-[#111111] shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                     <FaEnvelope size={14} />
-                  </div>
-                  <span className="text-sm font-bold text-gray-300">info@example.com</span>
-               </div>
+            <div className="space-y-3">
+              {[
+                { icon: FaPhoneAlt, text: '+2 123 654 7898' },
+                { icon: FaMapMarkerAlt, text: '25/B Milford Road, New York' },
+                { icon: FaEnvelope, text: 'info@example.com' },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-center gap-3 text-white/50 text-sm hover:text-white/80 transition-colors">
+                  <Icon className="text-primary text-xs shrink-0" />
+                  {text}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="lg:pl-8">
-            <h3 className="text-2xl font-black mb-8 relative inline-block uppercase tracking-tighter">
-               Quick Links
-               <span className="absolute bottom-[-10px] left-0 w-8 h-1 bg-primary rounded-full"></span>
-            </h3>
-            <ul className="space-y-4">
-              <li>
-                <Link to="/about" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/blog" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Update News
-                </Link>
-              </li>
-              <li>
-                <Link to="/testimonials" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Testimonials
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms-of-service" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Terms Of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy-policy" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Privacy policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/team" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Our Drivers
-                </Link>
-              </li>
+          <div>
+            <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Quick Links</h3>
+            <ul className="space-y-3">
+              {[
+                { to: '/about', label: 'About Us' },
+                { to: '/blog', label: 'News & Blog' },
+                { to: '/testimonials', label: 'Testimonials' },
+                { to: '/terms-of-service', label: 'Terms of Service' },
+                { to: '/privacy-policy', label: 'Privacy Policy' },
+                { to: '/team', label: 'Our Drivers' },
+              ].map(({ to, label }) => (
+                <li key={to}>
+                  <Link to={to} className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
+                    <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity text-xs" />
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Support Center */}
-          <div className="lg:pl-4">
-            <h3 className="text-2xl font-black mb-8 relative inline-block uppercase tracking-tighter">
-               Support Center
-               <span className="absolute bottom-[-10px] left-0 w-8 h-1 bg-primary rounded-full"></span>
-            </h3>
-            <ul className="space-y-4">
-              <li>
-                <Link to="/faq" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> FAQ's
-                </Link>
-              </li>
-              <li>
-                <Link to="/booking" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Book A Ride
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="flex items-center gap-2 text-gray-400 hover:text-primary transition-all text-sm font-bold group">
-                  <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity" /> Contact Us
-                </Link>
-              </li>
+          {/* Support */}
+          <div>
+            <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Support</h3>
+            <ul className="space-y-3">
+              {[
+                { to: '/faq', label: "FAQ's" },
+                { to: '/booking', label: 'Book a Ride' },
+                { to: '/contact', label: 'Contact Us' },
+                { to: '/driver-tracking', label: 'Track Driver' },
+                { to: '/my-booking', label: 'My Bookings' },
+              ].map(({ to, label }) => (
+                <li key={to}>
+                  <Link to={to} className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
+                    <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity text-xs" />
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Newsletter */}
           <div>
-            <h3 className="text-2xl font-black mb-8 relative inline-block uppercase tracking-tighter">
-               Newsletter
-               <span className="absolute bottom-[-10px] left-0 w-8 h-1 bg-primary rounded-full"></span>
-            </h3>
-            <p className="text-gray-400 font-bold text-sm mb-8 leading-relaxed">
-               Subscribe Our Newsletter To Get Latest Update And News
+            <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Newsletter</h3>
+            <p className="text-white/40 text-sm mb-6 leading-relaxed">
+              Get the latest updates, offers and news delivered to your inbox.
             </p>
-            <div className="space-y-4">
-               <input 
-                 type="email" 
-                 placeholder="Your Email"
-                 className="w-full bg-white text-[#111111] py-4 px-6 rounded-2xl outline-none font-bold placeholder:text-gray-400" 
-               />
-               <button className="w-full bg-primary text-[#111111] font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-primary/20">
-                  SUBSCRIBE NOW <FaPaperPlane size={14}/>
-               </button>
+            <div className="space-y-3">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="w-full bg-white/5 border border-white/10 text-white py-3.5 px-5 rounded-2xl outline-none focus:border-primary transition-all text-sm placeholder:text-white/30"
+              />
+              <button className="w-full bg-primary text-black font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-accent transition-all text-sm">
+                Subscribe <FaPaperPlane size={12} />
+              </button>
             </div>
           </div>
-
         </div>
 
-        {/* Bottom Bar */}
-        <div className="relative mt-20 -mx-4 lg:-mx-8">
-           <div className="flex flex-col lg:flex-row h-auto lg:h-[100px] items-center">
-              
-              {/* Left Side (Dark) */}
-              <div className="w-full lg:w-[55%] bg-[#1a1a1a] h-full flex items-center justify-center lg:justify-start lg:pl-12 py-6 lg:py-0 relative">
-                 <p className="text-gray-400 font-bold text-xs uppercase tracking-widest">
-                    © Copyright {new Date().getFullYear()} <span className="text-primary">Taxica</span> All Rights Reserved.
-                 </p>
-                 {/* The Slant Overlay */}
-                 <div className="hidden lg:block absolute top-0 right-[-50px] w-[100px] h-full bg-[#1a1a1a] skew-x-[-25deg] z-10"></div>
-              </div>
-
-              {/* Right Side (Yellow) */}
-              <div className="w-full lg:w-[45%] bg-primary h-full flex items-center justify-center lg:justify-between px-8 lg:px-16 py-6 lg:py-0 relative z-0">
-                 <div className="flex items-center gap-4">
-                    <a href="#" className="w-11 h-11 bg-[#111111] text-primary rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg"><FaFacebookF /></a>
-                    <a href="#" className="w-11 h-11 bg-[#111111] text-primary rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg"><FaTwitter /></a>
-                    <a href="#" className="w-11 h-11 bg-[#111111] text-primary rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg"><FaLinkedinIn /></a>
-                    <a href="#" className="w-11 h-11 bg-[#111111] text-primary rounded-full flex items-center justify-center hover:bg-white transition-all shadow-lg"><FaYoutube /></a>
-                 </div>
-
-                 {/* Floating Back to Top Button */}
-                 <AnimatePresence>
-                   {showScroll && (
-                     <motion.button 
-                       initial={{ opacity: 0, y: 20, scale: 0.5 }}
-                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                       exit={{ opacity: 0, y: 20, scale: 0.5 }}
-                       onClick={scrollToTop}
-                       className="fixed bottom-10 right-10 w-14 h-14 bg-primary text-[#111111] rounded-2xl flex items-center justify-center transition-all shadow-[0_10px_30px_rgba(255,193,7,0.3)] z-[999] hover:bg-[#111111] hover:text-primary active:scale-90"
-                     >
-                        <FaArrowUp size={20} className="animate-bounce" />
-                     </motion.button>
-                   )}
-                 </AnimatePresence>
-              </div>
-           </div>
+        {/* Bottom */}
+        <div className="border-t border-white/8 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-white/30 text-xs">
+            © {new Date().getFullYear()} <span className="text-primary">KwibCabs</span>. All rights reserved.
+          </p>
+          <p className="text-white/30 text-xs">
+            Crafted with ❤️ by{' '}
+            <a href="https://digicoders.in/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">
+              #TeamDigiCoders
+            </a>
+          </p>
+          <div className="flex gap-3">
+            {[FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn].map((Icon, i) => (
+              <a key={i} href="#" className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/40 transition-all">
+                <Icon size={12} />
+              </a>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Back to top */}
+      <AnimatePresence>
+        {showScroll && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-8 right-8 w-12 h-12 bg-primary text-black rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/30 z-[999] hover:bg-accent hover:scale-110 transition-all"
+          >
+            <FaArrowUp size={16} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </footer>
   );
 };

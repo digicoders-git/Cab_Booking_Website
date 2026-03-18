@@ -12,7 +12,7 @@ const MyBooking = () => {
       pickup: 'Downtown Hotel',
       destination: 'International Airport',
       status: 'upcoming',
-      fare: '$124.00'
+      fare: '₹124.00'
     },
     {
       id: 'TX-7744111',
@@ -21,7 +21,7 @@ const MyBooking = () => {
       pickup: 'City Mall',
       destination: 'Central Station',
       status: 'completed',
-      fare: '$45.00'
+      fare: '₹45.00'
     },
     {
       id: 'TX-7744005',
@@ -30,7 +30,7 @@ const MyBooking = () => {
       pickup: 'Opera House',
       destination: 'East Side Appts',
       status: 'completed',
-      fare: '$32.00'
+      fare: '₹32.00'
     }
   ];
 
@@ -47,7 +47,7 @@ const MyBooking = () => {
                    <FaHistory className="text-2xl" />
                 </div>
                 <div>
-                   <h3 className="text-3xl font-black text-[#111111] uppercase tracking-tighter">Ride History</h3>
+                   <h3 className="text-2xl font-black text-[#111111] uppercase tracking-tighter">Ride History</h3>
                    <p className="text-gray-400 font-bold text-xs uppercase tracking-widest">Manage your recent and upcoming trips</p>
                 </div>
              </div>
@@ -65,7 +65,7 @@ const MyBooking = () => {
                  initial={{ opacity: 0, x: -20 }}
                  whileInView={{ opacity: 1, x: 0 }}
                  transition={{ delay: index * 0.1 }}
-                 className="bg-white p-8 rounded-[40px] shadow-xl border border-gray-50 flex flex-col lg:flex-row lg:items-center justify-between gap-8 group hover:border-primary/20 transition-all duration-300"
+                 className="bg-white p-5 sm:p-8 rounded-[40px] shadow-xl border border-gray-50 flex flex-col lg:flex-row lg:items-center justify-between gap-6 group hover:border-primary/20 transition-all duration-300"
                >
                  <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center flex-grow">
                     <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-[#111111] transition-all duration-300 border border-gray-100">

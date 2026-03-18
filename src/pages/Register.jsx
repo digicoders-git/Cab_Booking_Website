@@ -4,22 +4,22 @@ import { FaEnvelope, FaLock, FaTaxi, FaUser, FaPhoneAlt, FaGoogle, FaFacebookF }
 
 const Register = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] pt-[160px] pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] pt-[100px] sm:pt-[160px] pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-1/2 h-full bg-[#111111] hidden lg:block skew-x-[10deg] -translate-x-20"></div>
       
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[40px] shadow-2xl overflow-hidden relative z-10 flex-row-reverse">
         
         {/* Right Side: Form */}
-        <div className="p-8 md:p-12 lg:p-16 flex flex-col justify-center order-1 lg:order-2">
+        <div className="p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col justify-center order-1 lg:order-2">
           <div className="mb-10 text-center lg:text-left">
             <Link to="/" className="inline-flex items-center gap-2 mb-6">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                 <FaTaxi className="text-[#111111]" />
               </div>
-              <span className="text-2xl font-black text-[#111111] lowercase tracking-tighter">taxica</span>
+              <span className="text-2xl font-black text-[#111111] lowercase tracking-tighter">kwibcabs</span>
             </Link>
-            <h2 className="text-3xl md:text-4xl font-black text-[#111111] mb-2 uppercase tracking-tight">Create Account</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#111111] mb-2 uppercase tracking-tight">Create Account</h2>
             <p className="text-gray-500 font-medium">Get started with your free account today</p>
           </div>
 
@@ -111,7 +111,7 @@ const Register = () => {
                New Member Offer
              </div>
             <h3 className="text-3xl font-black mb-4 leading-tight">GET 20% OFF ON YOUR <span className="text-primary">FIRST RIDE</span></h3>
-            <p className="text-gray-300 font-medium leading-relaxed">Experience the ultimate comfort and reliability. Join our community and enjoy exclusive benefits on your travel.</p>
+            <p className="text-gray-300 font-medium leading-relaxed">Experience the ultimate comfort and reliability. Join KwibCabs and enjoy exclusive benefits on your travel.</p>
           </div>
         </div>
       </div>

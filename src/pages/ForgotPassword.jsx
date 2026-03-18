@@ -13,7 +13,7 @@ const ForgotPassword = () => {
             <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
               <FaTaxi className="text-[#111111]" />
             </div>
-            <span className="text-2xl font-black text-[#111111] lowercase tracking-tighter">taxica</span>
+            <span className="text-2xl font-black text-[#111111] lowercase tracking-tighter">kwibcabs</span>
           </Link>
           
           <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6">

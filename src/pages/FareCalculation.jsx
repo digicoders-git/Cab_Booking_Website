@@ -48,12 +48,12 @@ const FareCalculation = () => {
                    <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
                       <FaRoad className="text-primary mb-3" />
                       <div className="text-xs font-black text-gray-400 uppercase">Base Fare</div>
-                      <div className="text-xl font-black text-[#111111]">${baseFare}</div>
+                      <div className="text-xl font-black text-[#111111]">₹{baseFare}</div>
                    </div>
                    <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
                       <FaGasPump className="text-primary mb-3" />
                       <div className="text-xs font-black text-gray-400 uppercase">Per KM</div>
-                      <div className="text-xl font-black text-[#111111]">${ratePerKm}</div>
+                      <div className="text-xl font-black text-[#111111]">₹{ratePerKm}</div>
                    </div>
                 </div>
 
@@ -64,8 +64,8 @@ const FareCalculation = () => {
                    <ul className="space-y-4">
                       {[
                         'Standard Fuel Surcharge included',
-                        'Night hours (10PM-6AM) +$10 extra',
-                        'Wait time: $2/per 5 mins after arrival',
+                        'Night hours (10PM-6AM) +₹10 extra',
+                        'Wait time: ₹2/per 5 mins after arrival',
                         'Toll charges are separate from fare'
                       ].map((item, i) => (
                         <li key={i} className="flex items-center gap-3 text-sm font-medium text-gray-500">
@@ -95,7 +95,7 @@ const FareCalculation = () => {
                    </div>
                    <h3 className="text-3xl font-black text-white mb-2 underline decoration-primary decoration-4 underline-offset-8 uppercase">PRIVATE CAB</h3>
                    <div className="mt-8 flex items-baseline gap-2">
-                      <span className="text-5xl font-black text-primary">${calculateTotal(false)}</span>
+                      <span className="text-5xl font-black text-primary">₹{calculateTotal(false)}</span>
                       <span className="text-white/40 font-bold uppercase text-xs">est. fare</span>
                    </div>
                    <p className="text-gray-400 mt-6 text-sm font-medium">Standard premium ride with no sharing. Best for business and urgent travel.</p>
@@ -120,7 +120,7 @@ const FareCalculation = () => {
                    </div>
                    <h3 className="text-3xl font-black text-[#111111] mb-2 uppercase tracking-tighter">SHARED CAB</h3>
                    <div className="mt-8 flex items-baseline gap-2">
-                      <span className="text-5xl font-black text-[#111111]">${calculateTotal(true).toFixed(0)}</span>
+                      <span className="text-5xl font-black text-[#111111]">₹{calculateTotal(true).toFixed(0)}</span>
                       <span className="text-gray-400 font-bold uppercase text-xs">per seat</span>
                    </div>
                    <p className="text-gray-500 mt-6 text-sm font-medium italic">"The most economical and sustainable way to travel comfortably."</p>

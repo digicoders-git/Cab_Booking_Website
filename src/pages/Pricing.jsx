@@ -35,7 +35,7 @@ const Pricing = () => {
                 <div className="p-8">
                   <h3 className="text-2xl font-bold mb-4">{plan.name}</h3>
                   <div className="mb-6 border-b border-gray-100 pb-6 flex items-baseline">
-                    <span className="text-5xl font-bold text-secondary">${plan.price}</span>
+                    <span className="text-5xl font-bold text-secondary">₹{plan.price}</span>
                     <span className="text-gray-500 ml-2">/ hour</span>
                   </div>
                   <ul className="space-y-4 mb-8">

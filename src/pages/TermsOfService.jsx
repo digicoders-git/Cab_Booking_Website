@@ -7,7 +7,7 @@ const TermsOfService = () => {
     {
       icon: <FaHandshake />,
       title: "Agreement to Terms",
-      content: "By accessing or using Taxica services, you agree to be bound by these Terms of Service. If you do not agree to all of these terms, do not use our app or website. These terms govern your use of our platform and the transportation services provided by our captains."
+      content: "By accessing or using KwibCabs services, you agree to be bound by these Terms of Service. If you do not agree to all of these terms, do not use our app or website. These terms govern your use of our platform and the transportation services provided by our captains."
     },
     {
       icon: <FaCheckDouble />,
@@ -43,7 +43,7 @@ const TermsOfService = () => {
              <div className="prose prose-lg max-w-none text-gray-500 mb-12 relative z-10">
                 <p className="font-black text-[#111111] text-xl mb-6 uppercase tracking-widest border-l-4 border-primary pl-6">Last Updated: March 2026</p>
                 <p>
-                  Welcome to Taxica. These Terms of Service ("Terms") constitute a legally binding agreement between you and Taxica regarding your use of our network of websites and mobile applications. By using our service, you acknowledge that you have read and understood these terms.
+                  Welcome to KwibCabs. These Terms of Service ("Terms") constitute a legally binding agreement between you and KwibCabs regarding your use of our network of websites and mobile applications. By using our service, you acknowledge that you have read and understood these terms.
                 </p>
              </div>
 
@@ -72,7 +72,7 @@ const TermsOfService = () => {
 
           <footer className="text-center pb-12">
              <p className="text-gray-400 font-bold mb-4 uppercase tracking-widest text-xs">Questions about our terms?</p>
-             <a href="mailto:legal@taxica.com" className="text-[#111111] font-black text-xl hover:text-primary transition-colors underline underline-offset-8">LEGAL@TAXICA.COM</a>
+             <a href="mailto:legal@kwibcabs.com" className="text-[#111111] font-black text-xl hover:text-primary transition-colors underline underline-offset-8">LEGAL@KWIBCABS.COM</a>
           </footer>
         </div>
       </div>

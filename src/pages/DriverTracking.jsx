@@ -80,7 +80,7 @@ const DriverTracking = () => {
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10">
 
           {/* ── LEFT: MAP ── */}
-          <div className="relative bg-white rounded-[40px] shadow-2xl overflow-hidden" style={{ minHeight: '520px' }}>
+          <div className="relative bg-white rounded-[40px] shadow-2xl overflow-hidden" style={{ minHeight: '380px' }}>
 
             {/* Road Grid Background */}
             <div

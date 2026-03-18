@@ -22,13 +22,13 @@ const PrivacyPolicy = () => {
     {
       icon: <FaRegFileAlt />,
       title: "Your Rights",
-      content: "You have the right to access, update, or delete your personal information at any time. You can manage your notification preferences in the app settings. For any data-related inquiries, you can contact our dedicated privacy team at privacy@taxica.com."
+      content: "You have the right to access, update, or delete your personal information at any time. You can manage your notification preferences in the app settings. For any data-related inquiries, you can contact our dedicated privacy team at privacy@kwibcabs.com."
     }
   ];
 
   return (
     <div className="bg-[#fcfcfc] min-h-screen">
-      <PageHeader title="Privacy Policy" subtitle="Your privacy is our top priority. Learn how we protect your data." />
+      <PageHeader title="Privacy Policy" subtitle="Your privacy is our top priority. Learn how KwibCabs protects your data." />
       
       <div className="section-padding container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
@@ -41,7 +41,7 @@ const PrivacyPolicy = () => {
              <div className="prose prose-lg max-w-none text-gray-500 mb-12">
                 <p className="font-bold text-[#111111] text-xl mb-6 uppercase tracking-tighter">Effective Date: March 12, 2026</p>
                 <p>
-                  At Taxica, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our website and mobile application. By using our services, you agree to the practices described in this policy.
+                  At KwibCabs, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our website and mobile application. By using our services, you agree to the practices described in this policy.
                 </p>
              </div>
 

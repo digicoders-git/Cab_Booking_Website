@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import Loader from './components/Loader';
 import MainLayout from './layout/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
@@ -32,8 +35,20 @@ import DriverTracking from './pages/DriverTracking';
 import NotFound from './pages/NotFound';
 
 function App() {
+  const [loading, setLoading] = useState(() => !sessionStorage.getItem('visited'));
+
+  useEffect(() => {
+    if (!loading) return;
+    const t = setTimeout(() => {
+      setLoading(false);
+      sessionStorage.setItem('visited', '1');
+    }, 2800);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <Router>
+      <AnimatePresence>{loading && <Loader />}</AnimatePresence>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<MainLayout />}>

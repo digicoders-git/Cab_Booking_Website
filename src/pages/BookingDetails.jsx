@@ -14,9 +14,9 @@ const BookingDetails = () => {
     vehicle: 'Toyota Camry (Premium White)',
     driver: 'Jack Sparrow',
     driverRating: 4.9,
-    baseFare: '$120.00',
-    serviceFee: '$4.00',
-    totalFare: '$124.00',
+    baseFare: '₹120.00',
+    serviceFee: '₹4.00',
+    totalFare: '₹124.00',
     paymentMethod: 'Visa Ending in •••• 4412'
   };
 

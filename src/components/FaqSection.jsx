@@ -1,109 +1,85 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaQuestion, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown } from 'react-icons/fa';
 
 const faqData = [
-  {
-    id: 1,
-    question: "How Long Does A Booking Take ?",
-    answer: "We denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire. Ante odio dignissim quam, vitae pulvinar turpis erat ac elit eu orci id odio facilisis pharetra."
-  },
-  {
-    id: 2,
-    question: "How Can I Become A Member ?",
-    answer: "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable."
-  },
-  {
-    id: 3,
-    question: "What Payment Gateway You Support ?",
-    answer: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo."
-  },
-  {
-    id: 4,
-    question: "How Can I Cancel My Request ?",
-    answer: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident."
-  }
+  { id: 1, question: 'How long does a booking take?', answer: 'Booking takes less than 60 seconds. Enter your pickup and drop-off, choose your ride type, and confirm. Your driver will be assigned instantly.' },
+  { id: 2, question: 'How can I become a member?', answer: 'Simply register on our platform with your email or phone number. Membership is free and gives you access to exclusive discounts and priority support.' },
+  { id: 3, question: 'What payment methods are supported?', answer: 'We support all major credit/debit cards, UPI, net banking, and cash payments. All digital transactions are secured with 256-bit encryption.' },
+  { id: 4, question: 'How can I cancel my booking?', answer: 'You can cancel your ride from the My Bookings page up to 5 minutes before the scheduled pickup. Cancellations within 5 minutes may incur a small fee.' },
 ];
 
 const FaqSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="py-24 bg-white">
+    <section className="section-padding bg-[#0A0A0A]">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap -mx-4 items-center">
-          
-          {/* Left Column: Info + Image */}
-          <div className="w-full lg:w-1/2 px-4 mb-12 lg:mb-0">
-            <div className="max-w-xl">
-              <span className="text-primary font-bold uppercase tracking-wider text-sm mb-3 block">
-                FAQ'S
-              </span>
-              <h2 className="text-4xl md:text-5xl font-bold text-[#111111] mb-6 leading-tight">
-                General <span className="text-primary font-black italic">Frequently</span> Asked Questions
-              </h2>
-              <p className="text-gray-500 mb-8 leading-relaxed">
-                There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even.
-              </p>
-              
-              <div className="rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-transform duration-500">
-                <img 
-                  src="/faq.jpg" 
-                  alt="Customer Support" 
-                  className="w-full h-auto object-cover"
-                />
-              </div>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          {/* Right Column: Accordion */}
-          <div className="w-full lg:w-1/2 px-4">
-            <div className="space-y-4">
-              {faqData.map((faq, index) => (
-                <div 
-                  key={faq.id} 
-                  className={`border rounded-2xl overflow-hidden transition-all duration-300 ${activeIndex === index ? 'border-primary shadow-lg' : 'border-gray-100 shadow-sm'}`}
+          {/* Left */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            <span className="section-tag">
+              <span className="w-4 h-px bg-primary" /> FAQ
+            </span>
+            <h2 className="section-title mb-6">
+              Frequently Asked<br /><span className="gradient-text">Questions</span>
+            </h2>
+            <p className="text-white/50 text-base leading-relaxed mb-8">
+              Got questions? We've got answers. If you don't find what you're looking for, reach out to our 24/7 support team.
+            </p>
+            <div className="rounded-3xl overflow-hidden border border-white/10">
+              <img src="/faq.jpg" alt="FAQ Support" className="w-full h-64 object-cover opacity-80" />
+            </div>
+          </motion.div>
+
+          {/* Right: Accordion */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="space-y-3"
+          >
+            {faqData.map((faq, index) => (
+              <div
+                key={faq.id}
+                className={`border rounded-2xl overflow-hidden transition-all duration-300 ${activeIndex === index ? 'border-primary/50 bg-[#111111]' : 'border-white/8 bg-[#111111]'}`}
+              >
+                <button
+                  onClick={() => setActiveIndex(activeIndex === index ? -1 : index)}
+                  className="w-full flex items-center justify-between p-5 text-left focus:outline-none"
                 >
-                  <button
-                    onClick={() => setActiveIndex(activeIndex === index ? -1 : index)}
-                    className="w-full flex items-center justify-between p-6 text-left focus:outline-none bg-white hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeIndex === index ? 'bg-primary text-white' : 'bg-primary text-white'}`}>
-                        <FaQuestion className="text-sm" />
+                  <span className={`font-bold text-base transition-colors ${activeIndex === index ? 'text-primary' : 'text-white/80'}`}>
+                    {faq.question}
+                  </span>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ml-4 transition-all ${activeIndex === index ? 'bg-primary text-black rotate-180' : 'bg-white/10 text-white/50'}`}>
+                    <FaChevronDown size={11} />
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {activeIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="px-5 pb-5 border-t border-white/8 pt-4">
+                        <p className="text-white/50 text-sm leading-relaxed">{faq.answer}</p>
                       </div>
-                      <span className={`font-bold text-lg md:text-xl transition-colors ${activeIndex === index ? 'text-primary' : 'text-[#111111]'}`}>
-                        {faq.question}
-                      </span>
-                    </div>
-                    <div className={`text-gray-400 transition-transform duration-300 ${activeIndex === index ? 'rotate-180' : ''}`}>
-                      <FaChevronDown />
-                    </div>
-                  </button>
-
-                  <AnimatePresence>
-                    {activeIndex === index && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      >
-                        <div className="px-6 pb-6 pt-0">
-                          <div className="border-t border-gray-100 pt-4 mt-2">
-                            <p className="text-gray-600 leading-relaxed">
-                              {faq.answer}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-            </div>
-          </div>
-
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,187 +1,127 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTaxi, FaUserTie, FaMapMarkedAlt, FaTimes } from 'react-icons/fa';
+import { FaTaxi, FaUserTie, FaMapMarkedAlt, FaTimes, FaPlay } from 'react-icons/fa';
 
 const featuresData = [
-  { 
-    id: 1, 
-    title: 'Best Quality Taxi', 
-    num: '01', 
-    icon: FaTaxi, 
-    desc: 'There are many variations of passages available but the majority have suffered alteration in form injected humour words which don\'t look even slightly believable. If you are going passage you need there anything embar.' 
-  },
-  { 
-    id: 2, 
-    title: 'Expert Drivers', 
-    num: '02', 
-    icon: FaUserTie, 
-    desc: 'There are many variations of passages available but the majority have suffered alteration in form injected humour words which even slightly believable. If you are going passage you need there anything.' 
-  },
-  { 
-    id: 3, 
-    title: 'Many Locations', 
-    num: '03', 
-    icon: FaMapMarkedAlt, 
-    desc: 'There are many variations of passages available but the majority have suffered alteration in form injected humour words which don\'t look even slightly believable. If you are going passage you need there anything embar.' 
-  },
+  { id: 1, title: 'Best Quality Taxi', num: '01', icon: FaTaxi, desc: 'Premium vehicles maintained to the highest standards for your comfort and safety on every journey.' },
+  { id: 2, title: 'Expert Drivers', num: '02', icon: FaUserTie, desc: 'Background-verified, professionally trained drivers who know the city routes inside out.' },
+  { id: 3, title: 'Many Locations', num: '03', icon: FaMapMarkedAlt, desc: 'Serving hundreds of pickup and drop-off points across the city and beyond.' },
 ];
 
 const QualityServiceSection = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
   return (
-    <section className="relative w-full bg-[#111111] pb-24 z-10">
-      
-      {/* Repeating Topographic Background Pattern (Simulated with SVG data URI) */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none z-0"
-        style={{ 
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z' fill='%23ffffff' fill-opacity='1' fill-rule='nonzero'/%3E%3C/g%3E%3C/svg%3E")`,
-        }}
-      ></div>
+    <section className="relative bg-[#0D0D0D] section-padding">
+      <div className="container mx-auto px-4">
 
-      <div className="container mx-auto px-4 relative z-10">
-        
-        {/* OVERLAPPING VIDEO BANNER */}
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
+        {/* Video Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="relative max-w-[1100px] mx-auto mb-20 lg:mb-28 mt-4 lg:mt-8 pt-6"
+          transition={{ duration: 0.7 }}
+          className="relative rounded-3xl overflow-hidden mb-20 shadow-2xl"
         >
-          <div className="relative rounded-[20px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
-            <img 
-              src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=1200" 
-              alt="Video Thumbnail" 
-              className="w-full h-[300px] md:h-[400px] object-cover"
-            />
-            {/* Dark overlay */}
-            <div className="absolute inset-0 bg-[#111111]/30 flex items-center justify-center">
-              {/* Play Button */}
-              <motion.div 
-                onClick={() => setIsVideoOpen(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-[85px] h-[85px] bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-[0_0_50px_rgba(255,193,7,0.6)] relative group"
-              >
-                {/* Simple CSS triangle for play icon */}
-                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-[#111111] border-b-[12px] border-b-transparent ml-1.5 relative z-10 transition-transform group-hover:scale-110"></div>
-                {/* Ping rings */}
-                <div className="absolute inset-[-12px] rounded-full border-[2px] border-primary animate-ping opacity-40"></div>
-                <div className="absolute inset-[-25px] rounded-full border-[1px] border-primary animate-ping opacity-20" style={{ animationDelay: '0.4s' }}></div>
-              </motion.div>
-            </div>
+          <img
+            src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=1200"
+            alt="Video Thumbnail"
+            className="w-full h-[280px] md:h-[380px] object-cover"
+          />
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <motion.button
+              onClick={() => setIsVideoOpen(true)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-2xl shadow-primary/40 cursor-pointer"
+            >
+              <FaPlay className="text-black text-xl ml-1" />
+              <span className="absolute inset-0 rounded-full border-2 border-primary animate-ping opacity-40" />
+            </motion.button>
           </div>
         </motion.div>
 
         <AnimatePresence>
           {isVideoOpen && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-10"
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-10 bg-black/95 backdrop-blur-xl"
             >
-              <div 
-                className="absolute inset-0 bg-[#111111]/95 backdrop-blur-md"
-                onClick={() => setIsVideoOpen(false)}
-              ></div>
-              
-              <motion.div 
-                initial={{ scale: 0.9, y: 50, opacity: 0 }}
-                animate={{ scale: 1, y: 0, opacity: 1 }}
-                exit={{ scale: 0.9, y: 50, opacity: 0 }}
-                className="relative w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                className="relative w-full max-w-4xl aspect-video bg-black rounded-3xl overflow-hidden border border-white/10"
               >
-                {/* Close Button */}
-                <button 
+                <button
                   onClick={() => setIsVideoOpen(false)}
-                  className="absolute top-5 right-5 z-20 w-11 h-11 bg-primary rounded-full flex items-center justify-center text-[#111111] text-lg shadow-xl hover:bg-white transition-colors"
+                  className="absolute top-4 right-4 z-20 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-black hover:bg-white transition-colors"
                 >
                   <FaTimes />
                 </button>
-
-                {/* Video Player */}
-                <iframe 
+                <iframe
                   className="w-full h-full"
                   src="https://www.youtube.com/embed/ckHzmP1evNU?autoplay=1"
                   title="Taxi Service Promo"
                   frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                ></iframe>
+                />
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* CONTENT SECTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-12 items-center">
-          
-          {/* Left Side: Text and Taxi Image */}
+        {/* Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.7 }}
           >
-            <span className="text-primary font-bold uppercase tracking-[0.2em] text-[13px] block mb-3">
-              WHY CHOOSE US
+            <span className="section-tag">
+              <span className="w-4 h-px bg-primary" /> Why Choose Us
             </span>
-            <h2 className="text-[38px] md:text-[45px] lg:text-[42px] xl:text-[48px] font-bold text-white leading-[1.15] mb-6">
-              We Are Dedicated <span className="text-primary">To Provide</span> Quality Service
+            <h2 className="section-title mb-6">
+              Dedicated To<br /><span className="gradient-text">Quality Service</span>
             </h2>
-            <p className="text-gray-400 text-[15.5px] leading-[1.8] mb-10 font-medium">
-              There are many variations of passages available but the majority have suffered alteration in some form going to use a passage by injected humour randomised words which don't look even slightly believable.
+            <p className="text-white/50 text-base leading-relaxed mb-8">
+              We combine technology with human expertise to deliver the most reliable cab experience in the city. Every ride is tracked, every driver is vetted.
             </p>
-            
-            <div className="relative mt-8">
-              <img 
-                src="/cab2.png" 
-                alt="Yellow Taxi" 
-                className="w-full max-w-[500px] object-contain transform translate-y-4 hover:-translate-y-2 transition-transform duration-500 drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)]"
+            <div className="relative">
+              <img
+                src="/cab2.png"
+                alt="Taxi"
+                className="w-full max-w-md object-contain drop-shadow-2xl hover:-translate-y-2 transition-transform duration-500"
               />
             </div>
           </motion.div>
 
-          {/* Right Side: Feature Cards */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {featuresData.map((feature, index) => (
               <motion.div
                 key={feature.id}
-                initial={{ opacity: 0, x: 50 }}
+                initial={{ opacity: 0, x: 40 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.15 }}
-                className="bg-white rounded-[20px] p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center group hover:shadow-[0_15px_30px_rgba(255,193,7,0.15)] transition-shadow duration-300"
+                className="group flex items-center gap-6 bg-[#111111] border border-white/8 hover:border-primary/40 rounded-3xl p-6 transition-all duration-300"
               >
-                {/* Yellow Icon Circle */}
-                <div className="w-[75px] h-[75px] shrink-0 rounded-full bg-primary flex items-center justify-center border-[3px] border-transparent group-hover:border-[#111111]/10 transition-colors">
-                  <feature.icon className="text-[32px] text-[#111111]" />
+                <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-black shrink-0 group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
+                  <feature.icon size={24} />
                 </div>
-                
-                {/* Content */}
-                <div className="flex-1 pr-0 sm:pr-4">
-                  <h3 className="text-[22px] font-bold text-[#111111] mb-2">{feature.title}</h3>
-                  <p className="text-gray-500 text-[14px] leading-[1.7] font-medium">
-                    {feature.desc}
-                  </p>
+                <div className="flex-1">
+                  <h3 className="text-white font-bold text-lg mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>{feature.title}</h3>
+                  <p className="text-white/40 text-sm leading-relaxed">{feature.desc}</p>
                 </div>
-
-                {/* Number Outline */}
-                <div className="hidden sm:block">
-                  <span 
-                    className="text-transparent text-[60px] lg:text-[70px] font-black leading-none opacity-40 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ WebkitTextStroke: '1.5px #FFC107' }}
-                  >
-                    {feature.num}
-                  </span>
-                </div>
+                <span
+                  className="hidden sm:block text-5xl font-black opacity-10 group-hover:opacity-30 transition-opacity"
+                  style={{ WebkitTextStroke: '1px #FFD60A', color: 'transparent' }}
+                >
+                  {feature.num}
+                </span>
               </motion.div>
             ))}
           </div>
-
         </div>
       </div>
     </section>
