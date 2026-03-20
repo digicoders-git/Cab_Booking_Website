@@ -156,7 +156,7 @@ export const blogs = [
     date: 'Oct 15, 2026',
     author: 'Admin',
     image: 'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&q=80&w=800',
-    excerpt: 'Discover the most breathtaking spots in the city that you absolutely must see. From historical landmarks to modern marvels...'
+    excerpt: 'Discover the most breath taking spots in the city that you absolutely must see. From historical landmarks to modern marvels...'
   },
   {
     id: 2,

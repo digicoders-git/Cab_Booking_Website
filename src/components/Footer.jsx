@@ -134,7 +134,7 @@ const Footer = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.5 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-8 right-8 w-12 h-12 bg-primary text-black rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/30 z-[999] hover:bg-accent hover:scale-110 transition-all"
+            className="fixed bottom-20 right-8 w-12 h-12 bg-primary text-black rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/30 z-[999] hover:bg-accent hover:scale-110 transition-all"
           >
             <FaArrowUp size={16} />
           </motion.button>

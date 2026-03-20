@@ -97,7 +97,7 @@ const BookingDetails = () => {
                    <div className="flex flex-col sm:flex-row justify-between items-center gap-8">
                       <div className="flex items-center gap-6">
                          <div className="w-20 h-20 rounded-3xl overflow-hidden border-2 border-primary">
-                            <img src="https://images.unsplash.com/photo-1544168190-79c175319808?auto=format&fit=crop&q=80&w=200" alt="Driver" className="w-full h-full object-cover" />
+                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWVufGVufDB8fDB8fHww" alt="Driver" className="w-full h-full object-cover" />
                          </div>
                          <div>
                             <h5 className="text-xl font-black text-[#111111] uppercase tracking-tighter">{booking.driver}</h5>

@@ -172,7 +172,7 @@ const RideType = () => {
                                  type="text" 
                                  name="pickup"
                                  required
-                                 className="w-full bg-gray-50 border-2 border-transparent px-14 py-4 rounded-xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                                 className="w-full bg-gray-50 border-2 border-transparent px-14 py-4 rounded-xl text-sm font-bold text-[#111111] placeholder:text-gray-400 focus:bg-white focus:border-primary transition-all outline-none"
                                  placeholder="Pickup Address"
                                  value={bookingFormData.pickup}
                                  onChange={handleInputChange}
@@ -189,7 +189,7 @@ const RideType = () => {
                                  type="text" 
                                  name="destination"
                                  required
-                                 className="w-full bg-gray-50 border-2 border-transparent px-14 py-4 rounded-xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                                 className="w-full bg-gray-50 border-2 border-transparent px-14 py-4 rounded-xl text-sm font-bold text-[#111111] placeholder:text-gray-400 focus:bg-white focus:border-primary transition-all outline-none"
                                  placeholder="Drop-off Address"
                                  value={bookingFormData.destination}
                                  onChange={handleInputChange}
@@ -202,7 +202,7 @@ const RideType = () => {
                               type="date" 
                               name="date"
                               required
-                              className="w-full bg-gray-50 border-2 border-transparent px-5 py-4 rounded-xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                              className="w-full bg-gray-50 border-2 border-transparent px-5 py-4 rounded-xl text-sm font-bold text-[#111111] focus:bg-white focus:border-primary transition-all outline-none"
                               value={bookingFormData.date}
                               onChange={handleInputChange}
                             />
@@ -213,7 +213,7 @@ const RideType = () => {
                               type="time" 
                               name="time"
                               required
-                              className="w-full bg-gray-50 border-2 border-transparent px-5 py-4 rounded-xl text-sm font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                              className="w-full bg-gray-50 border-2 border-transparent px-5 py-4 rounded-xl text-sm font-bold text-[#111111] focus:bg-white focus:border-primary transition-all outline-none"
                               value={bookingFormData.time}
                               onChange={handleInputChange}
                             />
