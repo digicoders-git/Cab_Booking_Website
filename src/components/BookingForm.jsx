@@ -496,7 +496,7 @@ const BookingForm = () => {
           setIsSearching(true);
           setTimeout(() => {
             setIsSearching(false);
-            navigate('/driver-tracking');
+            navigate(`/booking-details/${data.booking?._id || data.bookingId}`);
           }, 3000);
         });
       } else {

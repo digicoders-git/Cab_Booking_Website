@@ -10,7 +10,7 @@ import {
   FaMapMarkerAlt, FaCalendarAlt, FaCar, FaHashtag,
   FaUsers, FaCouch, FaSyncAlt, FaCalculator, FaFileInvoiceDollar,
   FaCreditCard, FaClipboardCheck, FaListAlt, FaInfoCircle, FaUserCircle,
-  FaExclamationCircle, FaGift, FaRoute, FaThumbsUp
+  FaExclamationCircle, FaGift, FaRoute, FaThumbsUp, FaHistory, FaMapMarkedAlt
 } from 'react-icons/fa';
 
 const navLinks = [
@@ -36,10 +36,9 @@ const navLinks = [
     subItems: [
       { name: 'Advanced Payment', path: '/advanced-payment', icon: <FaCreditCard className="text-primary" /> },
       { name: 'Booking Confirmation', path: '/booking-confirmation', icon: <FaClipboardCheck className="text-primary" /> },
-      { name: 'My Booking', path: '/my-booking', icon: <FaListAlt className="text-primary" /> },
-      { name: 'Booking Details', path: '/booking-details', icon: <FaInfoCircle className="text-primary" /> },
+      { name: 'My Booking History', path: '/my-booking', icon: <FaHistory className="text-primary" /> },
       { name: 'User Profile', path: '/profile', icon: <FaUserCircle className="text-primary" /> },
-      { name: 'Driver Tracking', path: '/driver-tracking', icon: <FaMapMarkerAlt className="text-primary" /> },
+      { name: 'Track Last Ride', path: '/driver-tracking', icon: <FaMapMarkedAlt className="text-primary" /> },
     ]
   },
   { name: 'My Rides', path: '/my-booking', hasDropdown: false },
@@ -120,65 +119,18 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setIsSearchOpen(true)}
-            className="w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+          {/* Notifications - Direct Link instead of Dropdown */}
+          <Link
+            to="/notifications"
+            className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
           >
-            <FaSearch size={16} />
-          </button>
-
-          {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => setIsNotifyOpen(!isNotifyOpen)}
-              className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-            >
-              <FaBell size={16} />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-black text-[9px] font-bold rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            <AnimatePresence>
-              {isNotifyOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-[100]"
-                >
-                  <div className="flex justify-between items-center p-4 border-b border-white/10">
-                    <h4 className="text-white font-bold text-sm">Notifications</h4>
-                    <button onClick={markAllAsRead} className="text-primary text-xs font-medium hover:underline">Mark all read</button>
-                  </div>
-                  <div className="max-h-80 overflow-y-auto">
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        onClick={() => markAsRead(n.id)}
-                        className={`flex gap-3 p-4 hover:bg-white/5 cursor-pointer border-b border-white/5 transition-colors ${n.read ? 'opacity-50' : ''}`}
-                      >
-                        <div className="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center shrink-0 text-sm">{n.icon}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start">
-                            <span className="text-white text-xs font-bold">{n.title}</span>
-                            <span className="text-white/30 text-[10px] ml-2 shrink-0">{n.time}</span>
-                          </div>
-                          <p className="text-white/50 text-xs mt-0.5 leading-relaxed line-clamp-2">{n.text}</p>
-                        </div>
-                        <button onClick={e => { e.stopPropagation(); deleteNotif(n.id); }} className="text-white/20 hover:text-red-400 transition-colors shrink-0">
-                          <FaTimes size={10} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            <FaBell size={16} />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </Link>
 
           <Link to="/booking" className="hidden sm:flex btn-primary text-xs py-2.5 px-5 rounded-full shadow-lg shadow-primary/20">
             Book Now
@@ -194,43 +146,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Search Overlay */}
-      <AnimatePresence>
-        {isSearchOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/98 z-[200] flex items-center justify-center p-6 backdrop-blur-xl"
-          >
-            <button
-              onClick={() => setIsSearchOpen(false)}
-              className="absolute top-6 right-6 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-            >
-              <FaTimes />
-            </button>
-            <div className="w-full max-w-2xl">
-              <h3 className="text-white text-2xl font-bold mb-2 text-center" style={{ fontFamily: 'Syne, sans-serif' }}>
-                Where to?
-              </h3>
-              <p className="text-white/40 text-center mb-8 text-sm">Search for your next ride</p>
-              <div className="space-y-4">
-                <div className="relative">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full" />
-                  <input type="text" placeholder="Pickup location" className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-5 py-5 text-white text-lg outline-none focus:border-primary transition-all placeholder:text-white/20" />
-                </div>
-                <div className="relative">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 w-2 h-2 bg-white/40 rounded-full" />
-                  <input type="text" placeholder="Drop-off location" className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-5 py-5 text-white text-lg outline-none focus:border-white/40 transition-all placeholder:text-white/20" />
-                </div>
-                <button className="w-full bg-primary text-black font-bold py-5 rounded-2xl text-base hover:bg-accent transition-all">
-                  Find Available Rides
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* Mobile Offcanvas */}
       <AnimatePresence>
@@ -286,6 +202,13 @@ const Header = () => {
                         ))}
                       </div>
                     )}
+                    <Link
+                      to="/notifications"
+                      onClick={() => setIsOffcanvasOpen(false)}
+                      className="flex items-center gap-4 py-3.5 px-4 rounded-xl text-primary bg-primary/5 border border-primary/10 text-sm font-black italic tracking-widest uppercase transition-all"
+                    >
+                      <FaBell size={14} /> Notifications
+                    </Link>
                   </div>
                 ))}
               </nav>

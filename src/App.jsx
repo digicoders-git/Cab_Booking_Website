@@ -32,6 +32,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import ForgotPassword from './pages/ForgotPassword';
 import DriverTracking from './pages/DriverTracking';
+import Notifications from './pages/Notifications';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -72,7 +73,7 @@ function App() {
           <Route path="advanced-payment" element={<AdvancedPayment />} />
           <Route path="booking-confirmation" element={<BookingConfirmation />} />
           <Route path="my-booking" element={<MyBooking />} />
-          <Route path="booking-details" element={<BookingDetails />} />
+          <Route path="booking-details/:bookingId" element={<BookingDetails />} />
           <Route path="profile" element={<Profile />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="driver-tracking" element={<DriverTracking />} />
@@ -80,6 +81,7 @@ function App() {
           <Route path="terms-of-service" element={<TermsOfService />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="notifications" element={<Notifications />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
