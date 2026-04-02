@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaTaxi, FaFacebookF, FaGoogle } from 'react-icons/fa';
 
 const Login = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] pt-[100px] sm:pt-[160px] pb-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Decorative Background Elements */}
@@ -23,7 +27,7 @@ const Login = () => {
             <p className="text-gray-500 font-medium">Please enter your details to sign in</p>
           </div>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div className="relative group">
                 <label className="text-xs font-bold text-[#111111] uppercase tracking-widest ml-1 mb-2 block opacity-70">Email Address</label>

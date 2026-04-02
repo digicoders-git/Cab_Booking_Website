@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import PageHeader from '../components/PageHeader';
 import { FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaTaxi, FaWhatsapp, FaClock, FaPaperPlane } from 'react-icons/fa';
 
@@ -17,7 +18,12 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert('Thank you for contacting KwibCabs! Your message has been received.');
+    Swal.fire({
+      icon: 'success',
+      title: 'Message Received',
+      text: 'Thank you for contacting KwibCabs! Our team will get back to you soon.',
+      confirmButtonColor: '#FFD60A',
+    });
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 

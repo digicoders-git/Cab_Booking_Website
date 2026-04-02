@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaMotorcycle, FaTaxi, FaCheckCircle, FaTimes,
@@ -28,6 +28,37 @@ const Booking = () => {
   const [selectedCar, setSelectedCar] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const pickupRef = useRef(null);
+  const dropoffRef = useRef(null);
+
+  useEffect(() => {
+    if (!window.google) return;
+
+    const pickupAutocomplete = new window.google.maps.places.Autocomplete(pickupRef.current, {
+      types: ['geocode', 'establishment'],
+      componentRestrictions: { country: 'in' }
+    });
+
+    const dropoffAutocomplete = new window.google.maps.places.Autocomplete(dropoffRef.current, {
+      types: ['geocode', 'establishment'],
+      componentRestrictions: { country: 'in' }
+    });
+
+    pickupAutocomplete.addListener('place_changed', () => {
+      const place = pickupAutocomplete.getPlace();
+      if (place.formatted_address) {
+        setFormData(prev => ({ ...prev, pickup: place.formatted_address }));
+      }
+    });
+
+    dropoffAutocomplete.addListener('place_changed', () => {
+      const place = dropoffAutocomplete.getPlace();
+      if (place.formatted_address) {
+        setFormData(prev => ({ ...prev, dropoff: place.formatted_address }));
+      }
+    });
+  }, []);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -80,9 +111,8 @@ const Booking = () => {
                 <button
                   key={rt.id}
                   onClick={() => setRideType(rt.id)}
-                  className={`flex-1 flex flex-col items-center gap-1.5 py-4 text-xs font-bold transition-all relative ${
-                    rideType === rt.id ? 'text-white' : 'text-white/30 hover:text-white/60'
-                  }`}
+                  className={`flex-1 flex flex-col items-center gap-1.5 py-4 text-xs font-bold transition-all relative ${rideType === rt.id ? 'text-white' : 'text-white/30 hover:text-white/60'
+                    }`}
                 >
                   <span className={`p-2 rounded-xl transition-all ${rideType === rt.id ? `bg-gradient-to-br ${rt.color} text-black shadow-lg` : 'bg-white/5'}`}>
                     {rt.icon}
@@ -102,6 +132,7 @@ const Booking = () => {
                 <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/10">
                   <FaDotCircle className="text-primary text-sm shrink-0" />
                   <input
+                    ref={pickupRef}
                     name="pickup" required value={formData.pickup} onChange={handleChange}
                     placeholder="Pickup location"
                     className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-white/30"
@@ -110,6 +141,7 @@ const Booking = () => {
                 <div className="flex items-center gap-3 px-4 py-3.5">
                   <FaMapMarkerAlt className="text-red-400 text-sm shrink-0" />
                   <input
+                    ref={dropoffRef}
                     name="dropoff" required value={formData.dropoff} onChange={handleChange}
                     placeholder="Drop-off location"
                     className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-white/30"
@@ -149,7 +181,7 @@ const Booking = () => {
                   name="passengers" value={formData.passengers} onChange={handleChange}
                   className="flex-1 bg-transparent text-white text-sm outline-none appearance-none cursor-pointer"
                 >
-                  {[1,2,3,4,'5+'].map(n => <option key={n} value={n} className="bg-[#111]">{n} Passenger{n !== 1 ? 's' : ''}</option>)}
+                  {[1, 2, 3, 4, '5+'].map(n => <option key={n} value={n} className="bg-[#111]">{n} Passenger{n !== 1 ? 's' : ''}</option>)}
                 </select>
               </div>
 

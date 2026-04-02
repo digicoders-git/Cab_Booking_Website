@@ -42,6 +42,7 @@ const navLinks = [
       { name: 'Driver Tracking', path: '/driver-tracking', icon: <FaMapMarkerAlt className="text-primary" /> },
     ]
   },
+  { name: 'My Rides', path: '/my-booking', hasDropdown: false },
   { name: 'Contact', path: '/contact', hasDropdown: false },
 ];
 

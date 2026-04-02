@@ -95,3 +95,69 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Google Maps Autocomplete Styles */
+.pac-container {
+  background-color: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  margin-top: 5px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+  z-index: 11000 !important;
+  min-width: 450px !important;
+  max-width: 90% !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+}
+
+.pac-item {
+  padding: 12px 16px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  cursor: pointer !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.pac-item:first-child {
+  border-top: none !important;
+}
+
+.pac-item:hover {
+  background-color: rgba(255, 214, 10, 0.1) !important;
+}
+
+.pac-item-query {
+  color: #FFD60A !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.pac-icon {
+  filter: invert(1) brightness(2) !important;
+  margin-right: 10px !important;
+}
+
+.pac-matched {
+  font-weight: 800 !important;
+}
+
+/* Scrollbar for suggestions */
+.pac-container::-webkit-scrollbar {
+  width: 4px;
+}
+.pac-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pac-container::-webkit-scrollbar-thumb {
+  background: #FFD60A;
+  border-radius: 10px;
+}
+
+/* Ensure SweetAlert2 is always on top of all modals */
+.swal2-container {
+  z-index: 20000 !important;
+}
+
