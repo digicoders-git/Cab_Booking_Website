@@ -1,141 +1,179 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaBell, FaRegBell, FaChevronLeft, FaTag, 
-  FaInfoCircle, FaCalendarAlt, FaTrashAlt, 
-  FaEllipsisV, FaCheckCircle, FaSpinner 
+import {
+  FaBell, FaRegBell, FaTag,
+  FaInfoCircle, FaCalendarAlt,
+  FaCheckCircle, FaSpinner, FaTaxi, FaGift, FaShieldAlt
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
+import PageHeader from '../components/PageHeader';
 
 const Notifications = () => {
-    const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const fetchNotifications = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/notifications/my-notifications`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success) {
-                // Latest first
-                setNotifications(data.notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-            } else {
-                setError(data.message || "Failed to load notifications");
-            }
-        } catch (err) {
-            setError("Connection to server failed");
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/notifications/my-notifications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setNotifications(data.notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+      } else {
+        setError(data.message || 'Failed to load notifications');
+      }
+    } catch (err) {
+      setError('Connection to server failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        fetchNotifications();
-    }, []);
+  useEffect(() => { fetchNotifications(); }, []);
 
-    const getIcon = (title) => {
-        const t = title.toLowerCase();
-        if (t.includes('off') || t.includes('discount') || t.includes('promo')) return <FaTag className="text-primary" />;
-        if (t.includes('ride') || t.includes('booking')) return <FaCheckCircle className="text-green-500" />;
-        return <FaInfoCircle className="text-blue-500" />;
-    };
+  const getIconConfig = (title) => {
+    const t = (title || '').toLowerCase();
+    if (t.includes('off') || t.includes('discount') || t.includes('promo') || t.includes('gift'))
+      return { icon: FaGift, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', strip: 'bg-purple-500' };
+    if (t.includes('ride') || t.includes('booking') || t.includes('confirm') || t.includes('complete'))
+      return { icon: FaCheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', strip: 'bg-emerald-500' };
+    if (t.includes('driver') || t.includes('taxi') || t.includes('cab'))
+      return { icon: FaTaxi, color: 'text-primary', bg: 'bg-primary/10 border-primary/20', strip: 'bg-primary' };
+    if (t.includes('safe') || t.includes('alert') || t.includes('security'))
+      return { icon: FaShieldAlt, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', strip: 'bg-amber-500' };
+    if (t.includes('tag') || t.includes('offer'))
+      return { icon: FaTag, color: 'text-primary', bg: 'bg-primary/10 border-primary/20', strip: 'bg-primary' };
+    return { icon: FaInfoCircle, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', strip: 'bg-blue-500' };
+  };
 
-    const formatDate = (dateStr) => {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-    };
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
-    if (loading) return (
-        <div className="min-h-screen bg-[#060606] flex items-center justify-center">
-            <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
-                <FaSpinner className="text-primary text-4xl" />
-            </motion.div>
-        </div>
-    );
+  if (loading) return (
+    <div className="min-h-screen bg-[#060606] flex items-center justify-center">
+      <div className="text-center space-y-4">
+        <FaSpinner className="text-primary text-4xl mx-auto animate-spin" />
+        <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em]">Loading...</p>
+      </div>
+    </div>
+  );
 
-    return (
-        <div className="bg-[#060606] min-h-screen pt-[110px] pb-20 px-4">
-            <div className="container mx-auto max-w-4xl">
-                
-                {/* Header Area */}
-                <div className="flex items-center justify-between mb-12">
-                    <div className="flex items-center gap-6">
-                        <Link to="/" className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/40 hover:bg-white/10 transition-all border border-white/5">
-                            <FaChevronLeft size={14} />
-                        </Link>
-                        <div>
-                            <h1 className="text-white font-black text-4xl italic tracking-tighter" style={{ fontFamily: 'Syne, sans-serif' }}>Updates & News</h1>
-                            <p className="text-white/30 font-bold text-[10px] uppercase tracking-widest mt-1">Personalized Feed for you</p>
-                        </div>
-                    </div>
-                    <div className="hidden md:flex bg-white/5 px-6 py-3 rounded-2xl border border-white/5 items-center gap-3">
-                        <FaBell className="text-primary animate-pulse" />
-                        <span className="text-white font-black text-xs uppercase tracking-widest">{notifications.length} Active</span>
-                    </div>
+  return (
+    <div className="bg-[#060606] min-h-screen pb-24">
+      <PageHeader title="Notifications" breadcrumb="Notifications" />
+
+      <div className="container mx-auto px-4 max-w-7xl mt-14">
+
+        {/* Stats Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#0d0d0d] border border-white/5 rounded-[1.75rem] overflow-hidden mb-10"
+        >
+          {/* Yellow top strip */}
+          <div className="h-[3px] w-full bg-primary" />
+          <div className="flex items-center justify-between px-7 py-5">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center">
+                <FaBell className="text-primary animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-white font-black text-base uppercase tracking-widest">Your Feed</h2>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  <p className="text-white/30 text-[9px] font-black uppercase tracking-[0.3em]">
+                    {notifications.length} Notification{notifications.length !== 1 ? 's' : ''}
+                  </p>
                 </div>
-
-                {/* Notifications List */}
-                <div className="space-y-4">
-                    {notifications.length > 0 ? (
-                        <AnimatePresence>
-                            {notifications.map((note, index) => (
-                                <motion.div 
-                                    key={note._id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    whileHover={{ x: 5 }}
-                                    className="bg-[#111] p-6 md:p-8 rounded-[2.5rem] border border-white/5 shadow-xl group relative overflow-hidden"
-                                >
-                                    {/* Accent Gradient on top */}
-                                    <div className="absolute top-0 left-0 right-0 h-1 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                                    <div className="flex gap-6 items-start relative z-10">
-                                        <div className="w-14 h-14 bg-white/5 rounded-2xl flex-shrink-0 items-center justify-center flex border border-white/10 group-hover:bg-white/10 transition-all">
-                                            {getIcon(note.title)}
-                                        </div>
-                                        
-                                        <div className="flex-1">
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
-                                                <h3 className="text-white font-black text-xl italic tracking-tighter" style={{ fontFamily: 'Syne, sans-serif' }}>{note.title}</h3>
-                                                <div className="flex items-center gap-2 text-white/20">
-                                                    <FaCalendarAlt size={10} />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">{formatDate(note.createdAt)}</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-white/40 text-sm leading-relaxed max-w-2xl font-medium">{note.message}</p>
-                                        </div>
-
-                                        <button className="text-white/10 hover:text-white/40 transition-colors p-2">
-                                            <FaEllipsisV size={14} />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    ) : (
-                        <div className="text-center py-20 bg-[#111] rounded-[3.5rem] border border-white/5">
-                            <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8">
-                                <FaRegBell className="text-white/10 text-4xl" />
-                            </div>
-                            <h3 className="text-white font-black text-2xl uppercase tracking-tighter mb-4 italic" style={{ fontFamily: 'Syne, sans-serif' }}>Inbox is Empty</h3>
-                            <p className="text-white/20 text-xs font-bold uppercase tracking-[0.2em]">Check back later for exciting offers and updates.</p>
-                            <Link to="/" className="mt-10 btn-primary inline-flex">Explore Rides</Link>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer Insight */}
-                <div className="mt-16 text-center">
-                    <p className="text-white/10 text-[9px] font-black uppercase tracking-[0.4em]">Powered by Taxica Real-Time Engine</p>
-                </div>
+              </div>
             </div>
+            <div className="bg-primary text-black font-black text-[10px] uppercase tracking-widest px-5 py-2.5 rounded-xl shadow-lg shadow-primary/20">
+              {notifications.length} Active
+            </div>
+          </div>
+        </motion.div>
+
+        {/* List */}
+        {notifications.length > 0 ? (
+          <div className="space-y-4">
+            <AnimatePresence>
+              {notifications.map((note, index) => {
+                const cfg = getIconConfig(note.title);
+                const IconComp = cfg.icon;
+                return (
+                  <motion.div
+                    key={note._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="bg-[#0d0d0d] border border-white/5 hover:border-primary/20 rounded-[1.75rem] overflow-hidden transition-all group"
+                  >
+                    {/* Top color strip */}
+                    <div className={`h-[3px] w-full ${cfg.strip}`} />
+
+                    <div className="p-6 md:p-7 flex gap-5 items-start">
+
+                      {/* Icon */}
+                      <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 ${cfg.bg}`}>
+                        <IconComp className={`text-lg ${cfg.color}`} />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                          <h3 className="text-white font-black text-base uppercase tracking-tight leading-snug">
+                            {note.title}
+                          </h3>
+                          <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-xl shrink-0">
+                            <FaCalendarAlt size={9} className="text-primary" />
+                            <span className="text-primary text-[9px] font-black uppercase tracking-widest">{formatDate(note.createdAt)}</span>
+                          </div>
+                        </div>
+                        <p className="text-white/40 text-sm leading-relaxed">{note.message}</p>
+                      </div>
+
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] p-20 text-center"
+          >
+            <div className="w-20 h-20 bg-white/5 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 border border-white/10">
+              <FaRegBell className="text-white/10 text-4xl" />
+            </div>
+            <h3 className="text-white font-black text-xl uppercase tracking-tight mb-2">Inbox is Empty</h3>
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-10 max-w-xs mx-auto leading-relaxed">
+              Check back later for exciting offers and updates.
+            </p>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 bg-primary text-black font-black px-10 py-4 rounded-2xl text-[10px] uppercase tracking-widest hover:bg-yellow-400 transition-all"
+            >
+              <FaTaxi /> Explore Rides
+            </Link>
+          </motion.div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-16 text-center">
+          <p className="text-white/10 text-[9px] font-black uppercase tracking-[0.4em]">Powered by KwibCabs Real-Time Engine</p>
         </div>
-    );
+
+      </div>
+    </div>
+  );
 };
 
 export default Notifications;

@@ -31,13 +31,14 @@ const Footer = () => {
             </p>
             <div className="space-y-3">
               {[
-                { icon: FaPhoneAlt, text: '+2 123 654 7898' },
-                { icon: FaMapMarkerAlt, text: '25/B Milford Road, New York' },
-                { icon: FaEnvelope, text: 'info@example.com' },
-              ].map(({ icon: Icon, text }) => (
+                { icon: FaPhoneAlt, text: '+91 7310221010', href: 'tel:+917310221010' },
+                { icon: FaPhoneAlt, text: '+91 7310231010', href: 'tel:+917310231010' },
+                { icon: FaMapMarkerAlt, text: '25/B Milford Road, New York', href: null },
+                { icon: FaEnvelope, text: 'basantktv@gmail.com', href: 'mailto:basantktv@gmail.com' },
+              ].map(({ icon: Icon, text, href }) => (
                 <div key={text} className="flex items-center gap-3 text-white/50 text-sm hover:text-white/80 transition-colors">
                   <Icon className="text-primary text-xs shrink-0" />
-                  {text}
+                  {href ? <a href={href}>{text}</a> : text}
                 </div>
               ))}
             </div>

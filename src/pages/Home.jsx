@@ -20,7 +20,7 @@ const Home = () => {
       <ServicesSection />
       <CarFleet />
       <WhyChooseUs />
-      <ExpertDrivers />
+      {/* <ExpertDrivers /> */}
       <QualityServiceSection />
       <FaqSection />
       {/* <AppDownload /> */}

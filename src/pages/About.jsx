@@ -14,7 +14,7 @@ const About = () => {
       
       <StatsSection />
       
-      <ExpertDrivers />
+      {/* <ExpertDrivers /> */}
       
       <Testimonials />
       

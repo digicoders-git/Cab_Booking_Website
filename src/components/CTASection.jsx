@@ -35,11 +35,11 @@ const CTASection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/booking" className="btn-primary shadow-2xl shadow-primary/30 hover:scale-105 transition-transform text-sm font-bold">
+              <Link to="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="btn-primary shadow-2xl shadow-primary/30 hover:scale-105 transition-transform text-sm font-bold">
                 Book a Ride Now <FaArrowRight />
               </Link>
-              <a href="tel:+21236547898" className="btn-secondary text-sm font-bold hover:scale-105 transition-transform">
-                <FaPhoneAlt size={14} /> +2 123 654 7898
+              <a href="tel:+7310221010" className="btn-secondary text-sm font-bold hover:scale-105 transition-transform">
+                <FaPhoneAlt size={14} /> +91 7310221010
               </a>
             </div>
           </div>

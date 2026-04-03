@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaTaxi, FaMapMarkerAlt, FaCalendarAlt, FaClock,
   FaChevronRight, FaCheckCircle, FaHistory, FaTimesCircle,
-  FaSpinner, FaUser, FaStar, FaShieldAlt, FaArrowRight, FaDotCircle, FaFingerprint
+  FaSpinner, FaUser, FaShieldAlt, FaArrowRight, FaDotCircle, FaFingerprint
 } from 'react-icons/fa';
-import { HiSparkles } from 'react-icons/hi';
 import PageHeader from '../components/PageHeader';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -22,16 +21,13 @@ const MyBooking = () => {
     const token = localStorage.getItem('token');
     try {
       const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      if (data.success) {
-        setBookings(data.bookings);
-      }
+      console.log('--- ALL BOOKINGS FROM BACKEND ---', data.bookings);
+      if (data.success) setBookings(data.bookings || []);
     } catch (error) {
-      console.error("Fetch Error:", error);
+      console.error('Fetch Error:', error);
     } finally {
       setLoading(false);
     }
@@ -39,23 +35,13 @@ const MyBooking = () => {
 
   useEffect(() => {
     fetchBookings();
-
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     const userId = localStorage.getItem('userId') || storedUser?._id;
-    const userRole = localStorage.getItem('role') || (storedUser?._id ? 'user' : 'user');
-
+    const userRole = localStorage.getItem('role') || 'user';
     if (!userId) return;
-
-    const backendServer = API_BASE_URL.replace('/api', '');
-    const socket = io(backendServer);
-
+    const socket = io(API_BASE_URL.replace('/api', ''));
     socket.emit('join_room', { userId, role: userRole });
-
-    socket.on('booking_update', (data) => {
-        console.log("Real-time list update received 🔔", data.status);
-        fetchBookings(); // Refresh the list
-    });
-
+    socket.on('booking_update', () => fetchBookings());
     return () => socket.disconnect();
   }, []);
 
@@ -67,27 +53,24 @@ const MyBooking = () => {
       inputPlaceholder: 'e.g. Plan changed',
       showCancelButton: true,
       confirmButtonText: 'Yes, Cancel it!',
+      background: '#111', color: '#fff'
     });
-
     if (reason) {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`${API_BASE_URL}/bookings/cancel/${bookingId}`, {
+        const res = await fetch(`${API_BASE_URL}/bookings/cancel/${bookingId}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ reason })
         });
-        const data = await response.json();
+        const data = await res.json();
         if (data.success) {
           Swal.fire('Cancelled!', 'Your ride has been cancelled.', 'success');
           fetchBookings();
         } else {
           Swal.fire('Error', data.message || 'Failed to cancel.', 'error');
         }
-      } catch (error) {
+      } catch {
         Swal.fire('Error', 'Server connection failed.', 'error');
       }
     }
@@ -95,80 +78,49 @@ const MyBooking = () => {
 
   const filteredBookings = bookings.filter(b => {
     if (!b) return false;
-    const status = (b.bookingStatus || b.status || '').toLowerCase();
+    // Map status from potential fields and lowercase it
+    const status = (b.bookingStatus || b.status || '').toLowerCase().trim();
+
     if (activeTab === 'Upcoming') {
-      return ['pending', 'accepted', 'ongoing', 'confirmed', 'driver_assigned'].includes(status);
+      return ['pending', 'accepted', 'ongoing', 'confirmed', 'driver_assigned', 'accepted_by_driver'].includes(status);
+    } else {
+      // Past Rides: Completed, Cancelled, Expired
+      return ['completed', 'cancelled', 'expired', 'rejected', 'timeout'].includes(status);
     }
-    return ['completed', 'cancelled', 'expired'].includes(status);
   });
 
   const getStatusConfig = (status) => {
     const s = status.toLowerCase();
-    if (s === 'completed') return { 
-        bg: 'bg-emerald-500/10 border-emerald-500/20', 
-        text: 'text-emerald-500', 
-        icon: FaCheckCircle, 
-        label: 'Completed' 
-    };
-    if (s === 'cancelled') return { 
-        bg: 'bg-red-500/10 border-red-500/20', 
-        text: 'text-red-500', 
-        icon: FaTimesCircle, 
-        label: 'Cancelled' 
-    };
-    if (s === 'accepted' || s === 'driver_assigned') return { 
-        bg: 'bg-primary/10 border-primary/20', 
-        text: 'text-primary', 
-        icon: FaShieldAlt, 
-        label: 'Accepted' 
-    };
-    if (s === 'ongoing') return { 
-        bg: 'bg-amber-500/10 border-amber-500/20', 
-        text: 'text-amber-500', 
-        icon: FaClock, 
-        label: 'Trip Live' 
-    };
-    if (s === 'expired') return { 
-        bg: 'bg-gray-500/10 border-gray-500/20', 
-        text: 'text-gray-500', 
-        icon: FaHistory, 
-        label: 'Expired' 
-    };
-    return { 
-        bg: 'bg-primary/10 border-primary/20', 
-        text: 'text-primary', 
-        icon: FaSpinner, 
-        label: 'Processing...' 
-    };
+    if (s === 'completed') return { bg: 'bg-emerald-500/10 border-emerald-500/20', text: 'text-emerald-400', strip: 'bg-emerald-500', icon: FaCheckCircle, label: 'Completed' };
+    if (s === 'cancelled') return { bg: 'bg-red-500/10 border-red-500/20', text: 'text-red-400', strip: 'bg-red-500', icon: FaTimesCircle, label: 'Cancelled' };
+    if (s === 'accepted' || s === 'driver_assigned') return { bg: 'bg-primary/10 border-primary/20', text: 'text-primary', strip: 'bg-primary', icon: FaShieldAlt, label: 'Accepted' };
+    if (s === 'ongoing') return { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-400', strip: 'bg-amber-500', icon: FaClock, label: 'Trip Live' };
+    if (s === 'expired') return { bg: 'bg-gray-500/10 border-gray-500/20', text: 'text-gray-400', strip: 'bg-gray-500', icon: FaHistory, label: 'Expired' };
+    return { bg: 'bg-primary/10 border-primary/20', text: 'text-primary', strip: 'bg-primary', icon: FaSpinner, label: 'Processing...' };
   };
 
   return (
-    <div className="bg-[#060606] min-h-screen text-white pt-[140px] pb-20">
-      <div className="container mx-auto px-4 max-w-6xl">
-        
-        {/* Header Section - Dashboard Style */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16 px-4">
-          <div className="space-y-4">
-            <h1 className="text-white font-black text-2xl sm:text-3xl uppercase tracking-widest leading-none">
-              Ride History
-            </h1>
-            <div className="flex items-center gap-3">
-               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-               <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">Total Journeys: {bookings.length}</p>
+    <div className="bg-[#060606] min-h-screen text-white pb-24">
+      <PageHeader title="My Bookings" breadcrumb="My Bookings" />
+
+      <div className="container mx-auto px-4 max-w-7xl mt-14">
+
+        {/* Top Bar */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+          <div>
+            <h2 className="text-white font-black text-2xl uppercase tracking-widest">Ride History</h2>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">Total Journeys: {bookings.length}</p>
             </div>
           </div>
-
-          {/* Tab Switcher - Segmented Style */}
-          <div className="flex bg-[#111] p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+          <div className="flex bg-[#111] p-1.5 rounded-2xl border border-white/5">
             {['Upcoming', 'Past Rides'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-500 ${
-                  activeTab === tab 
-                    ? 'bg-primary text-black shadow-xl shadow-primary/10' 
-                    : 'text-white/20 hover:text-white/40'
-                }`}
+                className={`px-7 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-primary text-black' : 'text-white/20 hover:text-white/50'
+                  }`}
               >
                 {tab}
               </button>
@@ -176,127 +128,136 @@ const MyBooking = () => {
           </div>
         </div>
 
-        {/* Action Content */}
+        {/* Content */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-40 gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-              <FaTaxi className="relative text-primary animate-bounce text-5xl" />
-            </div>
+          <div className="flex flex-col items-center justify-center py-40 gap-5">
+            <FaTaxi className="text-primary text-5xl animate-bounce" />
             <p className="text-white/20 font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">Syncing Trips...</p>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#111] p-24 rounded-[4rem] border border-white/5 text-center shadow-2xl relative overflow-hidden"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0d0d0d] p-20 rounded-[3rem] border border-white/5 text-center"
           >
-            <div className="absolute -top-20 -left-20 w-80 h-80 bg-primary/5 blur-[100px] rounded-full" />
-            <div className="relative z-10 font-sans">
-              <div className="w-32 h-32 bg-white/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 border border-white/10 shadow-inner">
-                <FaHistory className="text-white/10 text-5xl" />
-              </div>
-              <h3 className="text-white font-black text-2xl mb-3 uppercase tracking-wider">Empty History</h3>
-              <p className="text-white/20 text-xs mb-12 max-w-xs mx-auto font-black uppercase tracking-[0.3em] leading-relaxed">No {activeTab} journeys found on your account yet.</p>
-              <Link to="/" className="inline-flex items-center gap-4 bg-primary text-black px-12 py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-yellow-400 transition-all shadow-2xl shadow-primary/20 active:scale-95 group">
-                <FaTaxi className="group-hover:translate-x-1 transition-transform" /> 
-                Start Booking
-                <FaArrowRight className="text-[8px] group-hover:translate-x-1 transition-transform" />
-              </Link>
+            <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-white/10">
+              <FaHistory className="text-white/10 text-4xl" />
             </div>
+            <h3 className="text-white font-black text-xl mb-2 uppercase tracking-wider">No Rides Found</h3>
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-10">No {activeTab} journeys on your account yet.</p>
+            <Link to="/" className="inline-flex items-center gap-3 bg-primary text-black px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-yellow-400 transition-all">
+              <FaTaxi /> Start Booking <FaArrowRight size={9} />
+            </Link>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 px-2">
-            <AnimatePresence mode='popLayout'>
+          <div className="space-y-5">
+            <AnimatePresence mode="popLayout">
               {filteredBookings.map((booking, index) => {
-                const statusConfig = getStatusConfig(booking.bookingStatus || booking.status || 'pending');
-                const StatusIcon = statusConfig.icon;
-                const fareValue = Math.round(booking.totalFare || booking.fareEstimate || 0);
+                const sc = getStatusConfig(booking.bookingStatus || booking.status || 'pending');
+                const StatusIcon = sc.icon;
+                const fare = Math.round(booking.totalFare || booking.fareEstimate || 0);
 
                 return (
                   <motion.div
                     key={booking._id}
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="group"
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.04 }}
                   >
-                    <div className="bg-[#0a0a0a] rounded-[2.5rem] border border-white/5 hover:border-white/10 transition-all duration-500 overflow-hidden shadow-2xl">
-                      <div className="p-6 sm:p-10">
-                        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-                          
-                          {/* Info Column */}
-                          <div className="flex-1 w-full space-y-8">
-                             <div className="flex flex-wrap items-center gap-4">
-                               <span className={`px-4 py-2 border rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${statusConfig.bg} ${statusConfig.text}`}>
-                                 <StatusIcon size={10} className={statusConfig.label === 'Processing...' ? 'animate-spin' : ''} /> {statusConfig.label}
-                               </span>
-                               <span className="bg-white/5 text-primary/80 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border border-white/5">
-                                 {booking.rideType || booking.carCategory?.name || "Ride"}
-                               </span>
-                               <span className="bg-cyan-500/15 text-cyan-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cyan-500/20 flex items-center gap-2 shadow-lg shadow-cyan-500/5">
-                                 <FaFingerprint className="text-cyan-500 text-[12px]" /> OTP: {booking.tripData?.startOtp || booking.otp || "---"}
-                               </span>
-                               <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
-                             </div>
+                    <div className="bg-[#0d0d0d] rounded-[2rem] border border-white/5 hover:border-white/10 transition-all duration-300 overflow-hidden">
 
-                             {/* Location Details */}
-                             <div className="relative pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/5 before:border-dashed before:border-l">
-                               <div className="relative">
-                                  <FaDotCircle className="absolute -left-[31px] top-1 text-primary text-[10px] p-0.5 bg-[#0a0a0a]" />
-                                  <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-1 italic">Pickup</p>
-                                  <h4 className="text-white font-bold text-sm leading-tight line-clamp-1">{booking.pickupAddress || booking.pickup?.address}</h4>
-                               </div>
-                               <div className="relative">
-                                  <FaMapMarkerAlt className="absolute -left-[31px] top-1 text-red-500 text-[10px] p-0.5 bg-[#0a0a0a]" />
-                                  <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-1 italic">Destination</p>
-                                  <h4 className="text-white font-bold text-sm leading-tight line-clamp-1">{booking.dropAddress || booking.drop?.address}</h4>
-                               </div>
-                             </div>
-                          </div>
+                      {/* Status color strip */}
+                      <div className={`h-[3px] w-full ${sc.strip}`} />
 
-                          {/* Data Column */}
-                          <div className="grid grid-cols-2 lg:flex items-center gap-6 lg:gap-14 w-full lg:w-auto border-t lg:border-t-0 pt-6 lg:pt-0 border-white/5">
-                             {booking.assignedDriver && (
-                               <div>
-                                 <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Driver</p>
-                                 <div className="flex items-center gap-2">
-                                   <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-primary text-xs border border-white/10">
-                                      <FaUser />
-                                   </div>
-                                   <div>
-                                      <h4 className="text-white font-bold text-[11px] uppercase leading-none">{booking.assignedDriver.name}</h4>
-                                      <div className="flex text-[7px] text-primary mt-1">
-                                        <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
-                                      </div>
-                                   </div>
-                                 </div>
-                               </div>
-                             )}
-                             <div>
-                               <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Ride Date</p>
-                               <div className="flex items-center gap-2">
-                                 <FaCalendarAlt className="text-primary text-xs" />
-                                 <span className="text-white font-bold text-xs uppercase italic">{new Date(booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                               </div>
-                             </div>
-                             <div>
-                               <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Total Fare</p>
-                               <h2 className="text-primary font-black text-3xl tracking-tighter italic">₹{fareValue}</h2>
-                             </div>
-                             
-                             {/* CTA Actions */}
-                             <div className="col-span-2 lg:col-auto">
-                               <Link 
-                                 to={`/booking-details/${booking._id}`}
-                                 className="flex items-center justify-center gap-3 bg-white/5 hover:bg-primary hover:text-black text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all group"
-                               >
-                                 Details <FaChevronRight size={8} className="group-hover:translate-x-1 transition-transform" />
-                               </Link>
-                             </div>
-                          </div>
+                      <div className="p-6 sm:p-8">
 
+                        {/* Row 1 — Badges */}
+                        <div className="flex flex-wrap items-center gap-2 mb-6">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${sc.bg} ${sc.text}`}>
+                            <StatusIcon size={9} className={sc.label === 'Processing...' ? 'animate-spin' : ''} />
+                            {sc.label}
+                          </span>
+                          <span className="bg-white/5 border border-white/5 text-primary/70 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">
+                            {booking.rideType || booking.carCategory?.name || 'Ride'}
+                          </span>
+                          <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                            <FaFingerprint size={9} /> OTP: {booking.tripData?.startOtp || booking.otp || '---'}
+                          </span>
+                          <span className="text-white/20 text-[9px] font-black uppercase tracking-widest sm:ml-auto">
+                            #{booking._id?.slice(-8).toUpperCase()}
+                          </span>
                         </div>
+
+                        {/* Row 2 — Route + Info + Fare */}
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto_auto] gap-6 items-start">
+
+                          {/* Route */}
+                          <div className="relative pl-6 space-y-4 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-px before:bg-white/10">
+                            <div className="relative">
+                              <FaDotCircle className="absolute -left-[25px] top-1 text-primary text-[10px] bg-[#0d0d0d]" />
+                              <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-0.5">Pickup</p>
+                              <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
+                                {booking.pickupAddress || booking.pickup?.address}
+                              </p>
+                            </div>
+                            <div className="relative">
+                              <FaMapMarkerAlt className="absolute -left-[25px] top-1 text-red-500 text-[10px] bg-[#0d0d0d]" />
+                              <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-0.5">Destination</p>
+                              <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
+                                {booking.dropAddress || booking.drop?.address}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Driver */}
+                          {booking.assignedDriver && (
+                            <div className="lg:border-l lg:border-white/5 lg:pl-6">
+                              <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Driver</p>
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shrink-0">
+                                  <FaUser size={12} />
+                                </div>
+                                <span className="text-white font-bold text-xs uppercase">{booking.assignedDriver.name}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Date */}
+                          <div className="lg:border-l lg:border-white/5 lg:pl-6">
+                            <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Ride Date</p>
+                            <div className="flex items-center gap-1.5">
+                              <FaCalendarAlt className="text-primary text-[10px]" />
+                              <span className="text-white font-bold text-xs">
+                                {new Date(booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Fare */}
+                          <div className="lg:border-l lg:border-white/5 lg:pl-6">
+                            <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-1">Total Fare</p>
+                            <span className="text-primary font-black text-3xl tracking-tighter">₹{fare}</span>
+                          </div>
+                        </div>
+
+                        {/* Row 3 — Actions */}
+                        <div className="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-white/5">
+                          {['pending', 'accepted', 'ongoing'].includes((booking.bookingStatus || booking.status || '').toLowerCase()) && (
+                            <button
+                              onClick={() => handleCancelBooking(booking._id)}
+                              className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white font-black text-[9px] uppercase tracking-widest transition-all"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          <Link
+                            to={`/booking-details/${booking._id}`}
+                            className="inline-flex items-center gap-2 bg-white/5 hover:bg-primary hover:text-black text-white/70 px-6 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border border-white/5 hover:border-primary group"
+                          >
+                            View Details <FaChevronRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
+                          </Link>
+                        </div>
+
                       </div>
                     </div>
                   </motion.div>

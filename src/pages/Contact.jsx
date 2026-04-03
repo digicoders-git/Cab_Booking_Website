@@ -175,9 +175,11 @@ const Contact = () => {
                         ></textarea>
                      </div>
 
-                     <button type="submit" className="w-full bg-[#111111] text-white font-black py-6 rounded-3xl text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-primary hover:text-[#111111] transition-all duration-300">
-                        SEND MESSAGE NOW
-                     </button>
+                     <div className="flex justify-end">
+                        <button type="submit" className="bg-[#111111] text-white font-black py-5 px-10 rounded-3xl text-sm uppercase tracking-[0.2em] shadow-2xl hover:bg-primary hover:text-[#111111] transition-all duration-300 flex items-center gap-3">
+                           SEND MESSAGE NOW <FaPaperPlane size={14} />
+                        </button>
+                     </div>
                   </form>
                </motion.div>
             </div>

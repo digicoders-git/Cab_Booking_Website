@@ -33,6 +33,7 @@ import TermsOfService from './pages/TermsOfService';
 import ForgotPassword from './pages/ForgotPassword';
 import DriverTracking from './pages/DriverTracking';
 import Notifications from './pages/Notifications';
+import Support from './pages/Support';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="support" element={<Support />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

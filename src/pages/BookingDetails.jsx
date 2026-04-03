@@ -373,19 +373,7 @@ const BookingDetails = () => {
                                 <FaChevronLeft size={16} />
                             </button>
 
-                            <motion.div
-                                animate={{ scale: [1, 1.05, 1] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                                className="bg-primary/95 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-black/10"
-                            >
-                                <div className="w-8 h-8 bg-black/10 rounded-xl flex items-center justify-center text-black">
-                                    <FaRoute size={14} />
-                                </div>
-                                <div>
-                                    <p className="text-black/50 text-[8px] font-black uppercase tracking-widest leading-none mb-1">Signal Rx</p>
-                                    <span className="text-black font-black text-xl leading-none">{locationUpdateCount}</span>
-                                </div>
-                            </motion.div>
+
                         </div>
 
                         <div className="absolute top-6 right-6 z-10 flex items-center gap-3">

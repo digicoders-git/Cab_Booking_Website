@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logo.png';
 import {
@@ -8,41 +8,16 @@ import {
   FaInstagram, FaLinkedinIn, FaSearch, FaChevronDown,
   FaBars, FaTimes, FaBell, FaCheckCircle,
   FaMapMarkerAlt, FaCalendarAlt, FaCar, FaHashtag,
-  FaUsers, FaCouch, FaSyncAlt, FaCalculator, FaFileInvoiceDollar,
-  FaCreditCard, FaClipboardCheck, FaListAlt, FaInfoCircle, FaUserCircle,
-  FaExclamationCircle, FaGift, FaRoute, FaThumbsUp, FaHistory, FaMapMarkedAlt
+  FaExclamationCircle, FaGift, FaRoute, FaThumbsUp, FaUserCircle
 } from 'react-icons/fa';
 
 const navLinks = [
   { name: 'Home', path: '/', hasDropdown: false },
   { name: 'About', path: '/about', hasDropdown: false },
-  { name: 'Fleet', path: '/fleet', hasDropdown: false },
-  {
-    name: 'Services',
-    path: '/services',
-    hasDropdown: true,
-    subItems: [
-      { name: 'Select Ride Type', path: '/services/ride-type', icon: <FaUsers className="text-primary" /> },
-      { name: 'Seat Selection', path: '/services/seat-selection', icon: <FaCouch className="text-primary" /> },
-      { name: 'Auto Matching', path: '/services/auto-matching', icon: <FaSyncAlt className="text-primary" /> },
-      { name: 'Fare Calculation', path: '/services/fare-calculation', icon: <FaCalculator className="text-primary" /> },
-      { name: 'Booking Summary', path: '/services/booking-summary', icon: <FaFileInvoiceDollar className="text-primary" /> },
-    ]
-  },
-  {
-    name: 'Pages',
-    path: '#',
-    hasDropdown: true,
-    subItems: [
-      { name: 'Advanced Payment', path: '/advanced-payment', icon: <FaCreditCard className="text-primary" /> },
-      { name: 'Booking Confirmation', path: '/booking-confirmation', icon: <FaClipboardCheck className="text-primary" /> },
-      { name: 'My Booking History', path: '/my-booking', icon: <FaHistory className="text-primary" /> },
-      { name: 'User Profile', path: '/profile', icon: <FaUserCircle className="text-primary" /> },
-      { name: 'Track Last Ride', path: '/driver-tracking', icon: <FaMapMarkedAlt className="text-primary" /> },
-    ]
-  },
+  { name: 'Our Fleet', path: '/fleet', hasDropdown: false },
+  { name: 'Services', path: '/services', hasDropdown: false },
   { name: 'My Rides', path: '/my-booking', hasDropdown: false },
-  { name: 'Contact', path: '/contact', hasDropdown: false },
+  { name: 'Support', path: '/support', hasDropdown: false },
 ];
 
 const Header = () => {
@@ -69,6 +44,8 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const location = useLocation();
 
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
@@ -132,8 +109,12 @@ const Header = () => {
             )}
           </Link>
 
-          <Link to="/booking" className="hidden sm:flex btn-primary text-xs py-2.5 px-5 rounded-full shadow-lg shadow-primary/20">
-            Book Now
+          {/* Profile Button */}
+          <Link
+            to="/profile"
+            className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+          >
+            <FaUserCircle size={18} />
           </Link>
 
           {/* Mobile menu */}

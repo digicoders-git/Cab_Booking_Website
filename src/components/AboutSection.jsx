@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { FaCheckCircle, FaArrowRight } from 'react-icons/fa';
+import { FaCheckCircle } from 'react-icons/fa';
 
 const points = [
   'Professional, background-verified drivers',
@@ -92,9 +91,6 @@ const AboutSection = () => {
               ))}
             </ul>
 
-            <Link to="/about" className="btn-primary inline-flex shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
-              Learn More <FaArrowRight />
-            </Link>
           </motion.div>
         </div>
       </div>
