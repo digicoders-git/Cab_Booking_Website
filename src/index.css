@@ -62,10 +62,14 @@
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0A0A0A; }
-::-webkit-scrollbar-thumb { background: #FFD60A; border-radius: 3px; }
+/* Hide Scrollbar Globally but keep functionality */
+::-webkit-scrollbar { 
+  display: none; 
+}
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
 
 /* Swiper custom */
 .hero-swiper .swiper-pagination-bullet {
@@ -156,8 +160,78 @@
   border-radius: 10px;
 }
 
-/* Ensure SweetAlert2 is always on top of all modals */
+/* Ensure SweetAlert2 is always on top of all modals and matches Black & Yellow Theme */
 .swal2-container {
   z-index: 20000 !important;
+}
+
+.swal2-popup {
+  background: #0a0a0a !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 3rem !important;
+  padding: 3rem 1rem !important;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8) !important;
+}
+
+.swal2-title {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.swal2-html-container {
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.swal2-confirm {
+  background-color: #FACD16 !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  border-radius: 1.25rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  padding: 1.25rem 2.5rem !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 10px 25px rgba(250, 205, 22, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.swal2-confirm:hover {
+  background-color: #ffd60a !important;
+  transform: translateY(-2px) !important;
+}
+
+.swal2-cancel {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 1.25rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 0.75rem !important;
+}
+
+.swal2-icon {
+  border-width: 3px !important;
+  margin-bottom: 2rem !important;
+}
+
+.swal2-icon.swal2-success {
+  border-color: #FACD16 !important;
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+  background-color: #FACD16 !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+  border-color: rgba(250, 205, 22, 0.2) !important;
 }
 

@@ -5,7 +5,7 @@ import {
     FaTaxi, FaMapMarkerAlt, FaUser, FaPhoneAlt,
     FaCreditCard, FaChevronLeft, FaSpinner,
     FaStar, FaCar, FaDotCircle, FaShieldAlt,
-    FaRoad, FaClock, FaHistory, FaCheckCircle, FaTimesCircle,
+    FaRoad, FaClock, FaHistory, FaCheckCircle, FaTimesCircle, FaTimes,
     FaCommentDots, FaFingerprint, FaRoute
 } from 'react-icons/fa';
 import { io } from 'socket.io-client';
@@ -68,15 +68,26 @@ const BookingDetails = () => {
             lng: booking.pickup.longitude
         };
 
-        // Initialize Map with Standard Normal Theme
+        // Initialize Map with Premium Night Theme
         googleMap.current = new window.google.maps.Map(mapRef.current, {
             center: pickupCoords,
             zoom: 15,
             disableDefaultUI: true,
-            zoomControl: false,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false
+            gestureHandling: "greedy",
+            styles: [
+                { elementType: "geometry", stylers: [{ color: "#060606" }] },
+                { elementType: "labels.text.stroke", stylers: [{ color: "#060606" }] },
+                { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+                { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#d59563" }] },
+                { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#111" }] },
+                { featureType: "road", elementType: "geometry", stylers: [{ color: "#1a1a1a" }] },
+                { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+                { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#9ca5b3" }] },
+                { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#222" }] },
+                { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2f3948" }] },
+                { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] },
+            ]
         });
 
         directionsService.current = new window.google.maps.DirectionsService();
@@ -90,22 +101,20 @@ const BookingDetails = () => {
             }
         });
 
-        // Add Origin Marker (Pickup)
+        // Add Origin Marker (Pickup) - Improved Figurine Style
         originMarker.current = new window.google.maps.Marker({
             position: pickupCoords,
             map: googleMap.current,
-            label: { text: 'A', color: 'black', fontWeight: 'bold' },
             icon: {
-                path: window.google.maps.SymbolPath.CIRCLE,
-                fillColor: '#FFFFFF',
-                fillOpacity: 1,
-                strokeColor: '#000000',
-                strokeWeight: 2,
-                scale: 12
-            }
+                url: '/admins/user_marker-removebg-preview.png', // New 3D Figurines with base
+                scaledSize: new window.google.maps.Size(100, 100),
+                anchor: new window.google.maps.Point(50, 100) // Anchor at the very bottom-center
+            },
+            title: 'I am waiting here',
+            animation: window.google.maps.Animation.BOUNCE // A slight bounce to grab attention
         });
 
-        // Add Destination Marker (Drop) - CUSTOM RED PIN
+        // Destination Marker (Drop)
         destinationMarker.current = new window.google.maps.Marker({
             position: { lat: booking.drop.latitude, lng: booking.drop.longitude },
             map: googleMap.current,
@@ -132,12 +141,21 @@ const BookingDetails = () => {
 
         const pickup = { lat: booking.pickup.latitude, lng: booking.pickup.longitude };
         const drop = { lat: booking.drop.latitude, lng: booking.drop.longitude };
-        
+
         let start = pickup;
         let end = drop;
 
         const status = booking.bookingStatus;
         const dLoc = driverLocation;
+
+        // --- Marker Visibility Logic (Hide Human when Trip is Live/End) ---
+        if (originMarker.current) {
+            if (status === 'Ongoing' || status === 'Completed' || status === 'completed') {
+                originMarker.current.setMap(null);
+            } else {
+                originMarker.current.setMap(googleMap.current);
+            }
+        }
 
         const bounds = new window.google.maps.LatLngBounds();
         bounds.extend(drop);
@@ -150,7 +168,7 @@ const BookingDetails = () => {
             if (!driverMarker.current) {
                 // Determine Icon URL: Use carCategory image or fallback
                 let iconUrl = 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png'; // Default
-                
+
                 if (booking.carCategory?.image) {
                     iconUrl = `${backendServer}/uploads/${booking.carCategory.image}`;
                 }
@@ -186,8 +204,11 @@ const BookingDetails = () => {
             bounds.extend(pickup);
         }
 
-        // Auto-Adjust Viewport
-        googleMap.current.fitBounds(bounds, { top: 70, bottom: 70, left: 70, right: 70 });
+        // Auto-Adjust Viewport (Throttled: map zoom ko bar-bar change mat karo)
+        const currentZoom = googleMap.current.getZoom();
+        if (currentZoom < 10) { 
+            googleMap.current.fitBounds(bounds, { top: 70, bottom: 70, left: 70, right: 70 });
+        }
 
         // --- Render Directions ---
         directionsService.current.route({
@@ -222,11 +243,18 @@ const BookingDetails = () => {
         });
 
         // Join Room - DYNAMIC ROLE DETECTION
-        const userId = localStorage.getItem('userId');
-        const userRole = localStorage.getItem('role') || 'user'; // user or agent
-        
-        console.log(`Socket joining room as ${userRole}: ${userId}`);
-        socket.emit('join_room', { userId, role: userRole });
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const userId = localStorage.getItem('userId') || storedUser?._id;
+        const userRole = localStorage.getItem('role') || (storedUser?._id ? 'user' : (storedUser?.role || 'user'));
+
+        if (!userId) {
+            console.error("Missing User ID for Live Signal ❌");
+            return;
+        }
+
+        const room = userRole === 'agent' ? `agent_${userId}` : userId;
+        console.log(`Socket joining room: ${room} (Role: ${userRole})`);
+        socket.emit('join_room', { userId: userId, role: userRole });
 
         socket.on('booking_update', (data) => {
             if (data.bookingId === bookingId) {
@@ -237,52 +265,51 @@ const BookingDetails = () => {
 
         // LIVE DRIVER MOVEMENT LISTENER
         socket.on('driver_location_update', (data) => {
-            console.log("Incoming Location Packet 📍", data);
-            
-            // Flexibly find IDs (backend might send object or ID string)
-            const activeDriverId = booking?.assignedDriver?._id || booking?.assignedDriver;
-            const incomingDriverId = data.driverId?._id || data.driverId;
+            // 1. Packet validation
+            if (!data.driverId) return;
 
-            // Check if this update is from our assigned driver
-            if (activeDriverId && incomingDriverId && activeDriverId.toString() === incomingDriverId.toString()) {
-                console.log("Valid Signal for current ride! Increasing count...");
-                
-                // Increment Signal Counter
-                setLocationUpdateCount(prev => prev + 1);
+            // 2. ID Extraction for robust comparison
+            const currentDriverId = (booking?.assignedDriver?._id || booking?.assignedDriver || '').toString().toLowerCase().trim();
+            const incomingId = (data.driverId?._id || data.driverId || '').toString().toLowerCase().trim();
+
+            if (currentDriverId && incomingId && currentDriverId === incomingId) {
+                // Signal Incoming! ✅
+                setLocationUpdateCount(prev => {
+                    const next = prev + 1;
+                    console.log(`📍 Pulse #${next} | Lat: ${data.latitude} | Lng: ${data.longitude}`);
+                    return next;
+                });
 
                 const newCoords = { lat: data.latitude, lng: data.longitude };
-                
-                // --- SMOOTH ANIMATION LOGIC ---
+
+                // --- SMOOTH ANIMATION ---
                 if (driverMarker.current) {
                     const startPos = driverMarker.current.getPosition();
                     const endPos = new window.google.maps.LatLng(newCoords.lat, newCoords.lng);
-                    
-                    let frames = 20; // 20 frames for 1 second movement
+
+                    let frames = 30; // 30 frames for smoother movement
                     let count = 0;
-                    
+
                     const animate = () => {
                         count++;
                         const lat = startPos.lat() + (endPos.lat() - startPos.lat()) * (count / frames);
                         const lng = startPos.lng() + (endPos.lng() - startPos.lng()) * (count / frames);
-                        
+
                         const nextPos = new window.google.maps.LatLng(lat, lng);
                         driverMarker.current.setPosition(nextPos);
 
                         if (count < frames) {
                             requestAnimationFrame(animate);
                         } else {
-                            // Final sync
+                            // Sync state without re-centering map (only sync the data)
                             setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
                         }
                     };
                     requestAnimationFrame(animate);
                 } else {
-                    // First time location
-                    console.log("Initializing Driver Marker on Map");
+                    // First packet ever? Set location and let updateMapRoute handle creation
                     setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
                 }
-            } else {
-                console.warn("Location update received but IDs mismatch:", { activeDriverId, incomingDriverId });
             }
         });
 
@@ -302,7 +329,8 @@ const BookingDetails = () => {
             });
             const data = await response.json();
             if (data.success) {
-                window.location.reload();
+                // Redirecting to home page after cancellation
+                window.location.href = '/';
             }
         } catch (error) {
             console.error("Cancel Error:", error);
@@ -331,241 +359,186 @@ const BookingDetails = () => {
     const canCancel = ['Pending', 'Accepted', 'Ongoing', 'pending', 'accepted', 'ongoing'].includes(booking.bookingStatus || booking.status);
 
     return (
-        <div className="bg-[#060606] min-h-screen pt-[105px] pb-20">
+        <div className="bg-[#060606] min-h-screen pt-[130px] pb-10">
+            <div className="container mx-auto px-4 max-w-7xl h-auto md:h-[calc(100vh-180px)]">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
 
-            {/* FULL WIDTH DYNAMIC MAP (JS API) */}
-            <div className="relative w-full h-[60vh] min-h-[500px] border-b border-white/5 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-                <div ref={mapRef} className="w-full h-full" />
+                    {/* LEFT SIDE: THE LIVE MAP (DYNAMIC & INTERACTIVE) */}
+                    <div className="lg:col-span-7 h-[50vh] md:h-full relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+                        <div ref={mapRef} className="w-full h-full" />
 
-                {/* Floating Navigation Controls */}
-                <div className="absolute top-8 left-8 z-10 flex flex-col gap-4">
-                    <button onClick={() => window.history.back()} className="w-14 h-14 bg-white rounded-2xl shadow-2xl flex items-center justify-center text-black hover:scale-110 active:scale-95 transition-all">
-                        <FaChevronLeft size={18} />
-                    </button>
+                        {/* Floating Navigation Controls */}
+                        <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
+                            <button onClick={() => window.history.back()} className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl flex items-center justify-center text-black hover:scale-105 active:scale-95 transition-all">
+                                <FaChevronLeft size={16} />
+                            </button>
 
-                    {/* Signal Counter Badge */}
-                    <motion.div
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="bg-primary/95 backdrop-blur-xl px-5 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-black/10 min-w-[120px]"
-                    >
-                        <div className="w-10 h-10 bg-black/10 rounded-2xl flex items-center justify-center text-black">
-                            <FaRoute size={16} />
+                            <motion.div
+                                animate={{ scale: [1, 1.05, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                className="bg-primary/95 backdrop-blur-xl px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-black/10"
+                            >
+                                <div className="w-8 h-8 bg-black/10 rounded-xl flex items-center justify-center text-black">
+                                    <FaRoute size={14} />
+                                </div>
+                                <div>
+                                    <p className="text-black/50 text-[8px] font-black uppercase tracking-widest leading-none mb-1">Signal Rx</p>
+                                    <span className="text-black font-black text-xl leading-none">{locationUpdateCount}</span>
+                                </div>
+                            </motion.div>
                         </div>
-                        <div>
-                            <p className="text-black/50 text-[9px] font-black uppercase tracking-widest leading-none mb-1.5">Signal Rx</p>
-                            <span className="text-black font-black text-2xl leading-none">{locationUpdateCount}</span>
-                        </div>
-                    </motion.div>
-                </div>
 
-                <div className="absolute top-8 right-8 z-10 flex items-center gap-3">
-                    {/* Live Connection Indicator */}
-                    <div className={`px-4 py-3 rounded-full backdrop-blur-md border ${isConnected ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} flex items-center gap-2 shadow-2xl`}>
-                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{isConnected ? 'Live' : 'Offline'}</span>
+                        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+                            <div className={`px-4 py-2.5 rounded-full backdrop-blur-md border ${isConnected ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} flex items-center gap-2 shadow-2xl`}>
+                                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                                <span className="text-[9px] font-black uppercase tracking-widest">{isConnected ? 'Live' : 'Offline'}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                        className="bg-black/80 backdrop-blur-xl px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-4 border border-white/10"
-                    >
-                        <div className={`w-3 h-3 rounded-full ${isPending ? 'bg-yellow-500 animate-pulse' : (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500' : 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]')}`} />
-                        <span className="text-white font-black text-xs uppercase tracking-[0.2em]">{booking.bookingStatus || booking.status}</span>
-                    </motion.div>
-                </div>
-            </div>
+                    {/* RIGHT SIDE: THE CONTENT DASHBOARD (BLACK & YELLOW) */}
+                    <div className="lg:col-span-5 flex flex-col gap-6 overflow-y-auto no-scrollbar scroll-smooth pr-1 h-full">
 
-            {/* MODERN VERTICAL CONTENT DASHBOARD */}
-            <div className="container mx-auto px-4 mt-16 relative z-20 max-w-6xl">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
-                    {/* LEFT CONTENT: Journey Details */}
-                    <div className="lg:col-span-8 space-y-8">
-
-                        {/* Journey Tracking Card */}
-                        <div className="bg-[#111] p-10 lg:p-12 rounded-[3.5rem] border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.4)] relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-12 opacity-[0.02] rotate-12">
-                                <FaRoute size={200} />
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row justify-between items-start mb-14 gap-6">
-                                <div>
-                                    <h1 className="text-white font-black text-5xl mb-2 italic tracking-tighter" style={{ fontFamily: 'Syne, sans-serif' }}>Ride Summary</h1>
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-primary/10 px-3 py-1 rounded-lg border border-primary/20">
-                                            <span className="text-primary font-black text-[10px] uppercase tracking-widest italic">{booking.rideType || "Private"} Ride</span>
-                                        </div>
-                                        <span className="text-white/20 text-[10px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-white/5 p-4 rounded-3xl border border-white/5 flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
-                                        <FaShieldAlt size={16} />
-                                    </div>
-                                    <span className="text-white/60 font-black text-[10px] uppercase tracking-widest leading-none">Safe Journey<br />Verified</span>
+                        {/* 1. MAIN SUMMARY HEADER - COMPACT & SIMPLE */}
+                        <div className="bg-[#111] p-6 rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
+                            <div>
+                                <h1 className="text-white font-black text-2xl mb-1 uppercase tracking-wider">Ride Summary</h1>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className="text-primary font-black text-[9px] uppercase tracking-widest leading-none">{booking.rideType || "Private"} Ride</span>
+                                    <span className="text-white/20 text-[9px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
+                                    <span className="bg-cyan-500/15 text-cyan-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cyan-500/20 flex items-center gap-2 shadow-lg shadow-cyan-500/5">
+                                        <FaFingerprint className="text-cyan-500 text-[12px]" /> 
+                                        OTP: {booking.tripData?.startOtp || booking.otp || (isPending ? "SEARCHING..." : "---")}
+                                    </span>
                                 </div>
                             </div>
+                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border ${
+                                isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' : 
+                                (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 
+                                (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' : 
+                                'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
+                                {booking.bookingStatus || booking.status}
+                            </div>
+                        </div>
 
-                            {/* Stylized Route Information */}
-                            <div className="space-y-16 relative z-10 pl-12 before:absolute before:left-4 before:top-6 before:bottom-6 before:w-0.5 before:bg-gradient-to-b before:from-white/20 before:to-primary/50">
+                        {/* 2. ROUTE TRACKER DETAILS */}
+                        <div className="bg-[#111] p-8 rounded-[2.5rem] border border-white/5 shadow-xl">
+                            <div className="space-y-10 relative pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
                                 {/* Pickup */}
                                 <div className="relative">
-                                    <div className="absolute -left-[44px] top-1.5 w-8 h-8 bg-black border-4 border-white rounded-full z-10 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                                        <div className="w-2 h-2 bg-white rounded-full" />
+                                    <div className="absolute -left-[28px] top-1.5 w-6 h-6 bg-black border-2 border-white rounded-full z-10 flex items-center justify-center shadow-lg">
+                                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
                                     </div>
-                                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Pickup Address</p>
-                                    <h4 className="text-white font-bold text-xl leading-relaxed max-w-xl">{booking.pickup?.address || booking.pickupAddress}</h4>
+                                    <p className="text-white text-[9px] font-black uppercase tracking-[0.25em] mb-2 italic">Pickup Point</p>
+                                    <h4 className="text-white font-bold text-sm leading-snug">{booking.pickup?.address || booking.pickupAddress}</h4>
                                 </div>
-
                                 {/* Dropoff */}
                                 <div className="relative">
-                                    <div className="absolute -left-[44px] top-1.5 w-8 h-8 bg-black border-4 border-primary rounded-2xl z-10 flex items-center justify-center shadow-[0_0_20px_rgba(255,214,10,0.2)]">
-                                        <div className="w-2 h-2 bg-primary rounded-sm" />
+                                    <div className="absolute -left-[28px] top-1.5 w-6 h-6 bg-black border-2 border-primary rounded-lg z-10 flex items-center justify-center shadow-lg shadow-primary/10">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-sm" />
                                     </div>
-                                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Destination</p>
-                                    <h4 className="text-white font-bold text-xl leading-relaxed max-w-xl">{booking.drop?.address || booking.dropAddress}</h4>
+                                    <p className="text-white text-[9px] font-black uppercase tracking-[0.25em] mb-2 italic">Destination</p>
+                                    <h4 className="text-white font-bold text-sm leading-snug">{booking.drop?.address || booking.dropAddress}</h4>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Quick Insight Stats */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                { label: 'Distance', val: `${booking.estimatedDistanceKm || booking.distanceKm} KM`, icon: <FaRoad className="text-primary" /> },
-                                { label: 'Est. Time', val: '25 Mins', icon: <FaClock className="text-blue-500" /> },
-                                { label: 'Driver Rating', val: '5.0', icon: <FaStar className="text-yellow-500" /> },
-                                { label: 'Base Info', val: 'Verified', icon: <FaHistory className="text-green-500" /> }
-                            ].map((stat, i) => (
-                                <motion.div key={i} whileHover={{ y: -5 }} className="bg-[#111] p-6 rounded-[2.5rem] border border-white/5 text-center shadow-lg">
-                                    <div className="w-12 h-12 bg-white/[0.03] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/5">
-                                        {stat.icon}
-                                    </div>
-                                    <span className="text-white/30 text-[9px] font-black uppercase block mb-1 tracking-widest">{stat.label}</span>
-                                    <p className="text-white font-black text-xl italic font-syne">{stat.val}</p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* RIGHT SIDEBAR: Driver & Payment */}
-                    <div className="lg:col-span-4 space-y-6">
-
-                        {/* Premium Driver Card */}
-                        <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] p-10 rounded-[3.5rem] border border-white/10 shadow-2xl relative overflow-hidden group">
+                        {/* 3. DRIVER INFORMATION - DYNAMIC & HIGH FIDELITY */}
+                        <div className="bg-[#111] p-8 pb-12 rounded-[2.5rem] border border-white/5 relative overflow-hidden shadow-xl">
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
                             {booking.assignedDriver ? (
-                                <>
-                                    <div className="flex flex-col items-center text-center mb-10">
-                                        <div className="relative mb-6">
-                                            <div className="w-32 h-32 rounded-[3rem] overflow-hidden border-4 border-primary/20 p-1.5">
-                                                <div className="w-full h-full bg-white/5 rounded-[2.5rem] flex items-center justify-center">
-                                                    <FaUser className="text-white/10 text-5xl" />
-                                                </div>
-                                            </div>
-                                            <div className="absolute -bottom-2 -right-2 bg-primary text-black w-10 h-10 rounded-2xl flex items-center justify-center border-4 border-[#111] shadow-xl">
-                                                <FaStar size={14} />
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-1 relative overflow-hidden">
+                                            {booking.assignedDriver.image ? (
+                                                <img 
+                                                    src={`${backendServer}/uploads/${booking.assignedDriver.image}`} 
+                                                    alt={booking.assignedDriver.name}
+                                                    className="w-full h-full object-cover rounded-xl"
+                                                    onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; }}
+                                                />
+                                            ) : (
+                                                <FaUser className="text-white/10 text-3xl" />
+                                            )}
+                                            <div className="absolute -bottom-1 -right-1 bg-primary text-black w-5 h-5 rounded-lg flex items-center justify-center border-2 border-[#111] text-[8px] font-bold">
+                                                <FaStar />
                                             </div>
                                         </div>
-                                        <h4 className="text-white font-black text-2xl uppercase italic tracking-tighter mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>{booking.assignedDriver.name}</h4>
-                                        <div className="flex items-center gap-1.5 text-primary text-xs">
-                                            <FaStar size={10} /><FaStar size={10} /><FaStar size={10} /><FaStar size={10} /><FaStar size={10} />
-                                            <span className="text-white/30 ml-2 font-bold">(5.0) Super Driver</span>
+                                        <div>
+                                            <h4 className="text-white font-black text-xl tracking-tighter uppercase italic">{booking.assignedDriver.name}</h4>
+                                            <p className="text-primary text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 mt-1">
+                                                <FaStar size={8} /> 5.0 Driver Rating
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-white/[0.03] p-5 rounded-[2.5rem] border border-white/5 mb-8 flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-white/30">
-                                                <FaCar size={20} />
+                                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white/30 border border-white/5">
+                                                <FaCar size={16} />
                                             </div>
                                             <div>
-                                                <span className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em] block mb-0.5">Vehicle</span>
-                                                <span className="text-white font-bold text-xs uppercase tracking-tighter">{booking.assignedDriver.carDetails.carModel}</span>
+                                                <span className="text-white/20 text-[8px] font-black uppercase tracking-widest block mb-0.5">Vehicle</span>
+                                                <span className="text-white font-bold text-[10px] uppercase tracking-tighter leading-none">{booking.assignedDriver.carDetails.carModel}</span>
                                             </div>
                                         </div>
-                                        <span className="bg-primary px-4 py-2 text-black font-black text-[9px] rounded-xl tracking-widest shadow-lg shadow-primary/20">{booking.assignedDriver.carDetails.carNumber}</span>
+                                        <span className="bg-primary px-3 py-1.5 text-black font-black text-[10px] rounded-lg tracking-widest shadow-lg shadow-primary/10 whitespace-nowrap">{booking.assignedDriver.carDetails.carNumber}</span>
                                     </div>
 
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex gap-3">
-                                            <button className="flex-1 h-14 bg-white/[0.05] border border-white/10 rounded-2xl flex items-center justify-center gap-3 text-white/60 hover:text-white hover:bg-white/10 transition-all font-black text-[10px] uppercase tracking-widest">
-                                                <FaPhoneAlt size={14} /> Call
-                                            </button>
-                                            <button className="flex-[2] h-14 bg-primary text-black rounded-2xl flex items-center justify-center gap-3 hover:bg-yellow-400 font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 transition-all active:scale-95">
-                                                <FaCommentDots size={16} /> Chat
-                                            </button>
-                                        </div>
+                                    <div className="flex gap-3">
+                                        <a 
+                                            href={`tel:${booking.assignedDriver.phone}`} 
+                                            className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary transition-all flex-shrink-0" 
+                                            title="Call Driver"
+                                        >
+                                            <FaPhoneAlt size={14} />
+                                        </a>
+                                        <a 
+                                            href={`sms:${booking.assignedDriver.phone}`}
+                                            className="flex-1 h-12 bg-primary text-black rounded-xl flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-95"
+                                        >
+                                            <FaCommentDots size={16} /> Send Message
+                                        </a>
                                         {canCancel && (
-                                            <button
-                                                onClick={handleCancel}
-                                                className="w-full py-4 border border-red-500/30 text-red-500/60 hover:bg-red-500 hover:text-white transition-all rounded-2xl font-black text-[10px] uppercase tracking-[0.2em]"
+                                            <button 
+                                                onClick={handleCancel} 
+                                                className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all flex-shrink-0 shadow-lg shadow-red-500/5"
+                                                title="Cancel Ride"
                                             >
-                                                Cancel This Ride
+                                                <FaTimes size={16} />
                                             </button>
                                         )}
                                     </div>
-                                </>
+                                </div>
                             ) : (
-                                <div className="py-10 text-center space-y-8">
-                                    <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mx-auto relative">
-                                        <motion.div
-                                            animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
-                                            transition={{ repeat: Infinity, duration: 2 }}
-                                            className="absolute inset-0 bg-primary/20 rounded-full"
-                                        />
-                                        <FaSpinner className="text-primary text-4xl animate-spin" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-black uppercase text-lg italic tracking-tighter mb-3 leading-snug" style={{ fontFamily: 'Syne, sans-serif' }}>Matching your Perfect Driver</h4>
-                                        <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.2em] max-w-[200px] mx-auto leading-relaxed">Broadcasted your {booking.rideType} ride to top nearby partners.</p>
-                                    </div>
-                                    {canCancel && (
-                                        <button
-                                            onClick={handleCancel}
-                                            className="w-full py-4 border border-red-500/30 text-red-500/60 hover:bg-red-500 hover:text-white transition-all rounded-2xl font-black text-[10px] uppercase tracking-[0.2em]"
-                                        >
-                                            Cancel This Ride
-                                        </button>
+                                <div className="text-center py-6">
+                                    {booking.bookingStatus === 'Expired' || booking.status === 'expired' ? (
+                                        <>
+                                            <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+                                                <FaTimesCircle className="text-red-500 text-2xl" />
+                                            </div>
+                                            <p className="text-red-500 font-black text-sm uppercase tracking-tighter italic mb-2">Ride Expired</p>
+                                            <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">We couldn't find a driver in time. Please try booking again.</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="w-14 h-14 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                                                <FaSpinner className="text-primary text-2xl animate-spin" />
+                                            </div>
+                                            <p className="text-white font-black text-sm uppercase tracking-tighter italic mb-2">Matching Driver...</p>
+                                            <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">Broadcasted your ride to top nearby partners.</p>
+
+                                            {canCancel && (
+                                                <button onClick={handleCancel} className="mt-8 px-8 py-3 border border-red-500/20 text-red-500/40 hover:bg-red-500 hover:text-white transition-all rounded-xl font-black text-[8px] uppercase tracking-[0.3em]">
+                                                    Cancel
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )}
                         </div>
 
-                        {/* Payment & Security Card */}
-                        <div className="bg-[#111] p-10 rounded-[3.5rem] border border-white/5 shadow-2xl relative overflow-hidden group">
-                            <div className="flex justify-between items-start mb-10 pb-6 border-b border-white/5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-white/[0.03] border border-white/5 rounded-2xl flex items-center justify-center text-primary text-2xl group-hover:bg-primary/20 transition-all">
-                                        <FaCreditCard />
-                                    </div>
-                                    <div>
-                                        <p className="text-white/20 text-[9px] font-black uppercase tracking-widest block mb-1 leading-none">Payment Detail</p>
-                                        <p className="text-white font-bold text-sm">{booking.paymentMethod || "Cash"} • {booking.paymentStatus}</p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <h2 className="text-primary font-black text-4xl italic font-syne tracking-tighter drop-shadow-[0_0_15px_rgba(255,214,10,0.2)]">₹{booking.fareEstimate || booking.totalFare}</h2>
-                                </div>
-                            </div>
-
-                            {/* Trip Security OTP Card */}
-                            {booking.tripData?.startOtp && (
-                                <div className="relative p-8 bg-gradient-to-r from-primary to-yellow-500 rounded-[2.5rem] shadow-2xl overflow-hidden active:scale-95 transition-transform cursor-pointer">
-                                    <div className="absolute right-0 top-0 p-4 opacity-10">
-                                        <FaFingerprint size={100} className="text-black" />
-                                    </div>
-                                    <div className="relative z-10">
-                                        <span className="text-black/50 text-[10px] font-black uppercase tracking-[0.3em] block mb-3 leading-none">Trip Start OTP</span>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-black font-black text-5xl tracking-[0.5em] font-syne">{booking.tripData.startOtp}</span>
-                                            <div className="w-12 h-12 bg-black/10 rounded-2xl flex items-center justify-center text-black">
-                                                <FaCheckCircle size={20} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
 
                     </div>
                 </div>
