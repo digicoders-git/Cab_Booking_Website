@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { API_BASE_URL, BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 import { FaMapMarkerAlt, FaCheckCircle, FaTimes, FaUsers, FaUser, FaArrowRight, FaMobileAlt, FaDotCircle, FaSpinner, FaSearch, FaLocationArrow, FaTaxi, FaClock } from 'react-icons/fa';
 
 const cars = [
@@ -393,7 +393,7 @@ const BookingForm = () => {
     const activeCat = categories.find(c => c.carCategoryId === activeCategoryId);
 
     if (activeCat && activeCat.nearbyDrivers) {
-      const backendUrl = BASE_URL;
+      const backendUrl = API_BASE_URL.replace('/api', '');
 
       activeCat.nearbyDrivers.forEach(driver => {
         const marker = new window.google.maps.Marker({
@@ -1212,7 +1212,7 @@ const BookingForm = () => {
                             >
                               <div className={`w-14 h-14 rounded-xl flex items-center justify-center p-2 ${isSelected ? 'bg-black/10' : 'bg-white/5'}`}>
                                 <img
-                                  src={car.image ? `${BASE_URL}/uploads/${car.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
+                                  src={car.image ? `${API_BASE_URL.replace('/api', '')}/uploads/${car.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
                                   alt={car.name}
                                   className="w-full h-full object-contain"
                                 />
@@ -1318,7 +1318,7 @@ const BookingForm = () => {
                   <div className="bg-white/5 p-4 rounded-[2rem] border border-white/5 flex items-center gap-4 relative overflow-hidden mt-6">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black/40 rounded-xl p-2 z-10 flex items-center justify-center">
                       <img
-                        src={confirmedCar.image ? `${BASE_URL}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
+                        src={confirmedCar.image ? `${API_BASE_URL.replace('/api', '')}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
                         alt={confirmedCar.name}
                         className="w-full h-full object-contain"
                       />
@@ -1388,7 +1388,7 @@ const BookingForm = () => {
                   className="w-14 h-14 sm:w-16 sm:h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-xl relative overflow-hidden flex-shrink-0"
                 >
                   <img
-                    src={confirmedCar.image ? `${BASE_URL}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
+                    src={confirmedCar.image ? `${API_BASE_URL.replace('/api', '')}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
                     alt={confirmedCar.name}
                     className="w-full h-full object-contain z-10"
                   />

@@ -8,10 +8,12 @@ import {
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import PageHeader from '../components/PageHeader';
-import { API_BASE_URL, BASE_URL } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Register from './Register';
+
+const BASE_URL = API_BASE_URL.replace('/api', '');
 
 const Profile = () => {
   const [user, setUser] = useState(null);
