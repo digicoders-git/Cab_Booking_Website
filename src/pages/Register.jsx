@@ -116,11 +116,8 @@ const Register = () => {
 
           {/* Left Side: Branding / Marketing */}
           <div className="hidden lg:block relative overflow-hidden group">
-            <motion.img
-              initial={{ scale: 1.2 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-              src="https://images.unsplash.com/photo-1593950315186-76a92975b60c?auto=format&fit=crop&q=80&w=1920"
+            <img
+              src="/unnamed.jpg"
               alt="Premium Taxi"
               className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 transition-all duration-[2000ms]"
             />
