@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaUser, FaSnowflake, FaSpinner, FaBolt, FaCheckCircle } from 'react-icons/fa';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, BASE_URL } from '../config/api';
 
 const fallbackCars = [
   { _id: '1', name: 'Mini', seatCapacity: 4, privateRatePerKm: 12, sharedRatePerSeatPerKm: 4, baseFare: 30, avgSpeedKmH: 25, image: null },
@@ -33,7 +33,7 @@ const CarFleet = () => {
     fetchCategories();
   }, []);
 
-  const backendUrl = API_BASE_URL.replace('/api', '');
+
 
   return (
     <section className="section-padding bg-[#0D0D0D]">
@@ -85,7 +85,7 @@ const CarFleet = () => {
                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-40 h-10 bg-primary/10 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   <img
-                    src={car.image ? `${backendUrl}/uploads/${car.image}` : '/cab2.png'}
+                    src={car.image ? `${BASE_URL}/uploads/${car.image}` : '/cab2.png'}
                     alt={car.name}
                     className="w-full h-full object-contain p-6 drop-shadow-2xl group-hover:scale-110 transition-transform duration-700 relative z-10"
                     onError={e => { e.target.src = '/cab2.png'; }}
