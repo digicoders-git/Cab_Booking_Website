@@ -49,12 +49,12 @@ const Footer = () => {
             <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Quick Links</h3>
             <ul className="space-y-3">
               {[
-                { to: '/about', label: 'About Us' },
-                { to: '/blog', label: 'News & Blog' },
-                { to: '/testimonials', label: 'Testimonials' },
-                { to: '/terms-of-service', label: 'Terms of Service' },
-                { to: '/privacy-policy', label: 'Privacy Policy' },
-                { to: '/team', label: 'Our Drivers' },
+                { to: '/', label: 'Home' },
+                { to: '/about', label: 'About' },
+                { to: '/fleet', label: 'Our Fleet' },
+                { to: '/services', label: 'Services' },
+                { to: '/my-booking', label: 'My Rides' },
+                { to: '/support', label: 'Support' },
               ].map(({ to, label }) => (
                 <li key={to}>
                   <Link to={to} className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
@@ -71,11 +71,8 @@ const Footer = () => {
             <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Support</h3>
             <ul className="space-y-3">
               {[
-                { to: '/faq', label: "FAQ's" },
-                { to: '/booking', label: 'Book a Ride' },
-                { to: '/contact', label: 'Contact Us' },
-                { to: '/driver-tracking', label: 'Track Driver' },
-                { to: '/my-booking', label: 'My Bookings' },
+                { to: '/privacy-policy', label: 'Privacy Policy' },
+                { to: '/terms-of-service', label: 'Terms of Service' },
               ].map(({ to, label }) => (
                 <li key={to}>
                   <Link to={to} className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
