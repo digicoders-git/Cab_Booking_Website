@@ -8,7 +8,7 @@ import {
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import PageHeader from '../components/PageHeader';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, BASE_URL } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Register from './Register';
@@ -160,7 +160,7 @@ const Profile = () => {
   const avatarSrc = imagePreview
     ? imagePreview
     : user?.image
-      ? `${API_BASE_URL.replace('/api', '')}/uploads/${user.image}?t=${Date.now()}`
+      ? `${BASE_URL}/uploads/${user.image}?t=${Date.now()}`  // cache bust karo
       : null;
 
   const joinedDate = user?.createdAt

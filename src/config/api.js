@@ -4,7 +4,7 @@
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-// Base URL without /api — for images/uploads
-export const BASE_SERVER_URL = API_BASE_URL.replace(/\/api$/, '');
+// Uploads/static files ke liye — /api ke bina
+export const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
 
 export default API_BASE_URL;
