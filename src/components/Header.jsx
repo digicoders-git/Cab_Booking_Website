@@ -29,7 +29,7 @@ const Header = () => {
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Booking Confirmed', time: '2m ago', icon: <FaCheckCircle className="text-green-400" />, text: 'Your ride TX-992188 for today at 4:30 PM has been confirmed.', read: false },
     { id: 2, title: 'Driver Assigned', time: '5m ago', icon: <FaTaxi className="text-primary" />, text: 'Ravi Kumar (Toyota Camry • DL 01 AB 1234) is your driver. ETA: 8 mins.', read: false },
-    { id: 3, title: '🎁 Promo Unlocked', time: '1h ago', icon: <FaGift className="text-purple-400" />, text: 'Use KWIBCABS20 for 20% off on your next airport ride.', read: false },
+    { id: 3, title: '🎁 Promo Unlocked', time: '1h ago', icon: <FaGift className="text-purple-400" />, text: 'Use KwikCabs 20 for 20% off on your next airport ride.', read: false },
     { id: 4, title: 'Ride Completed', time: '3h ago', icon: <FaRoute className="text-blue-400" />, text: 'Your ride TX-992105 was completed. Total fare: ₹248.', read: true },
     { id: 5, title: 'Safety Alert', time: '1d ago', icon: <FaExclamationCircle className="text-orange-400" />, text: 'Share your live location with a trusted contact.', read: true },
   ]);
@@ -59,7 +59,7 @@ const Header = () => {
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 z-50 shrink-0">
-          <img src={logo} alt="KwibCabs Logo" className="h-20 w-auto object-contain" />
+          <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
         </Link>
 
         {/* Desktop Nav */}
@@ -145,7 +145,7 @@ const Header = () => {
             >
               <div className="flex justify-between items-center mb-10">
                 <Link to="/" className="flex items-center gap-2.5">
-                  <img src={logo} alt="KwibCabs Logo" className="h-16 w-auto object-contain" />
+                  <img src={logo} alt="KwikCabs  Logo" className="h-16 w-auto object-contain" />
                 </Link>
                 <button
                   onClick={() => setIsOffcanvasOpen(false)}

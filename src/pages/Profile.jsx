@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   FaUser, FaEnvelope, FaPhoneAlt, FaCamera, FaKey,
   FaSignOutAlt, FaTaxi, FaEdit, FaCheck, FaTimes,
-  FaShieldAlt, FaCalendarAlt
+  FaShieldAlt, FaCalendarAlt, FaUniversity, FaCreditCard,
+  FaIdCard, FaBuilding, FaWallet, FaChartLine
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import PageHeader from '../components/PageHeader';
@@ -19,7 +20,10 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '' });
+  const [form, setForm] = useState({
+    name: '', email: '',
+    accountNumber: '', ifscCode: '', accountHolderName: '', bankName: ''
+  });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const fileRef = useRef();
@@ -38,7 +42,14 @@ const Profile = () => {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
-        setForm({ name: data.user.name, email: data.user.email });
+        setForm({
+          name: data.user.name || '',
+          email: data.user.email || '',
+          accountNumber: data.user.bankDetails?.accountNumber || '',
+          ifscCode: data.user.bankDetails?.ifscCode || '',
+          accountHolderName: data.user.bankDetails?.accountHolderName || '',
+          bankName: data.user.bankDetails?.bankName || '',
+        });
       }
     } catch (e) {
       console.error(e);
@@ -49,12 +60,17 @@ const Profile = () => {
 
   useEffect(() => { fetchProfile(); }, []);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = useCallback((e) => {
     const file = e.target.files[0];
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
-  };
+  }, []);
+
+  const handleFormChange = useCallback((field) => (e) => {
+    const val = field === 'ifscCode' ? e.target.value.toUpperCase() : e.target.value;
+    setForm(p => ({ ...p, [field]: val }));
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -62,6 +78,10 @@ const Profile = () => {
       const formData = new FormData();
       formData.append('name', form.name);
       formData.append('email', form.email);
+      formData.append('accountNumber', form.accountNumber);
+      formData.append('ifscCode', form.ifscCode);
+      formData.append('accountHolderName', form.accountHolderName);
+      formData.append('bankName', form.bankName);
       if (imageFile) formData.append('image', imageFile);
 
       const res = await fetch(`${API_BASE_URL}/users/update-profile/${userId}`, {
@@ -76,12 +96,16 @@ const Profile = () => {
         setImageFile(null);
         setImagePreview(null);
         localStorage.setItem('user', JSON.stringify(data.user));
-        Swal.fire({ icon: 'success', title: 'Profile Updated!', background: '#111', color: '#fff', confirmButtonColor: '#f5c518', timer: 2000, showConfirmButton: false });
+        Swal.fire({
+          icon: 'success', title: 'Profile Updated!',
+          background: '#111', color: '#fff',
+          confirmButtonColor: '#FFD60A', timer: 2000, showConfirmButton: false
+        });
       } else {
-        Swal.fire({ icon: 'error', title: 'Failed', text: data.message, background: '#111', color: '#fff' });
+        Swal.fire({ icon: 'error', title: 'Failed', text: data.message, background: '#111', color: '#fff', confirmButtonColor: '#FFD60A' });
       }
     } catch (e) {
-      Swal.fire({ icon: 'error', title: 'Server Error', background: '#111', color: '#fff' });
+      Swal.fire({ icon: 'error', title: 'Server Error', background: '#111', color: '#fff', confirmButtonColor: '#FFD60A' });
     } finally {
       setSaving(false);
     }
@@ -100,17 +124,12 @@ const Profile = () => {
       background: '#0d0d0d',
       color: '#fff',
       customClass: {
-        popup: 'rounded-3xl border border-white/10 shadow-2xl',
-        title: 'font-black uppercase tracking-widest text-white text-lg',
-        htmlContainer: 'text-white/40 text-sm',
+        popup: 'rounded-3xl border border-white/10',
         confirmButton: 'font-black uppercase tracking-widest text-sm rounded-2xl px-8 py-3',
-        cancelButton: 'font-black uppercase tracking-widest text-sm rounded-2xl px-8 py-3 border border-white/10',
+        cancelButton: 'font-black uppercase tracking-widest text-sm rounded-2xl px-8 py-3',
       }
     }).then(r => {
-      if (r.isConfirmed) {
-        localStorage.clear();
-        navigate('/');
-      }
+      if (r.isConfirmed) { localStorage.clear(); navigate('/'); }
     });
   };
 
@@ -118,18 +137,27 @@ const Profile = () => {
     setEditMode(false);
     setImageFile(null);
     setImagePreview(null);
-    if (user) setForm({ name: user.name, email: user.email });
+    if (user) {
+      setForm({
+        name: user.name || '',
+        email: user.email || '',
+        accountNumber: user.bankDetails?.accountNumber || '',
+        ifscCode: user.bankDetails?.ifscCode || '',
+        accountHolderName: user.bankDetails?.accountHolderName || '',
+        bankName: user.bankDetails?.bankName || '',
+      });
+    }
   };
 
   const avatarSrc = imagePreview
     ? imagePreview
-    : user?.image
-      ? `${BASE_URL}/uploads/${user.image}`
-      : null;
+    : user?.image ? `${BASE_URL}/uploads/${user.image}` : null;
 
   const joinedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : '—';
+
+  const hasBankDetails = user?.bankDetails?.accountNumber;
 
   if (loading) return (
     <div className="bg-[#060606] min-h-screen flex items-center justify-center">
@@ -140,9 +168,7 @@ const Profile = () => {
     </div>
   );
 
-  if (!token || !userId) {
-    return <Register />;
-  }
+  if (!token || !userId) return <Register />;
 
   return (
     <div className="bg-[#060606] min-h-screen text-white pb-24">
@@ -152,12 +178,11 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* ── Left Card ── */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
               className="bg-[#0d0d0d] rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl"
             >
-              {/* Top glow strip */}
               <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary to-primary/60" />
 
               <div className="p-8 text-center">
@@ -181,14 +206,29 @@ const Profile = () => {
                 </div>
 
                 <h3 className="text-white font-black text-xl uppercase tracking-tight mb-1">{user?.name || '—'}</h3>
-                <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.25em] mb-1">{user?.email}</p>
+                <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{user?.email || '—'}</p>
+                <p className="text-white/20 text-[10px] font-bold mb-3">+91 {user?.phone || '—'}</p>
 
-                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full mt-2">
+                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
                   <HiSparkles /> Verified Member
                 </div>
 
+                {/* Wallet & Earnings */}
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                    <FaWallet className="text-primary text-sm mx-auto mb-2" />
+                    <p className="text-white font-black text-lg">₹{user?.walletBalance || 0}</p>
+                    <p className="text-white/20 text-[8px] font-black uppercase tracking-widest">Wallet</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                    <FaChartLine className="text-emerald-400 text-sm mx-auto mb-2" />
+                    <p className="text-white font-black text-lg">₹{user?.totalEarnings || 0}</p>
+                    <p className="text-white/20 text-[8px] font-black uppercase tracking-widest">Earnings</p>
+                  </div>
+                </div>
+
                 {/* Stats */}
-                <div className="mt-8 space-y-3">
+                <div className="mt-4 space-y-3">
                   <div className="flex justify-between items-center bg-white/5 px-5 py-3.5 rounded-2xl border border-white/5">
                     <div className="flex items-center gap-3">
                       <FaTaxi className="text-primary text-xs" />
@@ -209,7 +249,7 @@ const Profile = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full mt-8 bg-red-500/10 text-red-500 font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-red-500 hover:text-white transition-all duration-300 border border-red-500/20 text-[11px] uppercase tracking-widest"
+                  className="w-full mt-6 bg-red-500/10 text-red-500 font-black py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-red-500 hover:text-white transition-all border border-red-500/20 text-[11px] uppercase tracking-widest"
                 >
                   <FaSignOutAlt /> Logout
                 </button>
@@ -219,13 +259,14 @@ const Profile = () => {
 
           {/* ── Right Panel ── */}
           <div className="lg:col-span-2 space-y-6">
+
+            {/* Personal Info Card */}
             <motion.div
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
               className="bg-[#0d0d0d] rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden"
             >
               <div className="p-8 sm:p-10">
-                {/* Header row */}
-                <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center justify-between mb-8">
                   <div>
                     <h4 className="text-white font-black text-lg uppercase tracking-tight">Account Details</h4>
                     <p className="text-white/20 text-[10px] font-black uppercase tracking-widest mt-1">Personal Information</p>
@@ -235,7 +276,7 @@ const Profile = () => {
                       onClick={() => setEditMode(true)}
                       className="flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black transition-all"
                     >
-                      <FaEdit size={11} /> Edit
+                      <FaEdit size={11} /> Edit Profile
                     </button>
                   ) : (
                     <div className="flex gap-3">
@@ -250,62 +291,116 @@ const Profile = () => {
                         disabled={saving}
                         className="flex items-center gap-2 bg-primary text-black px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-yellow-400 transition-all disabled:opacity-50"
                       >
-                        <FaCheck size={10} /> {saving ? 'Saving...' : 'Save'}
+                        <FaCheck size={10} /> {saving ? 'Saving...' : 'Save All'}
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* Name */}
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block">Full Name</label>
-                    <div className={`flex items-center gap-4 bg-white/5 px-5 py-4 rounded-2xl border transition-all ${editMode ? 'border-primary/40' : 'border-white/5'}`}>
-                      <FaUser className="text-primary text-xs shrink-0" />
-                      {editMode
-                        ? <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="Your name" />
-                        : <span className="text-white font-bold text-sm">{user?.name || '—'}</span>
-                      }
-                    </div>
-                  </div>
+                  <Field label="Full Name" icon={<FaUser />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.name} onChange={handleFormChange('name')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="Your name" />
+                      : <span className="text-white font-bold text-sm">{user?.name || '—'}</span>
+                    }
+                  </Field>
 
                   {/* Email */}
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block">Email Address</label>
-                    <div className={`flex items-center gap-4 bg-white/5 px-5 py-4 rounded-2xl border transition-all ${editMode ? 'border-primary/40' : 'border-white/5'}`}>
-                      <FaEnvelope className="text-primary text-xs shrink-0" />
-                      {editMode
-                        ? <input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="Your email" />
-                        : <span className="text-white font-bold text-sm">{user?.email || '—'}</span>
-                      }
-                    </div>
-                  </div>
+                  <Field label="Email Address" icon={<FaEnvelope />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.email} onChange={handleFormChange('email')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="Your email" type="email" />
+                      : <span className="text-white font-bold text-sm">{user?.email || '—'}</span>
+                    }
+                  </Field>
 
-                  {/* Phone */}
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block">Phone Number</label>
-                    <div className="flex items-center gap-4 bg-white/5 px-5 py-4 rounded-2xl border border-white/5">
-                      <FaPhoneAlt className="text-primary text-xs shrink-0" />
-                      <span className="text-white font-bold text-sm">{user?.phone || '—'}</span>
-                    </div>
-                  </div>
+                  {/* Phone (read-only) */}
+                  <Field label="Phone Number" icon={<FaPhoneAlt />} editMode={false}>
+                    <span className="text-white font-bold text-sm">+91 {user?.phone || '—'}</span>
+                  </Field>
 
                   {/* Joined */}
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block">Joined On</label>
-                    <div className="flex items-center gap-4 bg-white/5 px-5 py-4 rounded-2xl border border-white/5">
-                      <FaCalendarAlt className="text-primary text-xs shrink-0" />
-                      <span className="text-white font-bold text-sm">{joinedDate}</span>
-                    </div>
-                  </div>
+                  <Field label="Joined On" icon={<FaCalendarAlt />} editMode={false}>
+                    <span className="text-white font-bold text-sm">{joinedDate}</span>
+                  </Field>
                 </div>
+              </div>
+            </motion.div>
+
+            {/* Bank Details Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="bg-[#0d0d0d] rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden"
+            >
+              <div className="p-8 sm:p-10">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-11 h-11 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center text-primary">
+                    <FaUniversity size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-black text-lg uppercase tracking-tight">Bank Details</h4>
+                    <p className="text-white/20 text-[10px] font-black uppercase tracking-widest mt-0.5">
+                      {hasBankDetails ? 'Linked for withdrawals' : 'Not linked yet'}
+                    </p>
+                  </div>
+                  {!hasBankDetails && !editMode && (
+                    <span className="ml-auto text-[9px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-3 py-1.5 rounded-full">
+                      Add Bank
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Account Number */}
+                  <Field label="Account Number" icon={<FaCreditCard />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.accountNumber} onChange={handleFormChange('accountNumber')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="e.g. 123456789012" />
+                      : <span className="text-white font-bold text-sm">
+                          {hasBankDetails ? `••••••${user.bankDetails.accountNumber.slice(-4)}` : '—'}
+                        </span>
+                    }
+                  </Field>
+
+                  {/* IFSC Code */}
+                  <Field label="IFSC Code" icon={<FaIdCard />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.ifscCode} onChange={handleFormChange('ifscCode')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="e.g. SBIN0001234" />
+                      : <span className="text-white font-bold text-sm">{user?.bankDetails?.ifscCode || '—'}</span>
+                    }
+                  </Field>
+
+                  {/* Account Holder Name */}
+                  <Field label="Account Holder Name" icon={<FaUser />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.accountHolderName} onChange={handleFormChange('accountHolderName')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="As per bank records" />
+                      : <span className="text-white font-bold text-sm">{user?.bankDetails?.accountHolderName || '—'}</span>
+                    }
+                  </Field>
+
+                  {/* Bank Name */}
+                  <Field label="Bank Name" icon={<FaBuilding />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.bankName} onChange={handleFormChange('bankName')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="e.g. SBI, HDFC, ICICI" />
+                      : <span className="text-white font-bold text-sm">{user?.bankDetails?.bankName || '—'}</span>
+                    }
+                  </Field>
+                </div>
+
+                {/* Bank linked badge */}
+                {hasBankDetails && !editMode && (
+                  <div className="mt-6 flex items-center gap-3 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl px-5 py-3.5">
+                    <FaShieldAlt className="text-emerald-400 text-sm shrink-0" />
+                    <p className="text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                      Bank account verified & linked for withdrawals
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
 
             {/* Security Card */}
             <motion.div
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
               className="bg-[#0d0d0d] rounded-[2.5rem] border border-white/5 shadow-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
             >
               <div className="flex items-center gap-5">
@@ -324,12 +419,23 @@ const Profile = () => {
                 Change Password
               </button>
             </motion.div>
-          </div>
 
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+// Reusable Field wrapper
+const Field = ({ label, icon, editMode, children }) => (
+  <div className="space-y-2">
+    <label className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] block">{label}</label>
+    <div className={`flex items-center gap-4 bg-white/5 px-5 py-4 rounded-2xl border transition-all ${editMode ? 'border-primary/40 bg-primary/5' : 'border-white/5'}`}>
+      <span className="text-primary text-xs shrink-0">{icon}</span>
+      {children}
+    </div>
+  </div>
+);
 
 export default Profile;

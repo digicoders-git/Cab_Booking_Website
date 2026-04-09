@@ -168,7 +168,7 @@ const Notifications = () => {
 
         {/* Footer */}
         <div className="mt-16 text-center">
-          <p className="text-white/10 text-[9px] font-black uppercase tracking-[0.4em]">Powered by KwibCabs Real-Time Engine</p>
+          <p className="text-white/10 text-[9px] font-black uppercase tracking-[0.4em]">Powered by KwikCabs  Real-Time Engine</p>
         </div>
 
       </div>

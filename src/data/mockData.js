@@ -116,14 +116,14 @@ export const testimonials = [
     name: 'Michael Davis',
     role: 'Tourist',
     image: 'https://randomuser.me/api/portraits/men/32.jpg',
-    text: 'Highly recommend KwibCabs for city tours. Our driver knew all the best routes and was incredibly friendly throughout the journey.'
+    text: 'Highly recommend KwikCabs  for city tours. Our driver knew all the best routes and was incredibly friendly throughout the journey.'
   },
   {
     id: 3,
     name: 'Emily Wilson',
     role: 'Regular Commuter',
     image: 'https://randomuser.me/api/portraits/women/68.jpg',
-    text: 'I use KwibCabs every day for my work commute. Their punctuality and consistent high-quality service keep me coming back.'
+    text: 'I use KwikCabs  every day for my work commute. Their punctuality and consistent high-quality service keep me coming back.'
   }
 ];
 

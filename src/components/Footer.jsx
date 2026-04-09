@@ -24,10 +24,10 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-6">
             <Link to="/" className="flex items-center ">
-              <img src={logo} alt="KwibCabs Logo" className="h-20 w-auto object-contain" />
+              <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
             </Link>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              Fast, safe, and reliable cab service available 24/7. Your comfort is our priority — KwibCabs.
+              Fast, safe, and reliable cab service available 24/7. Your comfort is our priority — KwikCabs .
             </p>
             <div className="space-y-3">
               {[
@@ -109,7 +109,7 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-white/8 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-white/30 text-xs">
-            © {new Date().getFullYear()} <span className="text-primary">KwibCabs</span>. All rights reserved.
+            © {new Date().getFullYear()} <span className="text-primary">KwikCabs </span>. All rights reserved.
           </p>
           <p className="text-white/30 text-xs">
             Crafted with ❤️ by{' '}

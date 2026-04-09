@@ -31,7 +31,7 @@ const CTASection = () => {
               <span className="gradient-text">Simple & Affordable.</span>
             </h2>
             <p className="text-white/50 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-              Join thousands of happy KwibCabs riders. Download the app or book online in seconds.
+              Join thousands of happy KwikCabs  riders. Download the app or book online in seconds.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

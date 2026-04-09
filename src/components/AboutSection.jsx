@@ -23,7 +23,7 @@ const AboutSection = () => {
           >
             {/* Glow blob */}
             <div className="absolute inset-0 bg-primary/10 rounded-full blur-[100px] scale-75" />
-            
+
             {/* Stats badge */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -72,7 +72,7 @@ const AboutSection = () => {
               <span className="gradient-text">Across The World</span>
             </h2>
             <p className="text-white/50 leading-relaxed mb-8 text-base">
-              KwibCabs connects you with professional drivers for safe, reliable rides. Whether it's a quick city trip or a long-distance journey, we deliver comfort and punctuality every time.
+              KwikCabs  connects you with professional drivers for safe, reliable rides. Whether it's a quick city trip or a long-distance journey, we deliver comfort and punctuality every time.
             </p>
 
             <ul className="space-y-4 mb-10">

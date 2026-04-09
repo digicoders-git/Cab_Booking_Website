@@ -46,7 +46,7 @@ const Loader = () => {
       {/* Logo */}
       <motion.img
         src={logo}
-        alt="KwibCabs"
+        alt="KwikCabs "
         className="h-16 w-auto object-contain mb-4"
         animate={{ opacity: [0.6, 1, 0.6] }}
         transition={{ duration: 1.5, repeat: Infinity }}
@@ -64,7 +64,7 @@ const Loader = () => {
         ))}
       </div>
 
-      <p className="text-white/40 text-xs mt-4 tracking-widest uppercase">KwibCabs — Finding your ride...</p>
+      <p className="text-white/40 text-xs mt-4 tracking-widest uppercase">KwikCabs  — Finding your ride...</p>
     </motion.div>
   );
 };

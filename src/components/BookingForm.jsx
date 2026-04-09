@@ -702,7 +702,7 @@ const BookingForm = () => {
             transition={{ delay: 0.1 }}
             className="text-primary text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] mb-4 drop-shadow-[0_0_8px_rgba(255,214,10,0.4)]"
           >
-            Fast & Reliable — KwibCabs
+            Fast & Reliable — KwikCabs
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -718,7 +718,7 @@ const BookingForm = () => {
             transition={{ delay: 0.3 }}
             className="text-white/60 mb-10 text-[11px] sm:text-xs font-black uppercase tracking-[0.15em] max-w-xs mx-auto leading-relaxed border-t border-white/10 pt-5"
           >
-            Book a KwibCabs ride in seconds.
+            Book a KwikCabs  ride in seconds.
           </motion.p>
 
           <motion.form
@@ -927,7 +927,7 @@ const BookingForm = () => {
 
                     <div className="mt-8 flex items-center justify-center gap-2">
                       <FaCheckCircle className="text-green-500/50 text-[10px]" />
-                      <span className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Secured by KwibCabs</span>
+                      <span className="text-white/20 text-[10px] font-bold uppercase tracking-widest">Secured by KwikCabs </span>
                     </div>
                   </motion.div>
                 ) : (
@@ -958,10 +958,9 @@ const BookingForm = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-white/40 text-[10px] uppercase font-bold tracking-[0.2em] ml-2">Email Address</label>
+                            <label className="text-white/40 text-[10px] uppercase font-bold tracking-[0.2em] ml-2">Email Address (Optional)</label>
                             <input
                               type="email"
-                              required
                               placeholder="email@example.com"
                               value={userEmail}
                               onChange={(e) => setUserEmail(e.target.value)}
@@ -979,10 +978,11 @@ const BookingForm = () => {
                             type="text"
                             inputMode="numeric"
                             maxLength={1}
+                            placeholder={idx + 1}
                             value={digit}
                             onChange={(e) => handleOtpChange(e.target.value, idx)}
                             onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                            className={`w-12 h-16 text-center text-white text-2xl font-black bg-white/[0.03] border-2 rounded-xl outline-none transition-all ${otpError ? 'border-red-500/50 bg-red-500/5' : digit ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,214,10,0.1)]' : 'border-white/10 focus:border-primary/50'
+                            className={`w-12 h-16 text-center text-white text-2xl font-black bg-white/[0.03] border-2 rounded-xl outline-none transition-all placeholder:text-white/10 ${otpError ? 'border-red-500/50 bg-red-500/5' : digit ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,214,10,0.1)]' : 'border-white/10 focus:border-primary/50'
                               }`}
                           />
                         ))}
@@ -993,7 +993,7 @@ const BookingForm = () => {
 
                         <button
                           type="submit"
-                          disabled={otp.join('').length !== 6 || (isNewUserDetected && (!userName || !userEmail))}
+                          disabled={otp.join('').length !== 6 || (isNewUserDetected && !userName)}
                           className="w-full bg-primary text-black font-black py-5 rounded-[1.25rem] text-sm tracking-widest hover:bg-yellow-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-primary/20"
                         >
                           {isNewUserDetected ? 'FINISH REGISTRATION' : 'VERIFY & BOOK NOW'}
@@ -1317,7 +1317,7 @@ const BookingForm = () => {
                   {/* Car Card - COMPACT */}
                   <div className="bg-white/5 p-4 rounded-[2rem] border border-white/5 flex items-center gap-4 relative overflow-hidden mt-6">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black/40 rounded-xl p-2 z-10 flex items-center justify-center">
-                       <img
+                      <img
                         src={confirmedCar.image ? `${API_BASE_URL.replace('/api', '')}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
                         alt={confirmedCar.name}
                         className="w-full h-full object-contain"
@@ -1428,8 +1428,8 @@ const BookingForm = () => {
                           }
                         }}
                         className={`relative p-3 sm:p-4 rounded-xl border-2 transition-all flex items-center gap-3 cursor-pointer ${isSelected
-                            ? 'bg-primary border-primary text-black shadow-lg shadow-primary/10'
-                            : 'bg-white/5 border-white/5 hover:border-primary/20 text-white'
+                          ? 'bg-primary border-primary text-black shadow-lg shadow-primary/10'
+                          : 'bg-white/5 border-white/5 hover:border-primary/20 text-white'
                           }`}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isSelected ? 'bg-black/10' : 'bg-white/5 text-primary'}`}>
