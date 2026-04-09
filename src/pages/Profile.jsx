@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
-  FaUser, FaEnvelope, FaPhoneAlt, FaCamera, FaKey,
+  FaUser, FaEnvelope, FaPhoneAlt, FaCamera,
   FaSignOutAlt, FaTaxi, FaEdit, FaCheck, FaTimes,
   FaShieldAlt, FaCalendarAlt, FaUniversity, FaCreditCard,
   FaIdCard, FaBuilding, FaWallet, FaChartLine
@@ -75,26 +75,33 @@ const Profile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const formData = new FormData();
-      formData.append('name', form.name);
-      formData.append('email', form.email);
-      formData.append('accountNumber', form.accountNumber);
-      formData.append('ifscCode', form.ifscCode);
-      formData.append('accountHolderName', form.accountHolderName);
-      formData.append('bankName', form.bankName);
-      if (imageFile) formData.append('image', imageFile);
+      const fd = new FormData();
+      fd.append('name', form.name);
+      fd.append('email', form.email);
+      fd.append('accountNumber', form.accountNumber);
+      fd.append('ifscCode', form.ifscCode);
+      fd.append('accountHolderName', form.accountHolderName);
+      fd.append('bankName', form.bankName);
+      if (imageFile) fd.append('image', imageFile);
+
+      // Debug: FormData check
+      for (let [k, v] of fd.entries()) console.log('FormData →', k, v);
 
       const res = await fetch(`${API_BASE_URL}/users/update-profile/${userId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
-        body: formData
+        // NOTE: Content-Type header bilkul mat lagao — browser khud multipart/form-data set karta hai boundary ke saath
+        body: fd
       });
       const data = await res.json();
+      console.log('Update response →', data);
+
       if (data.success) {
+        // Server se jo image naam aaya use use karo, local preview nahi
         setUser(data.user);
         setEditMode(false);
         setImageFile(null);
-        setImagePreview(null);
+        setImagePreview(null); // preview hata do — ab server image dikhegi
         localStorage.setItem('user', JSON.stringify(data.user));
         Swal.fire({
           icon: 'success', title: 'Profile Updated!',
@@ -105,7 +112,8 @@ const Profile = () => {
         Swal.fire({ icon: 'error', title: 'Failed', text: data.message, background: '#111', color: '#fff', confirmButtonColor: '#FFD60A' });
       }
     } catch (e) {
-      Swal.fire({ icon: 'error', title: 'Server Error', background: '#111', color: '#fff', confirmButtonColor: '#FFD60A' });
+      console.error('Save error:', e);
+      Swal.fire({ icon: 'error', title: 'Server Error', text: e.message, background: '#111', color: '#fff', confirmButtonColor: '#FFD60A' });
     } finally {
       setSaving(false);
     }
@@ -149,9 +157,13 @@ const Profile = () => {
     }
   };
 
+  // imagePreview = local blob (sirf edit mode mein preview ke liye)
+  // user.image = server se aaya filename (save hone ke baad yahi use hoga)
   const avatarSrc = imagePreview
     ? imagePreview
-    : user?.image ? `${BASE_URL}/uploads/${user.image}` : null;
+    : user?.image
+      ? `${BASE_URL}/uploads/${user.image}?t=${Date.now()}`  // cache bust karo
+      : null;
 
   const joinedDate = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -396,28 +408,6 @@ const Profile = () => {
                   </div>
                 )}
               </div>
-            </motion.div>
-
-            {/* Security Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="bg-[#0d0d0d] rounded-[2.5rem] border border-white/5 shadow-2xl p-8 sm:p-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
-            >
-              <div className="flex items-center gap-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary border border-primary/20">
-                  <FaKey />
-                </div>
-                <div>
-                  <h5 className="text-white font-black uppercase tracking-tight">Security</h5>
-                  <p className="text-white/20 text-[10px] font-black uppercase tracking-widest mt-1">Manage your password</p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate('/forgot-password')}
-                className="bg-white/5 border border-white/10 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-black hover:border-primary transition-all"
-              >
-                Change Password
-              </button>
             </motion.div>
 
           </div>
