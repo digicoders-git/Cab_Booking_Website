@@ -13,8 +13,6 @@ import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Register from './Register';
 
-const BASE_URL = API_BASE_URL.replace('/api', '');
-
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -162,7 +160,7 @@ const Profile = () => {
   const avatarSrc = imagePreview
     ? imagePreview
     : user?.image
-      ? `${BASE_URL}/uploads/${user.image}?t=${Date.now()}`  // cache bust karo
+      ? `${API_BASE_URL.replace('/api', '')}/uploads/${user.image}?t=${Date.now()}`
       : null;
 
   const joinedDate = user?.createdAt
