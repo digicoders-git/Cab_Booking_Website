@@ -214,8 +214,17 @@ const MyBooking = () => {
                             <div className="lg:border-l lg:border-white/5 lg:pl-6">
                               <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Driver</p>
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shrink-0">
-                                  <FaUser size={12} />
+                                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary shrink-0 overflow-hidden">
+                                  {booking.assignedDriver.image ? (
+                                    <img 
+                                      src={`${API_BASE_URL.replace('/api', '')}/uploads/${booking.assignedDriver.image}`} 
+                                      alt="Driver" 
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; }}
+                                    />
+                                  ) : (
+                                    <FaUser size={12} />
+                                  )}
                                 </div>
                                 <span className="text-white font-bold text-xs uppercase">{booking.assignedDriver.name}</span>
                               </div>

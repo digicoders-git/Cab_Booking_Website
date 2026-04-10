@@ -13,12 +13,14 @@ import { API_BASE_URL } from '../config/api';
 
 const BookingDetails = () => {
     const { bookingId } = useParams();
+    const navigate = useNavigate();
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [driverLocation, setDriverLocation] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [locationUpdateCount, setLocationUpdateCount] = useState(0);
+    const [secondsRemaining, setSecondsRemaining] = useState(240); // 4 minutes timer
 
     // Map Refs
     const mapRef = useRef(null);
@@ -58,6 +60,32 @@ const BookingDetails = () => {
     useEffect(() => {
         fetchBooking();
     }, [bookingId]);
+
+    // Timer Sync Logic
+    useEffect(() => {
+        if (!booking || (booking.bookingStatus !== 'Pending' && booking.status !== 'pending')) return;
+
+        const updateTimer = () => {
+            const createdAt = new Date(booking.createdAt).getTime();
+            const now = Date.now();
+            const elapsed = Math.floor((now - createdAt) / 1000);
+            const remaining = Math.max(0, 240 - elapsed);
+            setSecondsRemaining(remaining);
+
+            // If expired, refresh to show expired state and STOP the timer
+            if (remaining === 0) {
+                fetchBooking();
+                if (window.timerInterval) clearInterval(window.timerInterval);
+            }
+        };
+
+        updateTimer();
+        window.timerInterval = setInterval(updateTimer, 1000);
+        return () => {
+            if (window.timerInterval) clearInterval(window.timerInterval);
+        };
+    }, [booking]);
+    
 
     // 2. Map Initialization
     useEffect(() => {
@@ -206,7 +234,7 @@ const BookingDetails = () => {
 
         // Auto-Adjust Viewport (Throttled: map zoom ko bar-bar change mat karo)
         const currentZoom = googleMap.current.getZoom();
-        if (currentZoom < 10) { 
+        if (currentZoom < 10) {
             googleMap.current.fitBounds(bounds, { top: 70, bottom: 70, left: 70, right: 70 });
         }
 
@@ -229,32 +257,30 @@ const BookingDetails = () => {
 
     // 4. Real-time WebSocket Logic
     useEffect(() => {
-        if (!bookingId || !booking) return;
+        if (!bookingId) return;
         const socket = io(backendServer);
 
         // Track Connection Status
         socket.on('connect', () => {
             setIsConnected(true);
             console.log("Socket Connected ✅");
+            
+            // Join Room - Only after connection
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const userId = localStorage.getItem('userId') || storedUser?._id;
+            const userRole = localStorage.getItem('role') || (storedUser?._id ? 'user' : (storedUser?.role || 'user'));
+
+            if (userId) {
+                const room = userRole === 'agent' ? `agent_${userId}` : userId;
+                console.log(`Socket joining room: ${room} (Role: ${userRole})`);
+                socket.emit('join_room', { userId: userId, role: userRole });
+            }
         });
+
         socket.on('disconnect', () => {
             setIsConnected(false);
             console.log("Socket Disconnected ❌");
         });
-
-        // Join Room - DYNAMIC ROLE DETECTION
-        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const userId = localStorage.getItem('userId') || storedUser?._id;
-        const userRole = localStorage.getItem('role') || (storedUser?._id ? 'user' : (storedUser?.role || 'user'));
-
-        if (!userId) {
-            console.error("Missing User ID for Live Signal ❌");
-            return;
-        }
-
-        const room = userRole === 'agent' ? `agent_${userId}` : userId;
-        console.log(`Socket joining room: ${room} (Role: ${userRole})`);
-        socket.emit('join_room', { userId: userId, role: userRole });
 
         socket.on('booking_update', (data) => {
             if (data.bookingId === bookingId) {
@@ -265,56 +291,53 @@ const BookingDetails = () => {
 
         // LIVE DRIVER MOVEMENT LISTENER
         socket.on('driver_location_update', (data) => {
-            // 1. Packet validation
-            if (!data.driverId) return;
-
-            // 2. ID Extraction for robust comparison
-            const currentDriverId = (booking?.assignedDriver?._id || booking?.assignedDriver || '').toString().toLowerCase().trim();
-            const incomingId = (data.driverId?._id || data.driverId || '').toString().toLowerCase().trim();
-
-            if (currentDriverId && incomingId && currentDriverId === incomingId) {
-                // Signal Incoming! ✅
-                setLocationUpdateCount(prev => {
-                    const next = prev + 1;
-                    console.log(`📍 Pulse #${next} | Lat: ${data.latitude} | Lng: ${data.longitude}`);
-                    return next;
-                });
-
-                const newCoords = { lat: data.latitude, lng: data.longitude };
-
-                // --- SMOOTH ANIMATION ---
-                if (driverMarker.current) {
-                    const startPos = driverMarker.current.getPosition();
-                    const endPos = new window.google.maps.LatLng(newCoords.lat, newCoords.lng);
-
-                    let frames = 30; // 30 frames for smoother movement
-                    let count = 0;
-
-                    const animate = () => {
-                        count++;
-                        const lat = startPos.lat() + (endPos.lat() - startPos.lat()) * (count / frames);
-                        const lng = startPos.lng() + (endPos.lng() - startPos.lng()) * (count / frames);
-
-                        const nextPos = new window.google.maps.LatLng(lat, lng);
-                        driverMarker.current.setPosition(nextPos);
-
-                        if (count < frames) {
-                            requestAnimationFrame(animate);
-                        } else {
-                            // Sync state without re-centering map (only sync the data)
-                            setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
-                        }
-                    };
-                    requestAnimationFrame(animate);
-                } else {
-                    // First packet ever? Set location and let updateMapRoute handle creation
-                    setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
-                }
-            }
+            // Logic moved to a ref-based or memoized handler to avoid dependency on booking state
+            handleLocationUpdate(data);
         });
 
-        return () => socket.disconnect();
-    }, [bookingId, booking]);
+        return () => {
+            socket.off('connect');
+            socket.off('disconnect');
+            socket.off('booking_update');
+            socket.off('driver_location_update');
+            socket.disconnect();
+        };
+    }, [bookingId]);
+
+    // Robust location update handler
+    const handleLocationUpdate = (data) => {
+        if (!data.driverId || !booking) return;
+
+        const currentDriverId = (booking?.assignedDriver?._id || booking?.assignedDriver || '').toString().toLowerCase().trim();
+        const incomingId = (data.driverId?._id || data.driverId || '').toString().toLowerCase().trim();
+
+        if (currentDriverId && incomingId && currentDriverId === incomingId) {
+            setLocationUpdateCount(prev => prev + 1);
+            const newCoords = { lat: data.latitude, lng: data.longitude };
+
+            if (driverMarker.current) {
+                const startPos = driverMarker.current.getPosition();
+                const endPos = new window.google.maps.LatLng(newCoords.lat, newCoords.lng);
+                let frames = 30;
+                let count = 0;
+
+                const animate = () => {
+                    count++;
+                    const lat = startPos.lat() + (endPos.lat() - startPos.lat()) * (count / frames);
+                    const lng = startPos.lng() + (endPos.lng() - startPos.lng()) * (count / frames);
+                    driverMarker.current.setPosition(new window.google.maps.LatLng(lat, lng));
+                    if (count < frames) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
+                    }
+                };
+                requestAnimationFrame(animate);
+            } else {
+                setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
+            }
+        }
+    };
 
     const handleCancel = async () => {
         const token = localStorage.getItem('token');
@@ -329,8 +352,8 @@ const BookingDetails = () => {
             });
             const data = await response.json();
             if (data.success) {
-                // Redirecting to home page after cancellation
-                window.location.href = '/';
+                // Redirecting to home page after cancellation using React Router
+                navigate('/');
             }
         } catch (error) {
             console.error("Cancel Error:", error);
@@ -388,23 +411,22 @@ const BookingDetails = () => {
                     <div className="lg:col-span-5 flex flex-col gap-6 overflow-y-auto no-scrollbar scroll-smooth pr-1 h-full">
 
                         {/* 1. MAIN SUMMARY HEADER - COMPACT & SIMPLE */}
-                        <div className="bg-[#111] p-6 rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
+                        <div className="bg-[#111] p-15 rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
                             <div>
-                                <h1 className="text-white font-black text-2xl mb-1 uppercase tracking-wider">Ride Summary</h1>
+                                <h2 className="text-white font-black text-xl mb-1 uppercase tracking-wider">Ride Summary</h2>
                                 <div className="flex flex-wrap items-center gap-3">
                                     <span className="text-primary font-black text-[9px] uppercase tracking-widest leading-none">{booking.rideType || "Private"} Ride</span>
                                     <span className="text-white/20 text-[9px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
                                     <span className="bg-cyan-500/15 text-cyan-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cyan-500/20 flex items-center gap-2 shadow-lg shadow-cyan-500/5">
-                                        <FaFingerprint className="text-cyan-500 text-[12px]" /> 
+                                        <FaFingerprint className="text-cyan-500 text-[12px]" />
                                         OTP: {booking.tripData?.startOtp || booking.otp || (isPending ? "SEARCHING..." : "---")}
                                     </span>
                                 </div>
                             </div>
-                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border ${
-                                isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' : 
-                                (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 
-                                (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' : 
-                                'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
+                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' :
+                                (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                    (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' :
+                                        'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
                                 {booking.bookingStatus || booking.status}
                             </div>
                         </div>
@@ -432,15 +454,15 @@ const BookingDetails = () => {
                         </div>
 
                         {/* 3. DRIVER INFORMATION - DYNAMIC & HIGH FIDELITY */}
-                        <div className="bg-[#111] p-8 pb-12 rounded-[2.5rem] border border-white/5 relative overflow-hidden shadow-xl">
+                        <div className="bg-[#111] p-6 sm:p-8 pb-8 sm:pb-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden shadow-xl min-h-fit">
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
                             {booking.assignedDriver ? (
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-1 relative overflow-hidden">
                                             {booking.assignedDriver.image ? (
-                                                <img 
-                                                    src={`${backendServer}/uploads/${booking.assignedDriver.image}`} 
+                                                <img
+                                                    src={`${backendServer}/uploads/${booking.assignedDriver.image}`}
                                                     alt={booking.assignedDriver.name}
                                                     className="w-full h-full object-cover rounded-xl"
                                                     onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; }}
@@ -474,22 +496,22 @@ const BookingDetails = () => {
                                     </div>
 
                                     <div className="flex gap-3">
-                                        <a 
-                                            href={`tel:${booking.assignedDriver.phone}`} 
-                                            className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary transition-all flex-shrink-0" 
+                                        <a
+                                            href={`tel:${booking.assignedDriver.phone}`}
+                                            className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary transition-all flex-shrink-0"
                                             title="Call Driver"
                                         >
                                             <FaPhoneAlt size={14} />
                                         </a>
-                                        <a 
+                                        <a
                                             href={`sms:${booking.assignedDriver.phone}`}
                                             className="flex-1 h-12 bg-primary text-black rounded-xl flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-95"
                                         >
                                             <FaCommentDots size={16} /> Send Message
                                         </a>
                                         {canCancel && (
-                                            <button 
-                                                onClick={handleCancel} 
+                                            <button
+                                                onClick={handleCancel}
                                                 className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all flex-shrink-0 shadow-lg shadow-red-500/5"
                                                 title="Cancel Ride"
                                             >
@@ -508,17 +530,54 @@ const BookingDetails = () => {
                                             <p className="text-red-500 font-black text-sm uppercase tracking-tighter italic mb-2">Ride Expired</p>
                                             <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">We couldn't find a driver in time. Please try booking again.</p>
                                         </>
+                                    ) : booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? (
+                                        <>
+                                            <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+                                                <FaTimesCircle className="text-red-500 text-2xl" />
+                                            </div>
+                                            <p className="text-red-500 font-black text-sm uppercase tracking-tighter italic mb-2">Ride Cancelled</p>
+                                            <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">This request has been cancelled by you or the system.</p>
+                                        </>
                                     ) : (
                                         <>
-                                            <div className="w-14 h-14 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                                                <FaSpinner className="text-primary text-2xl animate-spin" />
+                                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                                {/* Pulsing High-Fidelity Radar Effect */}
+                                                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                                                <div className="absolute inset-[-10px] rounded-full bg-primary/10 animate-[ping_2s_infinite_offset]" />
+                                                <FaCar className="text-primary text-3xl relative z-10" />
                                             </div>
-                                            <p className="text-white font-black text-sm uppercase tracking-tighter italic mb-2">Matching Driver...</p>
-                                            <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">Broadcasted your ride to top nearby partners.</p>
+
+                                            <div className="mb-6">
+                                                <div className="flex justify-between items-end mb-2">
+                                                    <p className="text-white font-black text-lg uppercase tracking-tighter italic">Searching Driver</p>
+                                                    <p className="text-primary font-black text-xl italic tabular-nums">
+                                                        {Math.floor(secondsRemaining / 60)}:{(secondsRemaining % 60).toString().padStart(2, '0')}
+                                                    </p>
+                                                </div>
+
+                                                {/* Rapido-Style Linear Loader */}
+                                                <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden relative border border-white/5">
+                                                    <motion.div
+                                                        className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
+                                                        animate={{
+                                                            left: ["-33%", "100%"]
+                                                        }}
+                                                        transition={{
+                                                            duration: 2.5,
+                                                            repeat: Infinity,
+                                                            ease: "linear"
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest max-w-[280px] mx-auto leading-relaxed mb-6">
+                                                Matching your request with top active partners nearby...
+                                            </p>
 
                                             {canCancel && (
-                                                <button onClick={handleCancel} className="mt-8 px-8 py-3 border border-red-500/20 text-red-500/40 hover:bg-red-500 hover:text-white transition-all rounded-xl font-black text-[8px] uppercase tracking-[0.3em]">
-                                                    Cancel
+                                                <button onClick={handleCancel} className="w-full py-4 border border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white transition-all rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] active:scale-[0.98]">
+                                                    Cancel Request
                                                 </button>
                                             )}
                                         </>

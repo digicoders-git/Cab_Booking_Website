@@ -656,17 +656,30 @@ const BookingForm = () => {
       if (data.success) {
         setShowFinalSummaryModal(false);
         Swal.fire({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
           icon: 'success',
           title: 'Booking Successful!',
-          text: `Your ${bookingData.rideType} ride is confirmed!`,
-          confirmButtonColor: '#10b981',
-        }).then(() => {
-          setIsSearching(true);
-          setTimeout(() => {
-            setIsSearching(false);
-            navigate(`/booking-details/${data.booking?._id || data.bookingId}`);
-          }, 3000);
+          background: '#0a0a0a',
+          color: '#fff',
+          iconColor: '#FFD60A',
+          width: 'auto',
+          customClass: {
+            popup: 'rounded-2xl border border-primary/20 shadow-2xl !p-4 !px-6 flex items-center overflow-hidden',
+            icon: '!m-0 scale-90',
+            title: '!m-0 !ml-3 !p-0 text-[11px] font-black uppercase tracking-[0.1em] whitespace-nowrap',
+            timerProgressBar: 'bg-primary h-0.5'
+          }
         });
+        
+        setIsSearching(true);
+        setTimeout(() => {
+          setIsSearching(false);
+          navigate(`/booking-details/${data.booking?._id || data.bookingId}`);
+        }, 3000);
       } else {
         // If server returns success:false, show why
         throw new Error(data.message || data.error || "Server validation failed");
@@ -1346,8 +1359,8 @@ const BookingForm = () => {
                   </div>
                 </div>
 
-                {/* Footer Buttons - CLEAN & PROFESSIONAL */}
-                <div className="flex flex-col sm:flex-row gap-4 mt-6 mb-4 sticky bottom-0 bg-[#0a0a0a] pt-4 border-t border-white/5 pb-5">
+                {/* Footer Buttons - CLEAN & PROFESSIONAL (Static instead of Sticky) */}
+                <div className="flex flex-col sm:flex-row gap-4 mt-12 mb-4 bg-[#0a0a0a] pt-8 border-t border-white/5 pb-2">
                   <button
                     onClick={() => setShowFinalSummaryModal(false)}
                     className="order-2 sm:order-1 px-8 py-3.5 border-2 border-white/10 rounded-2xl text-white/70 font-black text-[10px] uppercase tracking-wide hover:text-white hover:border-white/20 transition-all text-center flex-1"
@@ -1356,7 +1369,7 @@ const BookingForm = () => {
                   </button>
                   <button
                     onClick={handleBookNow}
-                    className="order-1 sm:order-2 flex-[2.5] bg-primary text-black font-black py-3.5 rounded-2xl text-[11px] sm:text-xs tracking-wide hover:bg-yellow-400 shadow-2xl shadow-primary/30 transition-all uppercase flex items-center justify-center gap-3 active:scale-95 group"
+                    className="order-1 sm:order-2 flex-[2.5] bg-primary text-black font-black py-4 rounded-2xl text-[11px] sm:text-xs tracking-wide hover:bg-yellow-400 shadow-2xl shadow-primary/30 transition-all uppercase flex items-center justify-center gap-3 active:scale-95 group"
                   >
                     Confirm Booking <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </button>
@@ -1378,10 +1391,10 @@ const BookingForm = () => {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-[95%] md:w-full md:max-w-xl bg-[#0a0a0a] rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl p-6 sm:p-10 border border-white/10 overflow-y-auto relative"
+              className="w-[95%] md:w-full md:max-w-xl bg-[#0a0a0a] rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl px-6 sm:px-10 border border-white/10 overflow-y-auto relative"
               style={{ maxHeight: '90vh' }}
             >
-              <div className="flex items-center gap-6 mb-10 lg:sticky lg:top-0 bg-[#0a0a0a] z-20 pb-6 border-b border-white/5">
+              <div className="flex items-center gap-6 mb-10 sticky top-0 bg-[#0a0a0a] z-40 pb-6 pt-6 sm:pt-10 border-b border-white/5 -mx-6 sm:-mx-10 px-6 sm:px-10">
                 <motion.div
                   initial={{ scale: 0, rotate: -10 }}
                   animate={{ scale: 1, rotate: 0 }}
@@ -1466,8 +1479,8 @@ const BookingForm = () => {
                 </div>
               </div>
 
-              {/* ACTIONS - SOLID STICKY FOOTER */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sticky bottom-0 bg-[#0a0a0a] pt-4 pb-8 mt-auto border-t border-white/5 z-30">
+              {/* ACTIONS - FIXED FOOTER (Restored Sticky & Gap Fixed) */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sticky bottom-0 bg-[#0a0a0a] z-30 pt-4 pb-8 sm:pb-10 -mx-6 sm:-mx-10 px-6 sm:px-10 border-t border-white/5">
                 <button
                   onClick={() => { setShowSeatSelectionModal(false); setShowCategoriesModal(true); }}
                   className="order-2 sm:order-1 px-8 py-4 sm:py-5 rounded-2xl border border-white/10 text-white/40 font-black text-[9px] uppercase tracking-widest hover:text-white hover:border-white/20 transition-all text-center flex-1 sm:flex-none"
