@@ -290,15 +290,26 @@ const BookingForm = () => {
           setActiveCategoryId(data.options[0].carCategoryId);
         }
       } else {
-        throw new Error("Search API failed");
+        throw new Error(data.message || "Search API failed");
       }
     } catch (error) {
-      console.error("Error searching cabs, using fallback:", error);
-      // Fallback data if API fails
-      setCategories([
-        { carCategoryId: '1', name: 'Economy Bike', seatCapacity: 1, fare: Math.round(15 + (distanceValue * 10)), arrivalMins: '3 mins away', dropTime: 'Drop 04:45 PM', nearbyDrivers: [], image: null },
-        { carCategoryId: '2', name: 'Prime SUV', seatCapacity: 4, fare: Math.round(150 + (distanceValue * 45)), arrivalMins: '8 mins away', dropTime: 'Drop 04:55 PM', nearbyDrivers: [], image: null }
-      ]);
+      console.error("Error searching cabs:", error);
+      setIsSearching(false);
+      setShowCategoriesModal(false);
+      
+      Swal.fire({
+        icon: 'info',
+        title: 'No Rides Available',
+        text: error.message,
+        confirmButtonColor: '#FFD60A',
+        background: '#0a0a0a',
+        color: '#fff',
+        customClass: {
+          popup: 'rounded-3xl border border-white/5 shadow-2xl',
+          title: 'text-lg font-bold uppercase tracking-tight',
+          htmlContainer: 'text-sm text-white/60'
+        }
+      });
     } finally {
       setIsCategoriesLoading(false);
     }
