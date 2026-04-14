@@ -16,7 +16,9 @@ const navLinks = [
   { name: 'About', path: '/about', hasDropdown: false },
   { name: 'Our Fleet', path: '/fleet', hasDropdown: false },
   { name: 'Services', path: '/services', hasDropdown: false },
+  { name: 'Bulk Booking', path: '/bulk-booking', hasDropdown: false },
   { name: 'My Rides', path: '/my-booking', hasDropdown: false },
+  { name: 'My Bulk Rides', path: '/my-bulk-bookings', hasDropdown: false },
   { name: 'Support', path: '/support', hasDropdown: false },
 ];
 

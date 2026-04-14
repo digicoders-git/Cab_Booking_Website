@@ -62,6 +62,25 @@ const BookingForm = () => {
   useEffect(() => {
     if (!window.google) return;
 
+    const geocoder = new window.google.maps.Geocoder();
+
+    const fetchPincode = (location, callback) => {
+      geocoder.geocode({ location }, (results, status) => {
+        if (status === "OK" && results) {
+          const pin = results.find(r => r.types.includes("postal_code"))?.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+          if (!pin) {
+             // Fallback: check all components of the first result
+             const altPin = results[0]?.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+             callback(altPin);
+          } else {
+             callback(pin);
+          }
+        } else {
+          callback(null);
+        }
+      });
+    };
+
     const pickupAutocomplete = new window.google.maps.places.Autocomplete(pickupRef.current, {
       types: ['geocode', 'establishment'],
       componentRestrictions: { country: 'in' }
@@ -75,22 +94,53 @@ const BookingForm = () => {
     pickupAutocomplete.addListener('place_changed', () => {
       const place = pickupAutocomplete.getPlace();
       if (place.geometry && place.geometry.location) {
-        setFormData(prev => ({
-          ...prev,
-          pickup: place.formatted_address,
-          pickupCoords: place.geometry.location
-        }));
+        const latlng = place.geometry.location;
+        const directPin = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+        
+        if (!directPin) {
+          fetchPincode(latlng, (pin) => {
+            setFormData(prev => ({
+              ...prev,
+              pickup: place.formatted_address,
+              pickupCoords: latlng,
+              pickupPin: pin
+            }));
+            if (pin) console.log("🕵️ Smart PIN Hunter: Found missing PIN", pin);
+          });
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            pickup: place.formatted_address,
+            pickupCoords: latlng,
+            pickupPin: directPin
+          }));
+        }
       }
     });
 
     dropoffAutocomplete.addListener('place_changed', () => {
       const place = dropoffAutocomplete.getPlace();
       if (place.geometry && place.geometry.location) {
-        setFormData(prev => ({
-          ...prev,
-          dropoff: place.formatted_address,
-          dropoffCoords: place.geometry.location
-        }));
+        const latlng = place.geometry.location;
+        const directPin = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+
+        if (!directPin) {
+          fetchPincode(latlng, (pin) => {
+            setFormData(prev => ({
+              ...prev,
+              dropoff: place.formatted_address,
+              dropoffCoords: latlng,
+              dropoffPin: pin
+            }));
+          });
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            dropoff: place.formatted_address,
+            dropoffCoords: latlng,
+            dropoffPin: directPin
+          }));
+        }
       }
     });
   }, []);
@@ -280,7 +330,9 @@ const BookingForm = () => {
           pickupLat: pLat,
           pickupLng: pLng,
           dropLat: dLat,
-          dropLng: dLng
+          dropLng: dLng,
+          pickupPin: formData.pickupPin, // 🚀 SMART PIN
+          dropoffPin: formData.dropoffPin // 🚀 SMART PIN
         })
       });
       const data = await response.json();
@@ -642,7 +694,9 @@ const BookingForm = () => {
       dropLng: Number(dLng),
       distanceKm: Number(distanceValue) || 0,
       pickupDate: new Date().toISOString().split('T')[0],
-      pickupTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+      pickupTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+      pickupPin: formData.pickupPin, // 🚀 SMART PIN
+      dropoffPin: formData.dropoffPin // 🚀 SMART PIN
     };
 
     if (rideType === 'shared') {

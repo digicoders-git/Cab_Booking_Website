@@ -34,6 +34,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import DriverTracking from './pages/DriverTracking';
 import Notifications from './pages/Notifications';
 import Support from './pages/Support';
+import BulkBooking from './pages/BulkBooking';
+import MyBulkBookings from './pages/MyBulkBookings';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -84,6 +86,8 @@ function App() {
           <Route path="register" element={<Register />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="support" element={<Support />} />
+          <Route path="bulk-booking" element={<BulkBooking />} />
+          <Route path="my-bulk-bookings" element={<MyBulkBookings />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
