@@ -17,7 +17,7 @@ const CarFleet = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/car-categories/active`);
+        const res = await fetch(`${API_BASE_URL}/car-categories/active`);
         const data = await res.json();
         if (data.success && data.categories?.length > 0) {
           setCategories(data.categories);

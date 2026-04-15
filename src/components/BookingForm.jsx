@@ -316,7 +316,7 @@ const BookingForm = () => {
     const dLng = getCoord(formData.dropoffCoords, 'lng');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/search-cabs`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/search-cabs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -562,7 +562,7 @@ const BookingForm = () => {
 
     try {
       // Using the base URL defined in config
-      const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -707,7 +707,7 @@ const BookingForm = () => {
     console.log("Full Booking Payload:", bookingData);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/create`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

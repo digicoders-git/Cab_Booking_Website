@@ -25,7 +25,7 @@ const Support = () => {
   const fetchTickets = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/support/my-tickets`, {
+      const res = await fetch(`${API_BASE_URL}/support/my-tickets`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -68,7 +68,7 @@ const Support = () => {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/support/create`, {
+      const res = await fetch(`${API_BASE_URL}/support/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)

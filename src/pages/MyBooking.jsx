@@ -20,7 +20,7 @@ const MyBooking = () => {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${API_BASE_URL}/api/bookings/my-bookings`, {
+      const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -58,7 +58,7 @@ const MyBooking = () => {
     if (reason) {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch(`${API_BASE_URL}/api/bookings/cancel/${bookingId}`, {
+        const res = await fetch(`${API_BASE_URL}/bookings/cancel/${bookingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ reason })

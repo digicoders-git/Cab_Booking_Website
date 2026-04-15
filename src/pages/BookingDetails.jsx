@@ -38,7 +38,7 @@ const BookingDetails = () => {
         if (!bookingId) return;
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -258,7 +258,12 @@ const BookingDetails = () => {
     // 4. Real-time WebSocket Logic
     useEffect(() => {
         if (!bookingId) return;
-        const socket = io(backendServer);
+        const socket = io(backendServer, {
+            transports: ['polling', 'websocket'],
+            secure: backendServer.startsWith('https'),
+            reconnectionAttempts: 5,
+            reconnectionDelay: 2000
+        });
 
         // Track Connection Status
         socket.on('connect', () => {
@@ -342,7 +347,7 @@ const BookingDetails = () => {
     const handleCancel = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/api/bookings/cancel/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/bookings/cancel/${bookingId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -34,7 +34,7 @@ const Profile = () => {
   const fetchProfile = async () => {
     if (!userId || !token) { setLoading(false); return; }
     try {
-      const res = await fetch(`${API_BASE_URL}/api/users/profile/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/users/profile/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -85,7 +85,7 @@ const Profile = () => {
       // Debug: FormData check
       for (let [k, v] of fd.entries()) console.log('FormData →', k, v);
 
-      const res = await fetch(`${API_BASE_URL}/api/users/update-profile/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/users/update-profile/${userId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
         // NOTE: Content-Type header bilkul mat lagao — browser khud multipart/form-data set karta hai boundary ke saath

@@ -17,7 +17,7 @@ const Notifications = () => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/api/notifications/my-notifications`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/my-notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
