@@ -184,7 +184,7 @@ const Profile = () => {
     <div className="bg-[#060606] min-h-screen text-white pb-24">
       <PageHeader title="My Profile" breadcrumb="My Profile" />
 
-      <div className="container mx-auto px-4 max-w-6xl mt-16">
+      <div className="container mx-auto px-4 max-w-6xl mt-12 sm:mt-16 pt-4 sm:pt-0">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* ── Left Card ── */}

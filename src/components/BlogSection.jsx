@@ -12,15 +12,15 @@ const BlogSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
+          className="flex flex-col items-center text-center mb-16 gap-4"
         >
           <div>
-            <span className="section-tag">
-              <span className="w-4 h-px bg-primary" /> Our Blog
+            <span className="section-tag mx-auto">
+              <span className="w-4 h-px bg-primary" /> Our Blog <span className="w-4 h-px bg-primary" />
             </span>
-            <h2 className="section-title">Latest News</h2>
+            <h2 className="section-title text-3xl md:text-5xl gradient-text">Latest News</h2>
           </div>
-          <Link to="/blog" className="flex items-center gap-2 text-primary text-sm font-bold hover:gap-3 transition-all">
+          <Link to="/blog" className="flex items-center gap-2 text-primary text-sm font-black hover:gap-3 transition-all bg-primary/5 px-6 py-2 rounded-full border border-primary/20">
             View all posts <FaArrowRight size={12} />
           </Link>
         </motion.div>

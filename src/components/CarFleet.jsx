@@ -44,15 +44,15 @@ const CarFleet = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6"
+          className="flex flex-col items-center text-center md:flex-row md:items-end md:text-left justify-between mb-14 gap-6"
         >
           <div>
-            <span className="section-tag">
+            <span className="section-tag mx-auto md:mx-0">
               <span className="w-4 h-px bg-primary" /> Our Fleet
             </span>
             <h2 className="section-title">Pick Your Ride</h2>
           </div>
-          <p className="text-white/30 text-sm max-w-xs leading-relaxed">
+          <p className="text-white/30 text-sm max-w-xs leading-relaxed mx-auto md:mx-0">
             Choose from our premium fleet — economy to luxury, every ride is comfortable.
           </p>
         </motion.div>

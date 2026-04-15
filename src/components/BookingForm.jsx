@@ -202,7 +202,7 @@ const BookingForm = () => {
 
         const newMap = new window.google.maps.Map(mapRef.current, {
           center: { lat: 20.5937, lng: 78.9629 }, // Center of India
-          zoom: 5,
+          zoom: window.innerWidth < 768 ? 16 : 5,
           styles: [
             { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
             { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
@@ -379,7 +379,7 @@ const BookingForm = () => {
 
         const previewMap = new window.google.maps.Map(previewMapRef.current, {
           center: center,
-          zoom: 14,
+          zoom: window.innerWidth < 768 ? 16 : 14,
           disableDefaultUI: true,
           styles: [
             { elementType: "geometry", stylers: [{ color: "#060606" }] },
@@ -773,7 +773,7 @@ const BookingForm = () => {
       >
         <div className="absolute inset-0 bg-black/70" />
 
-        <div className="relative z-10 w-full max-w-xl mx-auto px-4 py-32 text-center">
+        <div className="relative z-10 w-full max-w-xl mx-auto px-1 sm:px-4 py-32 text-center">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -786,7 +786,7 @@ const BookingForm = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-3xl sm:text-4xl font-black text-white mb-4 uppercase tracking-[0.1em] drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]"
+            className="text-2xl sm:text-4xl font-black text-white mb-4 uppercase tracking-[0.1em] drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]"
           >
             Where to?
           </motion.h1>
@@ -871,10 +871,10 @@ const BookingForm = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-7xl h-[100vh] md:h-[90vh] bg-[#0a0a0a] md:rounded-3xl border-0 md:border border-white/10 overflow-hidden flex flex-col md:flex-row"
+              className="relative w-full max-w-7xl h-full md:h-[90vh] bg-[#0a0a0a] md:rounded-3xl border-0 md:border border-white/10 overflow-hidden flex flex-col md:flex-row"
             >
               {/* Left Side: Map Container */}
-              <div className="flex-1 relative order-2 md:order-1 h-[45vh] md:h-full border-t md:border-t-0 md:border-r border-white/10">
+              <div className="flex-1 relative order-1 md:order-1 h-[115vh] md:h-full border-b md:border-b-0 md:border-r border-white/10">
                 <div ref={mapRef} className="w-full h-full" />
 
                 {/* Float Close Button for Mobile */}
@@ -887,7 +887,7 @@ const BookingForm = () => {
               </div>
 
               {/* Right Side: Details & Car Selection */}
-              <div className="w-full md:w-[450px] flex flex-col order-1 md:order-2 bg-[#111] overflow-hidden">
+              <div className="w-full md:w-[450px] flex flex-col order-2 md:order-2 bg-[#111] overflow-hidden">
                 <div className="p-6 border-b border-white/10">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-white font-black text-2xl uppercase tracking-wider">Select Ride</h2>
@@ -912,7 +912,7 @@ const BookingForm = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 flex flex-col justify-center p-8 space-y-8">
+                <div className="hidden md:flex flex-1 flex-col justify-center p-8 space-y-8">
                   <div className="text-center space-y-4">
                     <motion.div
                       animate={{ y: [0, -5, 0] }}
@@ -1097,17 +1097,17 @@ const BookingForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10001] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[10001] flex items-center justify-center p-0 md:p-4"
           >
-            <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setShowFinalConfirm(false)} />
+            <div className="absolute inset-0 bg-black" onClick={() => setShowFinalConfirm(false)} />
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl"
+              className="relative w-full max-w-lg h-full md:h-auto bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[2.5rem] overflow-y-auto md:overflow-hidden shadow-2xl"
             >
               {/* Header: Distance Calculated - Yellow Brand Theme */}
-              <div className="bg-primary border-b border-black/5 p-8 text-center relative overflow-hidden">
+              <div className="bg-primary border-b border-black/5 p-6 sm:p-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12">
                   <FaTaxi size={120} className="text-black" />
                 </div>
@@ -1118,7 +1118,7 @@ const BookingForm = () => {
                 </div>
               </div>
 
-              <div className="p-10">
+              <div className="p-6 sm:p-10">
                 <div className="flex items-center gap-4 mb-10">
                   <motion.div
                     animate={{ scale: [1, 1.1, 1], y: [0, -4, 0] }}
@@ -1131,7 +1131,7 @@ const BookingForm = () => {
                 </div>
 
                 {/* Ride Type Selection Cards - Refined */}
-                <div className="grid grid-cols-2 gap-5 mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mb-8 md:mb-10">
                   <motion.div
                     whileHover={{ y: -2 }}
                     onClick={() => setRideType('private')}
@@ -1230,19 +1230,20 @@ const BookingForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10005] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 sm:p-8 overflow-y-auto"
+            className="fixed inset-0 z-[10005] flex items-center justify-center p-0 md:p-4"
           >
+            <div className="absolute inset-0 bg-black/95" onClick={() => setShowCategoriesModal(false)} />
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="w-full max-w-7xl h-[100vh] md:h-[90vh] bg-[#0a0a0a] md:rounded-[2.5rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col md:flex-row"
+              className="w-full max-w-7xl h-full md:h-[90vh] bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
               {/* Left Side: Map Section (2/3 Width) */}
-              <div className="w-full md:w-[66%] h-[40vh] md:h-full relative border-r border-white/5 bg-gray-900 flex items-center justify-center overflow-hidden">
+              <div className="w-full md:w-[66%] h-[115vh] md:h-full relative border-r border-white/5 bg-gray-900 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0">
                   <div ref={previewMapRef} className="w-full h-full" />
                 </div>
-                <div className="absolute top-6 left-6 z-10">
+                <div className="hidden md:flex absolute top-6 left-6 z-10">
                   <div className="bg-black/80 backdrop-blur-md shadow-xl px-5 py-2.5 rounded-2xl flex items-center gap-3 border border-white/10">
                     <FaLocationArrow className="text-primary text-xs" />
                     <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Live Route Overview</span>
@@ -1252,7 +1253,7 @@ const BookingForm = () => {
 
               {/* Right Side: Car List Section (1/3 Width - BLACK & YELLOW THEME) */}
               <div className="w-full md:w-[34%] flex flex-col bg-[#0a0a0a] h-full overflow-hidden relative">
-                <div className="p-6 sm:p-8 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a] z-10">
+                <div className="hidden md:flex p-6 sm:p-8 border-b border-white/5 justify-between items-center bg-[#0a0a0a] z-10">
                   <div>
                     <h3 className="text-white font-bold text-xl tracking-tight mb-1">Select a Cab</h3>
                     <p className="text-white/20 text-[9px] font-bold uppercase tracking-widest">{categories.length} Options Near You</p>
@@ -1263,6 +1264,8 @@ const BookingForm = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+                  {/* Visual Handle for Mobile Sheet look */}
+                  <div className="md:hidden w-12 h-1 bg-white/10 rounded-full mx-auto mb-4" />
                   <AnimatePresence mode="wait">
                     {isCategoriesLoading ? (
                       <div className="flex flex-col items-center justify-center h-full gap-4">
@@ -1283,7 +1286,7 @@ const BookingForm = () => {
                               whileTap={{ scale: 0.98 }}
                               onClick={() => setActiveCategoryId(car.carCategoryId)}
                               onDoubleClick={() => handleCarTypeSelect(car)}
-                              className={`relative flex items-center gap-4 p-5 border-2 transition-all rounded-3xl cursor-pointer ${isSelected
+                              className={`relative flex items-center gap-3 sm:gap-4 p-3.5 sm:p-5 border-2 transition-all rounded-2xl sm:rounded-3xl cursor-pointer ${isSelected
                                 ? 'bg-primary border-primary text-black shadow-lg shadow-primary/10'
                                 : 'bg-white/5 border-white/5 hover:border-primary/30 text-white shadow-sm'
                                 }`}
@@ -1296,13 +1299,13 @@ const BookingForm = () => {
                                 />
                               </div>
                               <div className="flex-1">
-                                <h4 className={`font-black text-lg mb-1 ${isSelected ? 'text-black' : 'text-white'}`}>{car.name}</h4>
-                                <div className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-wider ${isSelected ? 'text-black/60' : 'text-white/20'}`}>
+                                <h4 className={`font-black text-base sm:text-lg mb-0.5 sm:mb-1 leading-none uppercase tracking-tight ${isSelected ? 'text-black' : 'text-white'}`}>{car.name}</h4>
+                                <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${isSelected ? 'bg-black/10 text-black/60' : 'bg-white/5 text-primary/80'}`}>
                                   <FaClock size={8} /> {car.arrivalMins}
                                 </div>
                               </div>
                               <div className="text-right">
-                                <h2 className={`text-lg font-black tracking-tighter ${isSelected ? 'text-black' : 'text-primary'}`}>₹{car.fare}</h2>
+                                <h2 className={`text-lg sm:text-2xl font-black tracking-tighter ${isSelected ? 'text-black' : 'text-primary'}`}>₹{car.fare}</h2>
                               </div>
                             </motion.div>
                           );
@@ -1343,18 +1346,19 @@ const BookingForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10010] flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 sm:p-8 overflow-y-auto"
+            className="fixed inset-0 z-[10010] flex items-center justify-center p-0 md:p-8"
           >
+            <div className="absolute inset-0 bg-black/95 backdrop-blur-2xl" onClick={() => setShowFinalSummaryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-6xl h-auto md:h-[80vh] bg-[#0a0a0a] rounded-[2.5rem] md:rounded-[4rem] border border-white/10 overflow-hidden flex flex-col md:flex-row shadow-2xl"
+              className="relative w-full max-w-6xl h-full md:h-[80vh] bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[4rem] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row shadow-2xl"
             >
               {/* Left Side: Map Preview (1/2 or 3/5 Width) */}
-              <div className="w-full md:w-[60%] h-[35vh] md:h-full relative border-r border-white/5 bg-gray-900 overflow-hidden">
+              <div className="w-full md:w-[60%] h-[115vh] md:h-full relative border-r border-white/5 bg-gray-900 overflow-hidden">
                 <div ref={summaryMapRef} className="w-full h-full" />
-                <div className="absolute top-6 left-6 z-10">
+                <div className="hidden md:flex absolute top-6 left-6 z-10">
                   <div className="bg-black/80 backdrop-blur-md px-4 py-2 mt-2 rounded-2xl border border-white/10 flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">Route Confirmed</span>
@@ -1364,14 +1368,23 @@ const BookingForm = () => {
 
               {/* Right Side: Details Section (BLACK & YELLOW THEME) */}
               <div className="w-full md:w-[40%] flex flex-col bg-[#0a0a0a] h-full overflow-y-auto p-4 sm:p-10 custom-scrollbar">
-                <div className="mb-8">
+                <div className="hidden md:block mb-8">
                   <h3 className="text-white font-black text-3xl mb-1 tracking-tighter">Final Step</h3>
                   <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">Review your ride details</p>
                 </div>
+                
+                {/* Mobile-only Header - Simple and Straight Style */}
+                <div className="md:hidden mb-8 text-center pt-2">
+                  <h3 className="text-white font-black text-2xl mb-1 tracking-tight uppercase">Confirm Pickup</h3>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] italic">Your Location is Verified</p>
+                  </div>
+                </div>
 
                 <div className="space-y-6 flex-1">
-                  {/* Location Details */}
-                  <div className="space-y-4">
+                  {/* Location Details - Hidden on mobile to save space */}
+                  <div className="hidden md:block space-y-4">
                     <div className="flex gap-4 items-start">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0">
                         <FaDotCircle className="text-primary text-xs" />
@@ -1392,8 +1405,8 @@ const BookingForm = () => {
                     </div>
                   </div>
 
-                  {/* Car Card - COMPACT */}
-                  <div className="bg-white/5 p-4 rounded-[2rem] border border-white/5 flex items-center gap-4 relative overflow-hidden mt-6">
+                  {/* Car Card - COMPACT - Hidden on mobile */}
+                  <div className="hidden md:flex bg-white/5 p-4 rounded-[2rem] border border-white/5 items-center gap-4 relative overflow-hidden mt-4 md:mt-6">
                     <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black/40 rounded-xl p-2 z-10 flex items-center justify-center">
                       <img
                         src={confirmedCar.image ? `${BASE_URL}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
@@ -1401,7 +1414,7 @@ const BookingForm = () => {
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <div className="flex-1 z-10">
+                    <div className="hidden md:block flex-1 z-10">
                       <h4 className="text-white font-black text-lg mb-0.5">{confirmedCar.name}</h4>
                       <p className="text-primary text-[8px] font-black uppercase tracking-[0.2em] opacity-80">{rideType} Ride</p>
                       <div className="flex items-center gap-2 mt-2 text-white/40 text-[8px] font-bold">
@@ -1412,8 +1425,8 @@ const BookingForm = () => {
                     </div>
                   </div>
 
-                  {/* Fare Summary - MORE COMPACT */}
-                  <div className="p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/20 flex justify-between items-center mt-4">
+                  {/* Fare Summary - MORE COMPACT - Hidden on mobile */}
+                  <div className="hidden md:flex p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/20 justify-between items-center mt-4">
                     <div>
                       <p className="text-black/60 text-[9px] font-black uppercase tracking-widest mb-0.5">Total Payable</p>
                       <h2 className="text-3xl font-black text-black tracking-tighter italic">

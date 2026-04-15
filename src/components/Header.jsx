@@ -47,6 +47,14 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (isOffcanvasOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOffcanvasOpen]);
+
   const location = useLocation();
 
   const isActive = (path) => {
@@ -101,7 +109,7 @@ const Header = () => {
           {/* Notifications - Direct Link instead of Dropdown */}
           <Link
             to="/notifications"
-            className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            className="hidden xl:flex relative w-9 h-9 items-center justify-center text-white/60 hover:text-white transition-colors"
           >
             <FaBell size={16} />
             {unreadCount > 0 && (
@@ -134,7 +142,7 @@ const Header = () => {
       {/* Mobile Offcanvas */}
       <AnimatePresence>
         {isOffcanvasOpen && (
-          <div className="fixed inset-0 z-[1100]">
+          <div className="fixed inset-0 z-[1100] overflow-hidden">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsOffcanvasOpen(false)}
@@ -143,7 +151,8 @@ const Header = () => {
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 250 }}
-              className="absolute top-0 right-0 h-full w-full max-w-sm bg-[#0D0D0D] border-l border-white/10 flex flex-col p-8 overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-0 right-0 bottom-0 w-full max-w-sm bg-[#0D0D0D] border-l border-white/10 flex flex-col p-8 overflow-y-auto shadow-2xl"
             >
               <div className="flex justify-between items-center mb-10">
                 <Link to="/" className="flex items-center gap-2.5">
@@ -185,15 +194,16 @@ const Header = () => {
                         ))}
                       </div>
                     )}
-                    <Link
-                      to="/notifications"
-                      onClick={() => setIsOffcanvasOpen(false)}
-                      className="flex items-center gap-4 py-3.5 px-4 rounded-xl text-primary bg-primary/5 border border-primary/10 text-sm font-black italic tracking-widest uppercase transition-all"
-                    >
-                      <FaBell size={14} /> Notifications
-                    </Link>
                   </div>
                 ))}
+
+                <Link
+                  to="/notifications"
+                  onClick={() => setIsOffcanvasOpen(false)}
+                  className="flex items-center gap-4 py-3.5 px-4 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                >
+                  <FaBell size={14} className="text-primary" /> Notifications
+                </Link>
               </nav>
 
               <div className="mt-auto pt-8 border-t border-white/10">

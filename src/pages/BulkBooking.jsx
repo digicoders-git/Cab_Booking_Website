@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaCar, FaCalendarAlt, FaClock, FaMapMarkerAlt,
@@ -9,6 +10,7 @@ import PageHeader from '../components/PageHeader';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
 const BulkBooking = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCars, setSelectedCars] = useState([]);
@@ -237,7 +239,7 @@ if (success) {
           You will receive a notification as soon as a Fleet owner accepts your deal.
         </p>
         <button
-          onClick={() => window.location.href = '/my-booking'}
+          onClick={() => navigate('/my-bulk-bookings')}
           className="w-full py-4 bg-primary text-black font-bold rounded-xl hover:shadow-[0_0_20px_rgba(255,182,0,0.4)] transition-all"
         >
           Track My Requests

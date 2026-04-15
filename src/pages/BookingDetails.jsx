@@ -382,12 +382,12 @@ const BookingDetails = () => {
     const canCancel = ['Pending', 'Accepted', 'Ongoing', 'pending', 'accepted', 'ongoing'].includes(booking.bookingStatus || booking.status);
 
     return (
-        <div className="bg-[#060606] min-h-screen pt-[130px] pb-10">
-            <div className="container mx-auto px-4 max-w-7xl h-auto md:h-[calc(100vh-180px)]">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+        <div className="bg-[#060606] min-h-screen pt-[70px] md:pt-[130px] pb-0 md:pb-10">
+            <div className="container mx-auto px-0 md:px-4 max-w-7xl h-full md:h-[calc(100vh-180px)]">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 md:gap-8 h-full">
 
                     {/* LEFT SIDE: THE LIVE MAP (DYNAMIC & INTERACTIVE) */}
-                    <div className="lg:col-span-7 h-[50vh] md:h-full relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+                    <div className="lg:col-span-7 h-[60vh] md:h-full relative rounded-none md:rounded-[3.5rem] overflow-hidden border-b md:border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
                         <div ref={mapRef} className="w-full h-full" />
 
                         {/* Floating Navigation Controls */}
@@ -408,10 +408,10 @@ const BookingDetails = () => {
                     </div>
 
                     {/* RIGHT SIDE: THE CONTENT DASHBOARD (BLACK & YELLOW) */}
-                    <div className="lg:col-span-5 flex flex-col gap-6 overflow-y-auto no-scrollbar scroll-smooth pr-1 h-full">
+                    <div className="lg:col-span-5 flex flex-col gap-4 md:gap-6 overflow-y-auto md:overflow-visible no-scrollbar scroll-smooth p-4 md:p-0 h-full">
 
                         {/* 1. MAIN SUMMARY HEADER - COMPACT & SIMPLE */}
-                        <div className="bg-[#111] p-15 rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
+                        <div className="bg-[#111] p-6 md:p-15 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
                             <div>
                                 <h2 className="text-white font-black text-xl mb-1 uppercase tracking-wider">Ride Summary</h2>
                                 <div className="flex flex-wrap items-center gap-3">

@@ -89,7 +89,7 @@ const Booking = () => {
     <>
       <PageHeader title="Book a Ride" breadcrumb="Booking" />
 
-      <section className="min-h-screen bg-[#0a0a0a] py-16 px-4">
+      <section className="min-h-screen bg-[#0a0a0a] py-16 px-1 sm:px-4">
         <div className="max-w-lg mx-auto">
 
           {/* Header */}
@@ -98,7 +98,7 @@ const Booking = () => {
               <FaBolt className="text-primary text-xs" />
               <span className="text-primary text-xs font-bold tracking-widest uppercase">Instant Booking</span>
             </div>
-            <h1 className="text-4xl font-black text-white" style={{ fontFamily: 'Syne, sans-serif' }}>Where to?</h1>
+            <h1 className="text-2xl sm:text-4xl font-black text-white" style={{ fontFamily: 'Syne, sans-serif' }}>Where to?</h1>
             <p className="text-white/40 text-sm mt-2">Book in seconds, ride in minutes</p>
           </motion.div>
 

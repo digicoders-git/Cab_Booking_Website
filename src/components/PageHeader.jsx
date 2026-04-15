@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const PageHeader = ({ title, breadcrumb }) => {
   return (
-    <div className="relative pt-24 pb-12 lg:pt-40 lg:pb-20 bg-[#0A0A0A] overflow-hidden border-b border-white/8">
+    <div className="relative pt-32 pb-12 lg:pt-40 lg:pb-20 bg-[#0A0A0A] overflow-hidden border-b border-white/8">
       {/* Background glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[500px] h-[200px] bg-primary/8 rounded-full blur-[100px]" />

@@ -22,14 +22,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
 
           {/* Brand */}
-          <div className="space-y-6">
-            <Link to="/" className="flex items-center ">
+          <div className="flex flex-col items-center text-center sm:items-start sm:text-left space-y-6">
+            <Link to="/" className="flex items-center justify-center sm:justify-start">
               <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
             </Link>
-            <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+            <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
               Fast, safe, and reliable cab service available 24/7. Your comfort is our priority — KwikCabs .
             </p>
-            <div className="space-y-3">
+            <div className="space-y-3 flex flex-col items-center sm:items-start">
               {[
                 { icon: FaPhoneAlt, text: '+91 7310221010', href: 'tel:+917310221010' },
                 { icon: FaPhoneAlt, text: '+91 7310231010', href: 'tel:+917310231010' },
@@ -45,9 +45,9 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
             <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Quick Links</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex flex-col items-center sm:items-start">
               {[
                 { to: '/', label: 'Home' },
                 { to: '/about', label: 'About' },
@@ -67,9 +67,9 @@ const Footer = () => {
           </div>
 
           {/* Support */}
-          <div>
+          <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
             <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Support</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex flex-col items-center sm:items-start">
               {[
                 { to: '/privacy-policy', label: 'Privacy Policy' },
                 { to: '/terms-of-service', label: 'Terms of Service' },
@@ -85,9 +85,9 @@ const Footer = () => {
           </div>
 
           {/* Newsletter */}
-          <div>
+          <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
             <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Newsletter</h3>
-            <p className="text-white/40 text-sm mb-6 leading-relaxed">
+            <p className="text-white/40 text-sm mb-6 leading-relaxed mx-auto sm:mx-0">
               Get the latest updates, offers and news delivered to your inbox.
             </p>
             <div className="space-y-3">

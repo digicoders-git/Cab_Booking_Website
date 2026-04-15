@@ -109,8 +109,9 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   font-family: "Plus Jakarta Sans", sans-serif !important;
   z-index: 11000 !important;
-  min-width: 450px !important;
-  max-width: 90% !important;
+  min-width: 150px !important;
+  width: auto !important;
+  max-width: 92vw !important;
   max-height: 250px !important;
   overflow-y: auto !important;
 }
