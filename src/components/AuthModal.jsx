@@ -23,7 +23,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }) => {
         setError(null);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/users/login`, {
+            const res = await fetch(`${API_BASE_URL}/api/users/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(authData)

@@ -38,7 +38,7 @@ const BookingDetails = () => {
         if (!bookingId) return;
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -342,7 +342,7 @@ const BookingDetails = () => {
     const handleCancel = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${API_BASE_URL}/bookings/cancel/${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/bookings/cancel/${bookingId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -44,7 +44,7 @@ const BulkBooking = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const response = await fetch(`${API_BASE_URL}/bulk-bookings/my-requests`, {
+      const response = await fetch(`${API_BASE_URL}/api/bulk-bookings/my-requests`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
@@ -113,7 +113,7 @@ const BulkBooking = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/car-categories/active`);
+      const response = await fetch(`${API_BASE_URL}/api/car-categories/active`);
       const data = await response.json();
       if (data.success) {
         // Filter categories that have bulk price set
@@ -179,7 +179,7 @@ const handleSubmit = async (e) => {
       notes: formData.notes
     };
 
-    const response = await fetch(`${API_BASE_URL}/bulk-bookings/create`, {
+    const response = await fetch(`${API_BASE_URL}/api/bulk-bookings/create`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -208,7 +208,7 @@ const handleCancel = async (id) => {
     
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/bulk-bookings/cancel/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/bulk-bookings/cancel/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });

@@ -93,7 +93,7 @@ const MyBulkBookings = () => {
             if (isRefresh) setRefreshing(true);
             else setLoading(true);
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/bulk-bookings/my-requests`, {
+            const res = await fetch(`${API_BASE_URL}/api/bulk-bookings/my-requests`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -129,7 +129,7 @@ const MyBulkBookings = () => {
         setCancellingId(id);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/bulk-bookings/cancel/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/bulk-bookings/cancel/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
