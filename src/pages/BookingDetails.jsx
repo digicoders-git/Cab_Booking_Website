@@ -31,7 +31,7 @@ const BookingDetails = () => {
     const directionsRenderer = useRef(null);
     const directionsService = useRef(null);
 
-    const backendServer = API_BASE_URL.replace('/api', '');
+    const backendServer = API_BASE_URL.replace(/\/api$/, '');
 
     // 1. Initial Fetch
     const fetchBooking = async () => {
