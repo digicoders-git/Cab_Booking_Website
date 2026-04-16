@@ -479,11 +479,11 @@ return (
               <button
                 disabled={selectedCars.length === 0 || loading || !formData.pickup}
                 onClick={handleSubmit}
-                className="w-full group relative py-4 bg-primary text-black font-extrabold rounded-xl overflow-hidden transition-all disabled:opacity-30 disabled:grayscale"
+                className="w-full group relative py-3.5 sm:py-4 bg-primary text-black text-sm sm:text-base font-extrabold rounded-xl overflow-hidden transition-all disabled:opacity-30 disabled:grayscale"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {loading ? 'Processing...' : 'Place Request on Marketplace'}
-                  {!loading && <FaChevronRight className="group-hover:translate-x-1 transition-transform" />}
+                  {!loading && <FaChevronRight className="group-hover:translate-x-1 transition-transform shrink-0" />}
                 </span>
                 <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
               </button>

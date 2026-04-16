@@ -53,6 +53,8 @@ const Footer = () => {
                 { to: '/about', label: 'About' },
                 { to: '/fleet', label: 'Our Fleet' },
                 { to: '/services', label: 'Services' },
+                { to: '/bulk-booking', label: 'Bulk Booking' },
+                { to: '/my-bulk-bookings', label: 'My Bulk Rides' },
                 { to: '/my-booking', label: 'My Rides' },
                 { to: '/support', label: 'Support' },
               ].map(({ to, label }) => (
@@ -86,19 +88,21 @@ const Footer = () => {
 
           {/* Newsletter */}
           <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
-            <h3 className="text-white font-bold text-sm uppercase tracking-widest mb-6" style={{ fontFamily: 'Syne, sans-serif' }}>Newsletter</h3>
-            <p className="text-white/40 text-sm mb-6 leading-relaxed mx-auto sm:mx-0">
-              Get the latest updates, offers and news delivered to your inbox.
+            <h3 className="text-white font-bold text-[10px] uppercase tracking-[0.3em] mb-4 opacity-70" style={{ fontFamily: 'Syne, sans-serif' }}>Stay Updated</h3>
+            <p className="text-white/40 text-[13px] mb-6 leading-relaxed max-w-[260px] mx-auto sm:mx-0">
+              Get the latest updates and exclusive offers delivered to your inbox.
             </p>
-            <div className="space-y-3">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="w-full bg-white/5 border border-white/10 text-white py-3.5 px-5 rounded-2xl outline-none focus:border-primary transition-all text-sm placeholder:text-white/30"
-              />
-              <button className="w-full bg-primary text-black font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 hover:bg-accent transition-all text-sm">
-                Subscribe <FaPaperPlane size={12} />
-              </button>
+            <div className="w-full max-w-[320px] sm:max-w-none group">
+              <div className="relative flex items-center p-1.5 bg-white/5 border border-white/10 rounded-2xl focus-within:border-primary/40 transition-all duration-300">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  className="w-full bg-transparent text-white py-2.5 px-4 outline-none text-sm placeholder:text-white/20"
+                />
+                <button className="bg-primary hover:bg-white text-black font-bold py-2.5 px-5 rounded-xl flex items-center justify-center gap-2 transition-all text-xs shrink-0 shadow-xl shadow-primary/5">
+                  Join <FaPaperPlane size={10} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -132,9 +136,9 @@ const Footer = () => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.5 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-20 right-8 w-12 h-12 bg-primary text-black rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/30 z-[999] hover:bg-accent hover:scale-110 transition-all"
+            className="fixed bottom-8 right-4 sm:bottom-20 sm:right-8 w-10 h-10 sm:w-12 sm:h-12 bg-primary text-black rounded-xl sm:rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/30 z-[999] hover:bg-accent hover:scale-110 transition-all"
           >
-            <FaArrowUp size={16} />
+            <FaArrowUp size={14} className="sm:size-4" />
           </motion.button>
         )}
       </AnimatePresence>

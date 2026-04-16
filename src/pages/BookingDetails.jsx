@@ -526,20 +526,24 @@ const BookingDetails = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white/30 border border-white/5">
+                                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-3 overflow-hidden">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white/30 border border-white/5 shrink-0">
                                                 <FaCar size={16} />
                                             </div>
-                                            <div>
+                                            <div className="min-w-0 flex flex-col">
                                                 <span className="text-white/20 text-[8px] font-black uppercase tracking-widest block mb-0.5">Vehicle</span>
-                                                <span className="text-white font-bold text-[10px] uppercase tracking-tighter leading-none">{booking.assignedDriver.carDetails.carModel}</span>
+                                                <span className="text-white font-bold text-[11px] uppercase tracking-tighter leading-none truncate">
+                                                    {booking.assignedDriver.carDetails.carModel}
+                                                </span>
                                             </div>
                                         </div>
-                                        <span className="bg-primary px-3 py-1.5 text-black font-black text-[10px] rounded-lg tracking-widest shadow-lg shadow-primary/10 whitespace-nowrap">{booking.assignedDriver.carDetails.carNumber}</span>
+                                        <span className="bg-primary px-3 py-1.5 text-black font-black text-[10px] rounded-lg tracking-widest shadow-lg shadow-primary/10 shrink-0 tabular-nums">
+                                            {booking.assignedDriver.carDetails.carNumber}
+                                        </span>
                                     </div>
 
-                                    <div className="flex gap-3">
+                                    <div className="flex gap-2 sm:gap-3">
                                         <a
                                             href={`tel:${booking.assignedDriver.phone}`}
                                             className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary transition-all flex-shrink-0"
@@ -549,9 +553,10 @@ const BookingDetails = () => {
                                         </a>
                                         <a
                                             href={`sms:${booking.assignedDriver.phone}`}
-                                            className="flex-1 h-12 bg-primary text-black rounded-xl flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-95"
+                                            className="flex-1 h-12 bg-primary text-black rounded-xl flex items-center justify-center gap-2 font-black text-[9px] xs:text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-95"
                                         >
-                                            <FaCommentDots size={16} /> Send Message
+                                            <FaCommentDots size={16} className="hidden xs:block" />
+                                            <span>Send Message</span>
                                         </a>
                                         {canCancel && (
                                             <button
