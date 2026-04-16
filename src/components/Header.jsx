@@ -64,6 +64,7 @@ const Header = () => {
   };
 
   return (
+    <>
     <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl' : 'bg-transparent'}`}>
       <div className="container mx-auto 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8 flex justify-between items-center py-2 lg:py-3">
 
@@ -139,81 +140,86 @@ const Header = () => {
 
 
 
-      {/* Mobile Offcanvas */}
+    </header>
+
+      {/* Mobile Offcanvas — header ke BAHAR, body level pe */}
       <AnimatePresence>
         {isOffcanvasOpen && (
-          <div className="fixed inset-0 z-[1100] overflow-hidden">
+          <div className="fixed inset-0 z-[500000]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsOffcanvasOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(4px)' }}
             />
+            {/* Sidebar Panel */}
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 250 }}
               onClick={(e) => e.stopPropagation()}
-              className="absolute top-0 right-0 bottom-0 w-full max-w-sm bg-[#0D0D0D] border-l border-white/10 flex flex-col p-8 overflow-y-auto shadow-2xl"
+              style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: '360px', background: '#0D0D0D', borderLeft: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', padding: '2rem', overflowY: 'auto', overflowX: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}
             >
-              <div className="flex justify-between items-center mb-10">
-                <Link to="/" className="flex items-center gap-2.5">
-                  <img src={logo} alt="KwikCabs  Logo" className="h-16 w-auto object-contain" />
+              {/* Logo + Close */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                <Link to="/" onClick={() => setIsOffcanvasOpen(false)}>
+                  <img src={logo} alt="KwikCabs Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain' }} />
                 </Link>
                 <button
                   onClick={() => setIsOffcanvasOpen(false)}
-                  className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                  style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: 'none', cursor: 'pointer' }}
                 >
                   <FaTimes size={14} />
                 </button>
               </div>
 
-
-
-              <nav className="space-y-1">
+              {/* Nav Links */}
+              <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {navLinks.map((link, idx) => (
-                  <div key={idx}>
-                    <Link
-                      to={link.path}
-                      onClick={() => setIsOffcanvasOpen(false)}
-                      className="flex items-center justify-between py-3.5 px-4 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
-                    >
-                      {link.name}
-                      {link.hasDropdown && <FaChevronDown size={10} className="text-white/30" />}
-                    </Link>
-                    {link.hasDropdown && (
-                      <div className="pl-4 space-y-1 mb-2">
-                        {link.subItems.map((sub, sIdx) => (
-                          <Link
-                            key={sIdx}
-                            to={sub.path}
-                            onClick={() => setIsOffcanvasOpen(false)}
-                            className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-white/40 hover:text-white/70 text-xs transition-colors"
-                          >
-                            <span className="text-primary">{sub.icon}</span>
-                            {sub.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Link
+                    key={idx}
+                    to={link.path}
+                    onClick={() => setIsOffcanvasOpen(false)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '14px 16px', borderRadius: '12px',
+                      color: isActive(link.path) ? '#FFD60A' : 'rgba(255,255,255,0.7)',
+                      fontSize: '15px', fontWeight: '500', textDecoration: 'none',
+                      background: isActive(link.path) ? 'rgba(255,214,10,0.08)' : 'transparent',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {link.name}
+                  </Link>
                 ))}
 
                 <Link
                   to="/notifications"
                   onClick={() => setIsOffcanvasOpen(false)}
-                  className="flex items-center gap-4 py-3.5 px-4 rounded-xl text-white/70 hover:text-white hover:bg-white/5 text-sm font-medium transition-all"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '14px 16px', borderRadius: '12px',
+                    color: 'rgba(255,255,255,0.7)', fontSize: '15px',
+                    fontWeight: '500', textDecoration: 'none', transition: 'all 0.2s'
+                  }}
                 >
-                  <FaBell size={14} className="text-primary" /> Notifications
+                  <FaBell size={14} style={{ color: '#FFD60A' }} /> Notifications
                 </Link>
               </nav>
 
-              <div className="mt-auto pt-8 border-t border-white/10">
-                <div className="space-y-3 text-sm text-white/40">
-                  <div className="flex items-center gap-3"><FaEnvelope className="text-primary" /> info@example.com</div>
-                  <div className="flex items-center gap-3"><FaPhoneAlt className="text-primary" /> +2 123 654 7898</div>
+              {/* Footer Info */}
+              <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
+                    <FaEnvelope style={{ color: '#FFD60A', flexShrink: 0 }} /> basantktv@gmail.com
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
+                    <FaPhoneAlt style={{ color: '#FFD60A', flexShrink: 0 }} /> +91 7310221010
+                  </div>
+
                 </div>
-                <div className="flex gap-3 mt-6">
+                <div style={{ display: 'flex', gap: '10px' }}>
                   {[FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn].map((Icon, i) => (
-                    <a key={i} href="#" className="w-9 h-9 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/50 hover:text-primary hover:border-primary/40 transition-all">
+                    <a key={i} href="#" style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
                       <Icon size={13} />
                     </a>
                   ))}
@@ -223,7 +229,7 @@ const Header = () => {
           </div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 };
 

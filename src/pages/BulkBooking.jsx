@@ -260,45 +260,51 @@ return (
         <div className="lg:col-span-8 space-y-8">
 
           {/* Step 1: Car Selection */}
-          <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 transition-all ${step === 1 ? 'border-primary/50' : ''}`}>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center font-bold">1</div>
-              <h3 className="text-xl font-bold text-white">Select Your Fleet</h3>
+          <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-5 sm:p-8 transition-all ${step === 1 ? 'border-primary/50' : ''}`}>
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-black flex items-center justify-center font-bold text-sm shrink-0">1</div>
+              <h3 className="text-lg sm:text-xl font-bold text-white">Select Your Fleet</h3>
             </div>
 
             {loading ? (
               <div className="h-40 flex items-center justify-center text-white/30">Loading approved cars...</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {(categories || []).map((cat) => (
                   <motion.div
                     key={cat._id}
-                    whileHover={{ scale: 1.02 }}
-                    className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-center justify-between"
+                    whileHover={{ scale: 1.01 }}
+                    className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3"
                   >
-                    <div className="flex items-center gap-4">
-                      <img src={`${BASE_URL}/uploads/${cat.image}`} alt={cat.name} className="w-16 h-12 object-contain rounded-lg bg-black/50 p-2" />
-                      <div>
-                        <h4 className="text-white font-bold">{cat.name}</h4>
-                        <p className="text-primary text-xs font-semibold">Admin Base: ₹{cat.bulkBookingBasePrice || 1000}/km</p>
+                    {/* Left: Image + Info */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <img
+                        src={`${BASE_URL}/uploads/${cat.image}`}
+                        alt={cat.name}
+                        className="w-14 h-10 sm:w-16 sm:h-12 object-contain rounded-lg bg-black/50 p-1.5 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="text-white font-bold text-sm truncate">{cat.name}</h4>
+                        <p className="text-primary text-[11px] font-semibold">₹{cat.bulkBookingBasePrice || 1000}/km</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    {/* Right: Counter */}
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleRemoveCar(cat._id)}
                         className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
                       >
-                        <FaMinus size={12} />
+                        <FaMinus size={11} />
                       </button>
-                      <span className="text-white font-bold w-4 text-center">
+                      <span className="text-white font-bold w-5 text-center text-sm">
                         {selectedCars.find(c => c.id === cat._id)?.quantity || 0}
                       </span>
                       <button
                         onClick={() => handleAddCar(cat)}
                         className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-colors"
                       >
-                        <FaPlus size={12} />
+                        <FaPlus size={11} />
                       </button>
                     </div>
                   </motion.div>
@@ -498,95 +504,7 @@ return (
 
       </div>
 
-      {/* --- Recent Requests Section --- */}
-      <div className="mt-20">
-        <div className="flex items-center justify-between mb-8">
-            <div>
-                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <FaTruck className="text-primary" /> My Recent Requests
-                </h2>
-                <p className="text-white/40 text-sm">Track your live marketplace deals and assignments.</p>
-            </div>
-            <button onClick={fetchMyRequests} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/50 hover:text-white transition-all text-xs">
-                Refresh Status
-            </button>
-        </div>
 
-        {(!myRequests || myRequests.length === 0) ? (
-            <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl p-10 text-center text-white/20 italic">
-                No recent bulk booking requests found.
-            </div>
-        ) : (
-            <div className="bg-[#0A0A0A] border border-white/5 rounded-3xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-white/5 text-[10px] uppercase tracking-widest text-white/40 font-bold">
-                                <th className="p-6">Date & ID</th>
-                                <th className="p-6">Route</th>
-                                <th className="p-6">Requirement</th>
-                                <th className="p-6">Offered Price</th>
-                                <th className="p-6">Status</th>
-                                <th className="p-6">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-sm">
-                            {(myRequests || []).map((req) => (
-                                <tr key={req._id} className="hover:bg-white/[0.02] transition-colors">
-                                    <td className="p-6">
-                                        <p className="text-white font-bold">{new Date(req.pickupDateTime).toLocaleDateString()}</p>
-                                        <p className="text-[10px] text-white/30 font-mono">#{req._id.slice(-6).toUpperCase()}</p>
-                                    </td>
-                                    <td className="p-6 max-w-xs">
-                                        <div className="flex items-center gap-2 text-white/70">
-                                            <FaMapMarkerAlt className="text-primary shrink-0" size={12} />
-                                            <span className="truncate">{req.pickup.address}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-white/30 mt-1">
-                                            <FaChevronRight size={10} />
-                                            <span className="truncate">{req.drop.address}</span>
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <div className="flex flex-wrap gap-1">
-                                            {req.carsRequired.map((car, idx) => (
-                                                <span key={idx} className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/50 border border-white/10 uppercase">
-                                                    {car.quantity}x {car.category?.name}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="p-6">
-                                        <p className="text-primary font-black">₹{req.offeredPrice.toLocaleString()}</p>
-                                        <p className="text-[10px] text-white/30">{req.totalDistance} KM Package</p>
-                                    </td>
-                                    <td className="p-6">
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-                                            req.status === 'Marketplace' ? 'bg-orange-500/10 text-orange-500' :
-                                            req.status === 'Accepted' ? 'bg-green-500/10 text-green-500' :
-                                            'bg-white/5 text-white/40'
-                                        }`}>
-                                            {req.status}
-                                        </span>
-                                    </td>
-                                    <td className="p-6">
-                                        {req.status === 'Marketplace' && (
-                                            <button 
-                                                onClick={() => handleCancel(req._id)}
-                                                className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                                            >
-                                                <FaTimes />
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        )}
-      </div>
 
     </div>
   </div>

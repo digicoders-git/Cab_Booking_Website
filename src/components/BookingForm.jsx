@@ -871,11 +871,11 @@ const BookingForm = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-7xl h-full md:h-[90vh] bg-[#0a0a0a] md:rounded-3xl border-0 md:border border-white/10 overflow-hidden flex flex-col md:flex-row"
+              className="relative w-full max-w-7xl h-[100dvh] md:h-[90vh] bg-[#0a0a0a] md:rounded-3xl border-0 md:border border-white/10 overflow-hidden flex flex-col md:flex-row"
             >
               {/* Left Side: Map Container */}
-              <div className="flex-1 relative order-1 md:order-1 h-[115vh] md:h-full border-b md:border-b-0 md:border-r border-white/10">
-                <div ref={mapRef} className="w-full h-full" />
+              <div className="flex-1 relative order-1 md:order-1 min-h-[55%] md:min-h-full border-b md:border-b-0 md:border-r border-white/10">
+                <div ref={mapRef} className="w-full h-full absolute inset-0" />
 
                 {/* Float Close Button for Mobile */}
                 <button
@@ -1236,10 +1236,10 @@ const BookingForm = () => {
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="w-full max-w-7xl h-full md:h-[90vh] bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
+              className="w-full max-w-7xl h-[100dvh] md:h-[90vh] bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row"
             >
               {/* Left Side: Map Section (2/3 Width) */}
-              <div className="w-full md:w-[66%] h-[115vh] md:h-full relative border-r border-white/5 bg-gray-900 flex items-center justify-center overflow-hidden">
+              <div className="flex-1 w-full md:w-[66%] min-h-[55%] md:min-h-full relative border-r border-white/5 bg-gray-900 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0">
                   <div ref={previewMapRef} className="w-full h-full" />
                 </div>
@@ -1353,11 +1353,11 @@ const BookingForm = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-6xl h-full md:h-[80vh] bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[4rem] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row shadow-2xl"
+              className="relative w-full max-w-6xl h-[100dvh] md:h-[80vh] bg-[#0a0a0a] border-0 md:border border-white/10 rounded-none md:rounded-[4rem] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row shadow-2xl"
             >
               {/* Left Side: Map Preview (1/2 or 3/5 Width) */}
-              <div className="w-full md:w-[60%] h-[115vh] md:h-full relative border-r border-white/5 bg-gray-900 overflow-hidden">
-                <div ref={summaryMapRef} className="w-full h-full" />
+              <div className="flex-1 w-full md:w-[60%] min-h-[55%] md:min-h-full relative border-r border-white/5 bg-gray-900 overflow-hidden">
+                <div ref={summaryMapRef} className="absolute inset-0 w-full h-full" />
                 <div className="hidden md:flex absolute top-6 left-6 z-10">
                   <div className="bg-black/80 backdrop-blur-md px-4 py-2 mt-2 rounded-2xl border border-white/10 flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />

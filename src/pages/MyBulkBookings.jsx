@@ -64,14 +64,14 @@ const StatCard = ({ label, value, icon, color }) => (
     <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#111] border border-white/5 rounded-2xl p-5 flex items-center gap-4"
+        className="bg-[#111] border border-white/5 rounded-2xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4"
     >
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color}`}>
+        <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
             {icon}
         </div>
-        <div>
-            <p className="text-2xl font-black text-white">{value}</p>
-            <p className="text-[10px] text-white/30 uppercase font-bold tracking-widest">{label}</p>
+        <div className="min-w-0">
+            <p className="text-xl sm:text-2xl font-black text-white leading-none">{value}</p>
+            <p className="text-[9px] sm:text-[10px] text-white/30 uppercase font-bold tracking-widest mt-1 leading-tight">{label}</p>
         </div>
     </motion.div>
 );
@@ -161,7 +161,7 @@ const MyBulkBookings = () => {
         <div className="bg-[#080808] min-h-screen">
 
             {/* ── HERO HEADER ── */}
-            <div className="relative overflow-hidden bg-[#0a0a0a] border-b border-white/5 pt-28 pb-14 px-4 mt-10">
+            <div className="relative overflow-hidden bg-[#0a0a0a] border-b border-white/5 pt-28 pb-10 px-4">
                 {/* glow blobs */}
                 <div className="absolute -top-32 -left-32 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
                 <div className="absolute -bottom-20 right-0 w-72 h-72 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -195,7 +195,7 @@ const MyBulkBookings = () => {
                     </div>
 
                     {/* Stats Row */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-8 sm:mt-10">
                         <StatCard label="Total Requests" value={stats.total} icon={<FaTruck size={18} />} color="bg-white/5 text-white/40" />
                         <StatCard label="Live on Market" value={stats.live} icon={<FaHourglassHalf size={18} />} color="bg-amber-400/10 text-amber-400" />
                         <StatCard label="Accepted" value={stats.accepted} icon={<FaCheckCircle size={18} />} color="bg-green-400/10 text-green-400" />
