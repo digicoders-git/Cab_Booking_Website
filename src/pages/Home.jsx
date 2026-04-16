@@ -21,9 +21,9 @@ const Home = () => {
       <CarFleet />
       <WhyChooseUs />
       {/* <ExpertDrivers /> */}
-      <QualityServiceSection />
-      <FaqSection />
-      {/* <AppDownload /> */}
+      {/* <QualityServiceSection /> */}
+      {/* <FaqSection /> */}
+      <AppDownload />
       <Testimonials />
       <BlogSection />
       <PartnersSection />
