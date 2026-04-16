@@ -85,7 +85,7 @@ const BookingDetails = () => {
             if (window.timerInterval) clearInterval(window.timerInterval);
         };
     }, [booking]);
-    
+
 
     // 2. Map Initialization
     useEffect(() => {
@@ -269,7 +269,7 @@ const BookingDetails = () => {
         socket.on('connect', () => {
             setIsConnected(true);
             console.log("Socket Connected ✅");
-            
+
             // Join Room - Only after connection
             const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
             const userId = localStorage.getItem('userId') || storedUser?._id;
@@ -387,16 +387,16 @@ const BookingDetails = () => {
     const canCancel = ['Pending', 'Accepted', 'Ongoing', 'pending', 'accepted', 'ongoing'].includes(booking.bookingStatus || booking.status);
 
     return (
-        <div className="bg-[#060606] min-h-screen pt-[70px] md:pt-[130px] pb-0 md:pb-10">
+        <div className="bg-[#060606] min-h-screen pt-[85px] md:pt-[130px] pb-0 md:pb-10">
             <div className="container mx-auto px-0 md:px-4 max-w-7xl h-full md:h-[calc(100vh-180px)]">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 md:gap-8 h-full">
 
                     {/* LEFT SIDE: THE LIVE MAP (DYNAMIC & INTERACTIVE) */}
-                    <div className="lg:col-span-7 h-[60vh] md:h-full relative rounded-none md:rounded-[3.5rem] overflow-hidden border-b md:border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)]">
+                    <div className="lg:col-span-7 h-[50vh] md:h-full sticky md:relative top-0 md:top-auto z-[60] md:z-auto w-full mt-0 mx-0 rounded-none md:rounded-[3.5rem] overflow-hidden border-b border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                         <div ref={mapRef} className="w-full h-full" />
 
                         {/* Floating Navigation Controls */}
-                        <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
+                        <div className="absolute top-6 left-6 z-10 hidden md:flex flex-col gap-3">
                             <button onClick={() => window.history.back()} className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl flex items-center justify-center text-black hover:scale-105 active:scale-95 transition-all">
                                 <FaChevronLeft size={16} />
                             </button>
@@ -404,7 +404,7 @@ const BookingDetails = () => {
 
                         </div>
 
-                        <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+                        <div className="absolute top-6 right-6 z-10 hidden md:flex items-center gap-3">
                             <div className={`px-4 py-2.5 rounded-full backdrop-blur-md border ${isConnected ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} flex items-center gap-2 shadow-2xl`}>
                                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                                 <span className="text-[9px] font-black uppercase tracking-widest">{isConnected ? 'Live' : 'Offline'}</span>
@@ -413,32 +413,71 @@ const BookingDetails = () => {
                     </div>
 
                     {/* RIGHT SIDE: THE CONTENT DASHBOARD (BLACK & YELLOW) */}
-                    <div className="lg:col-span-5 flex flex-col gap-4 md:gap-6 overflow-y-auto md:overflow-visible no-scrollbar scroll-smooth p-4 md:p-0 h-full">
+                    <div className="lg:col-span-5 flex flex-col gap-4 md:gap-6 overflow-y-auto no-scrollbar scroll-smooth p-4 md:p-0 h-full md:pb-10">
 
                         {/* 1. MAIN SUMMARY HEADER - COMPACT & SIMPLE */}
-                        <div className="bg-[#111] p-6 md:p-15 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
-                            <div>
-                                <h2 className="text-white font-black text-xl mb-1 uppercase tracking-wider">Ride Summary</h2>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <span className="text-primary font-black text-[9px] uppercase tracking-widest leading-none">{booking.rideType || "Private"} Ride</span>
-                                    <span className="text-white/20 text-[9px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
-                                    <span className="bg-cyan-500/15 text-cyan-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cyan-500/20 flex items-center gap-2 shadow-lg shadow-cyan-500/5">
-                                        <FaFingerprint className="text-cyan-500 text-[12px]" />
-                                        OTP: {booking.tripData?.startOtp || booking.otp || (isPending ? "SEARCHING..." : "---")}
-                                    </span>
+                        <div className="bg-[#111] p-5 md:p-15 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 shadow-xl">
+
+                            <div className="w-full md:w-auto flex justify-between items-start md:block">
+                                <div>
+                                    <h2 className="text-white font-black text-lg md:text-xl mb-1.5 md:mb-1 uppercase tracking-wider">Ride Summary</h2>
+                                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                                        <span className="bg-primary/10 border border-primary/20 px-2 py-1 rounded-md text-primary font-black text-[8px] md:text-[9px] uppercase tracking-widest leading-none">{booking.rideType || "Private"} Ride</span>
+                                        <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
+
+                                        {/* OTP Desktop Version */}
+                                        <span className="hidden md:flex bg-cyan-500/15 text-cyan-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cyan-500/20 items-center gap-2 shadow-lg shadow-cyan-500/5">
+                                            <FaFingerprint className="text-cyan-500 text-[12px]" />
+                                            OTP: {booking.tripData?.startOtp || booking.otp || (isPending ? "SEARCHING..." : "---")}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Mobile Status Box (Right aligned beside Title) */}
+                                <div className={`md:hidden px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest italic border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' :
+                                    (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                        (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' :
+                                            'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
+                                    {booking.bookingStatus || booking.status}
                                 </div>
                             </div>
-                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' :
+
+                            {/* Desktop Status Box */}
+                            <div className={`hidden md:block px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' :
                                 (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
                                     (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' :
                                         'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
                                 {booking.bookingStatus || booking.status}
                             </div>
+
+                            {/* Mobile OTP Box (Full width aesthetic ticket) */}
+                            <div className="md:hidden w-full bg-cyan-500/10 text-cyan-400 px-4 py-3.5 rounded-[1rem] text-[12px] font-black uppercase tracking-[0.2em] border border-cyan-500/20 flex items-center justify-between shadow-lg shadow-cyan-500/5 mt-1">
+                                <div className="flex items-center gap-2">
+                                    <FaFingerprint className="text-cyan-500 text-[18px]" />
+                                    <span className="text-white/60 text-[9px] tracking-widest">OTP SECURE PIN</span>
+                                </div>
+                                <span className="text-xl text-white leading-none tracking-[0.25em]">{booking.tripData?.startOtp || booking.otp || (isPending ? "---" : "---")}</span>
+                            </div>
                         </div>
 
                         {/* 2. ROUTE TRACKER DETAILS */}
-                        <div className="bg-[#111] p-8 rounded-[2.5rem] border border-white/5 shadow-xl">
-                            <div className="space-y-10 relative pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
+                        <div className="bg-[#111] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5 shadow-xl">
+                            {/* Mobile Layout (Sleek Phone Design) */}
+                            <div className="md:hidden space-y-6 relative pl-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-[2px] before:bg-gradient-to-b before:from-white/20 before:to-primary/40">
+                                <div className="relative">
+                                    <div className="absolute -left-[28.5px] top-1 w-5 h-5 bg-[#111] border-[3px] border-white rounded-full z-10 shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
+                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-[0.25em] mb-0.5">Pickup Point</p>
+                                    <h4 className="text-white/90 text-[13px] font-medium leading-tight">{booking.pickup?.address || booking.pickupAddress}</h4>
+                                </div>
+                                <div className="relative">
+                                    <div className="absolute -left-[28.5px] top-1 w-5 h-5 bg-[#111] border-[3px] border-primary rounded-full z-10 shadow-[0_0_10px_rgba(255,214,10,0.1)]" />
+                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-[0.25em] mb-0.5">Destination</p>
+                                    <h4 className="text-white/90 text-[13px] font-medium leading-tight">{booking.drop?.address || booking.dropAddress}</h4>
+                                </div>
+                            </div>
+
+                            {/* Desktop Layout (Original Pre-existing Design) */}
+                            <div className="hidden md:block space-y-10 relative pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
                                 {/* Pickup */}
                                 <div className="relative">
                                     <div className="absolute -left-[28px] top-1.5 w-6 h-6 bg-black border-2 border-white rounded-full z-10 flex items-center justify-center shadow-lg">
@@ -545,46 +584,34 @@ const BookingDetails = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
-                                                {/* Pulsing High-Fidelity Radar Effect */}
-                                                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-                                                <div className="absolute inset-[-10px] rounded-full bg-primary/10 animate-[ping_2s_infinite_offset]" />
-                                                <FaCar className="text-primary text-3xl relative z-10" />
-                                            </div>
+                                            {/* Minimal Clean Radar */}
+                                            <div className="flex flex-col items-center justify-center py-6">
+                                                {/* Clean Simple Icon */}
+                                                <div className="relative w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-lg">
+                                                    <div className="absolute inset-0 rounded-full border-t-2 border-primary animate-spin shadow-[0_0_15px_rgba(255,214,10,0.5)]" />
+                                                    <FaCar className="text-white/90 text-3xl" />
+                                                </div>
 
-                                            <div className="mb-6">
-                                                <div className="flex justify-between items-end mb-2">
-                                                    <p className="text-white font-black text-lg uppercase tracking-tighter italic">Searching Driver</p>
-                                                    <p className="text-primary font-black text-xl italic tabular-nums">
-                                                        {Math.floor(secondsRemaining / 60)}:{(secondsRemaining % 60).toString().padStart(2, '0')}
+                                                <h3 className="text-white/90 text-xl font-bold uppercase tracking-widest mb-3">Searching Driver</h3>
+
+                                                <div className="flex items-center gap-2 mb-8 bg-black/40 px-5 py-2.5 rounded-full border border-white/5 shadow-inner">
+                                                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                                        Est. Time: <span className="text-primary ml-1 text-[12px]">{Math.floor(secondsRemaining / 60)}:{(secondsRemaining % 60).toString().padStart(2, '0')}</span>
                                                     </p>
                                                 </div>
 
-                                                {/* Rapido-Style Linear Loader */}
-                                                <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden relative border border-white/5">
-                                                    <motion.div
-                                                        className="absolute top-0 bottom-0 w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent"
-                                                        animate={{
-                                                            left: ["-33%", "100%"]
-                                                        }}
-                                                        transition={{
-                                                            duration: 2.5,
-                                                            repeat: Infinity,
-                                                            ease: "linear"
-                                                        }}
-                                                    />
-                                                </div>
+                                                <p className="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em] text-center max-w-[250px] mb-8 leading-relaxed">
+                                                    Matching your request with top active partners nearby
+                                                </p>
+
+                                                {canCancel && (
+                                                    <button onClick={handleCancel} className="w-full sm:w-[90%] mx-auto py-3.5 bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-[1.2rem] flex items-center justify-center gap-3 transition-all active:scale-[0.98] group">
+                                                        <FaTimes size={12} className="text-white/40 group-hover:text-red-500 transition-colors" />
+                                                        <span className="text-white/60 group-hover:text-red-500 font-bold text-[9px] uppercase tracking-[0.3em] transition-colors">Cancel Request</span>
+                                                    </button>
+                                                )}
                                             </div>
-
-                                            <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest max-w-[280px] mx-auto leading-relaxed mb-6">
-                                                Matching your request with top active partners nearby...
-                                            </p>
-
-                                            {canCancel && (
-                                                <button onClick={handleCancel} className="w-full py-4 border border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white transition-all rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] active:scale-[0.98]">
-                                                    Cancel Request
-                                                </button>
-                                            )}
                                         </>
                                     )}
                                 </div>

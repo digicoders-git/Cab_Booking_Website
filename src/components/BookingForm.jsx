@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { API_BASE_URL, BASE_URL } from '../config/api';
-import { FaMapMarkerAlt, FaCheckCircle, FaTimes, FaUsers, FaUser, FaArrowRight, FaMobileAlt, FaDotCircle, FaSpinner, FaSearch, FaLocationArrow, FaTaxi, FaClock } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCheckCircle, FaTimes, FaUsers, FaUser, FaArrowRight, FaMobileAlt, FaDotCircle, FaSpinner, FaSearch, FaLocationArrow, FaTaxi, FaClock, FaCar } from 'react-icons/fa';
 
 const cars = [
   { id: 1, name: 'Economy Bike', emoji: '🛵', price: 15, eta: '3 min', capacity: 1, desc: 'Quick bike ride' },
@@ -952,14 +952,14 @@ const BookingForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-[10000] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-sm"
           >
             <div className="absolute inset-0 bg-black/80" onClick={() => { setShowPhoneModal(false); setStep('phone'); }} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative w-full max-w-[400px] bg-[#111] border border-white/10 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+              exit={{ opacity: 0, y: "100%" }}
+              className="relative w-full max-w-[400px] bg-[#111] border-t border-l border-r sm:border border-white/10 rounded-t-[2.5rem] sm:rounded-b-[2.5rem] rounded-b-none p-6 sm:p-8 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] sm:shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden pb-10 sm:pb-8"
             >
               {/* Background glow decorate */}
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 blur-[80px] rounded-full pointer-events-none" />
@@ -971,11 +971,11 @@ const BookingForm = () => {
               <AnimatePresence mode="wait">
                 {step === 'phone' ? (
                   <motion.div key="phone" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="relative z-10">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl flex items-center justify-center mb-6 shadow-lg shadow-primary/10">
-                      <FaMobileAlt className="text-primary text-2xl" />
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl sm:rounded-3xl flex items-center justify-center mb-5 sm:mb-6 shadow-lg shadow-primary/10">
+                      <FaMobileAlt className="text-primary text-xl sm:text-2xl" />
                     </div>
-                    <h3 className="text-white font-black text-3xl mb-2 tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Verify Mobile</h3>
-                    <p className="text-white/40 text-sm mb-8 leading-relaxed">We'll send a 4-digit code to verify your booking.</p>
+                    <h3 className="text-white font-black text-2xl sm:text-3xl mb-1 sm:mb-2 tracking-widest uppercase">Verify Mobile</h3>
+                    <p className="text-white/40 text-xs sm:text-sm mb-6 sm:mb-8 leading-relaxed">We'll send a 4-digit code to verify your booking.</p>
 
                     <form onSubmit={handleSendOtp} className="space-y-6">
                       <div className="space-y-2">
@@ -997,7 +997,7 @@ const BookingForm = () => {
                       <button
                         type="submit"
                         disabled={phone.length !== 10}
-                        className="w-full bg-primary text-black font-black py-5 rounded-[1.25rem] text-sm tracking-widest hover:bg-yellow-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-primary/20"
+                        className="w-full bg-primary text-black font-black py-4 sm:py-5 rounded-[1.25rem] text-xs sm:text-sm tracking-widest hover:bg-yellow-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-primary/20"
                       >
                         GET VERIFICATION CODE
                       </button>
@@ -1010,11 +1010,11 @@ const BookingForm = () => {
                   </motion.div>
                 ) : (
                   <motion.div key="otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="relative z-10">
-                    <button onClick={() => { setStep('phone'); setIsNewUserDetected(false); }} className="text-primary text-xs font-bold mb-6 hover:underline flex items-center gap-2 transition-all">
-                      <span className="text-base">←</span> Edit Number (+91 {phone})
+                    <button onClick={() => { setStep('phone'); setIsNewUserDetected(false); }} className="w-fit text-primary/80 hover:text-primary text-[10px] font-black uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-1.5 transition-all bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
+                      <span>←</span> Edit (+91 {phone})
                     </button>
-                    <h3 className="text-white font-black text-3xl mb-2 tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Enter Code</h3>
-                    <p className="text-white/40 text-sm mb-6 leading-relaxed">Enter the 4-digit code we've sent to your device.</p>
+                    <h3 className="text-white font-black text-2xl sm:text-3xl mb-1 tracking-widest uppercase">Enter Code</h3>
+                    <p className="text-white/40 text-xs sm:text-sm mb-6 leading-relaxed">Enter the code to verify your booking.</p>
 
                     <form onSubmit={handleVerifyOtp} className="space-y-6">
                       {/* Name and Email fields - show only if isNewUserDetected is true */}
@@ -1048,7 +1048,7 @@ const BookingForm = () => {
                         </motion.div>
                       )}
 
-                      <div className="flex gap-2 justify-between mb-8">
+                      <div className="flex gap-1.5 sm:gap-3 justify-center mb-8 w-full max-w-full">
                         {otp.map((digit, idx) => (
                           <input
                             key={idx}
@@ -1060,7 +1060,7 @@ const BookingForm = () => {
                             value={digit}
                             onChange={(e) => handleOtpChange(e.target.value, idx)}
                             onKeyDown={(e) => handleOtpKeyDown(e, idx)}
-                            className={`w-12 h-16 text-center text-white text-2xl font-black bg-white/[0.03] border-2 rounded-xl outline-none transition-all placeholder:text-white/10 ${otpError ? 'border-red-500/50 bg-red-500/5' : digit ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,214,10,0.1)]' : 'border-white/10 focus:border-primary/50'
+                            className={`flex-1 max-w-[46px] sm:max-w-[55px] aspect-square text-center text-white text-lg sm:text-2xl font-black bg-white/[0.03] border-2 rounded-xl outline-none transition-all placeholder:text-white/10 ${otpError ? 'border-red-500/50 bg-red-500/5' : digit ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,214,10,0.1)]' : 'border-white/10 focus:border-primary/50'
                               }`}
                           />
                         ))}
@@ -1072,12 +1072,12 @@ const BookingForm = () => {
                         <button
                           type="submit"
                           disabled={otp.join('').length !== 6 || (isNewUserDetected && !userName)}
-                          className="w-full bg-primary text-black font-black py-5 rounded-[1.25rem] text-sm tracking-widest hover:bg-yellow-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-primary/20"
+                          className="w-full bg-primary text-black font-black py-4 sm:py-5 rounded-[1.25rem] text-xs sm:text-sm tracking-widest hover:bg-yellow-400 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-primary/20"
                         >
                           {isNewUserDetected ? 'FINISH REGISTRATION' : 'VERIFY & BOOK NOW'}
                         </button>
 
-                        <button type="button" onClick={handleSendOtp} className="w-full text-white/40 text-xs font-bold hover:text-primary transition-all py-2">
+                        <button type="button" onClick={handleSendOtp} className="w-full text-white/40 text-[10px] uppercase font-bold hover:text-primary transition-all py-1 mt-2">
                           Didn't receive code? <span className="underline ml-1">Resend</span>
                         </button>
                       </div>
@@ -1205,20 +1205,21 @@ const BookingForm = () => {
             className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/95 backdrop-blur-xl"
           >
             <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', damping: 20 }}
-              className="text-center px-6"
+              initial={{ scale: 0.9, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="text-center px-6 flex flex-col items-center justify-center"
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-                className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-primary/20 border-t-primary"
-              >
-                <FaSearch className="text-primary text-3xl" />
-              </motion.div>
-              <h2 className="text-4xl font-black text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>Searching Driver...</h2>
-              <p className="text-white/40 text-sm">Finding the best driver near you 🚀</p>
+              {/* Minimal Animated Spinner */}
+              <div className="relative w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-xl">
+                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin duration-1000" />
+                  <FaCar className="text-white/90 text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+              </div>
+              <h2 className="text-white/90 text-xl md:text-2xl font-black uppercase tracking-widest mb-3">Connecting</h2>
+              <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                  <p className="text-white/50 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.25em]">Locating nearest partners...</p>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -1463,20 +1464,19 @@ const BookingForm = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10007] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4"
+            className="fixed inset-0 z-[10007] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-xl p-0 sm:p-4"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-[95%] md:w-full md:max-w-xl bg-[#0a0a0a] rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl px-6 sm:px-10 border border-white/10 overflow-y-auto relative"
-              style={{ maxHeight: '90vh' }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              className="w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] md:max-w-xl bg-[#0a0a0a] rounded-none sm:rounded-[3.5rem] shadow-none sm:shadow-2xl px-6 sm:px-10 border-none sm:border border-white/10 overflow-y-auto relative"
             >
-              <div className="flex items-center gap-6 mb-10 sticky top-0 bg-[#0a0a0a] z-40 pb-6 pt-6 sm:pt-10 border-b border-white/5 -mx-6 sm:-mx-10 px-6 sm:px-10">
+              <div className="flex items-center gap-6 mb-10 sticky top-0 bg-[#0a0a0a] z-40 pb-6 pt-12 sm:pt-10 border-b border-white/5 -mx-6 sm:-mx-10 px-6 sm:px-10">
                 <motion.div
                   initial={{ scale: 0, rotate: -10 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  className="w-14 h-14 sm:w-16 sm:h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-xl relative overflow-hidden flex-shrink-0"
+                  className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center relative flex-shrink-0"
                 >
                   <img
                     src={confirmedCar.image ? `${BASE_URL}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
@@ -1491,7 +1491,7 @@ const BookingForm = () => {
               </div>
 
               {/* SEAT LAYOUT DISPLAY - COMPACT GRID */}
-              <div className="grid grid-cols-2 gap-3 mb-8 sm:mb-10 overflow-hidden scrollbar-none">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 sm:mb-10 overflow-hidden scrollbar-none">
                 {confirmedCar.seatLayout && confirmedCar.seatLayout.length > 0 ? (
                   confirmedCar.seatLayout.map((seatName, idx) => {
                     const isSelected = selectedSeatNames.includes(seatName);
@@ -1526,8 +1526,8 @@ const BookingForm = () => {
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isSelected ? 'bg-black/10' : 'bg-white/5 text-primary'}`}>
                           <FaUser size={12} />
                         </div>
-                        <div className="flex-1 overflow-hidden">
-                          <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest truncate block ${isSelected ? 'text-black' : 'text-white'}`}>{seatName}</span>
+                        <div className="flex-1 overflow-visible">
+                          <span className={`text-[10px] sm:text-[9px] font-black uppercase tracking-widest break-words block ${isSelected ? 'text-black' : 'text-white'}`}>{seatName}</span>
                         </div>
                         {isSelected && <FaCheckCircle size={10} className="text-black ml-auto" />}
                       </motion.div>
