@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { requestForToken, onMessageListener } from './firebase';
+import { API_BASE_URL } from './config/api';
 import Loader from './components/Loader';
 import MainLayout from './layout/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
@@ -40,6 +42,53 @@ import NotFound from './pages/NotFound';
 
 function App() {
   const [loading, setLoading] = useState(() => !sessionStorage.getItem('visited'));
+
+  useEffect(() => {
+    // 🔥 FCM Integration for User
+    const setupFCM = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const fcmToken = await requestForToken();
+      console.log("Current Rider FCM Token:", fcmToken);
+      
+      if (fcmToken) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/users/update-fcm-token`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ fcmToken })
+          });
+          const data = await res.json();
+          console.log("FCM Update Response:", data);
+          if (data.success) {
+            console.log("Rider FCM Token updated on backend successfully. ✅");
+          } else {
+            console.error("Backend failed to update FCM Token: ❌", data.message);
+          }
+        } catch (error) {
+          console.error("Error updating user FCM token:", error);
+        }
+      } else {
+        console.warn("FCM Token was not obtained (User might have denied permission). ⚠️");
+      }
+    };
+
+    setupFCM();
+
+    // Listen for foreground messages
+    const unsubscribeFCM = onMessageListener((payload) => {
+      console.log('User Notification:', payload);
+      // You could show a custom toast here if needed
+    });
+
+    return () => {
+      if (unsubscribeFCM) unsubscribeFCM();
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading) return;
