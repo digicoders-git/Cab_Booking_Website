@@ -128,7 +128,7 @@ function App() {
           <Route path="booking-details/:bookingId" element={<BookingDetails />} />
           <Route path="profile" element={<Profile />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="driver-tracking" element={<DriverTracking />} />
+          <Route path="driver-tracking/:bookingId" element={<DriverTracking />} />
           <Route path="privacy-policy" element={<PrivacyPolicy />} />
           <Route path="terms-of-service" element={<TermsOfService />} />
           <Route path="login" element={<Login />} />
