@@ -34,7 +34,7 @@ const Footer = () => {
                 { icon: FaPhoneAlt, text: '+91 7310221010', href: 'tel:+917310221010' },
                 { icon: FaPhoneAlt, text: '+91 7310231010', href: 'tel:+917310231010' },
                 { icon: FaMapMarkerAlt, text: '25/B Milford Road, New York', href: null },
-                { icon: FaEnvelope, text: 'basantktv@gmail.com', href: 'mailto:basantktv@gmail.com' },
+                { icon: FaEnvelope, text: 'kwikcabs9@gmail.com ', href: 'mailto:kwikcabs9@gmail.com ' },
               ].map(({ icon: Icon, text, href }) => (
                 <div key={text} className="flex items-center gap-3 text-white/50 text-sm hover:text-white/80 transition-colors">
                   <Icon className="text-primary text-xs shrink-0" />

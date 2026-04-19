@@ -65,82 +65,82 @@ const Header = () => {
 
   return (
     <>
-    <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl' : 'bg-transparent'}`}>
-      <div className="container mx-auto 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8 flex justify-between items-center py-2 lg:py-3">
+      <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl' : 'bg-transparent'}`}>
+        <div className="container mx-auto 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8 flex justify-between items-center py-2 lg:py-3">
 
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 z-50 shrink-0">
-          <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
-        </Link>
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 z-50 shrink-0">
+            <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
+          </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden xl:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <div key={link.name} className="relative group">
-              <Link
-                to={link.path}
-                className={`flex items-center gap-1.5 text-sm font-medium transition-colors py-2 ${isActive(link.path) ? 'text-primary' : 'text-white/70 hover:text-white'}`}
-              >
-                {link.name}
-                {link.hasDropdown && <FaChevronDown className="text-[10px] transition-transform group-hover:rotate-180" />}
-              </Link>
+          {/* Desktop Nav */}
+          <nav className="hidden xl:flex items-center gap-8">
+            {navLinks.map((link) => (
+              <div key={link.name} className="relative group">
+                <Link
+                  to={link.path}
+                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors py-2 ${isActive(link.path) ? 'text-primary' : 'text-white/70 hover:text-white'}`}
+                >
+                  {link.name}
+                  {link.hasDropdown && <FaChevronDown className="text-[10px] transition-transform group-hover:rotate-180" />}
+                </Link>
 
-              {link.hasDropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-[1000]">
-                  <div className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-                    {link.subItems.map((sub, idx) => (
-                      <Link
-                        key={idx}
-                        to={sub.path}
-                        className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/5 transition-colors text-white/70 hover:text-white text-sm"
-                      >
-                        <span className="text-primary">{sub.icon}</span>
-                        {sub.name}
-                      </Link>
-                    ))}
+                {link.hasDropdown && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-[1000]">
+                    <div className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+                      {link.subItems.map((sub, idx) => (
+                        <Link
+                          key={idx}
+                          to={sub.path}
+                          className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/5 transition-colors text-white/70 hover:text-white text-sm"
+                        >
+                          <span className="text-primary">{sub.icon}</span>
+                          {sub.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Notifications - Direct Link instead of Dropdown */}
+            <Link
+              to="/notifications"
+              className="hidden xl:flex relative w-9 h-9 items-center justify-center text-white/60 hover:text-white transition-colors"
+            >
+              <FaBell size={16} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
               )}
-            </div>
-          ))}
-        </nav>
+            </Link>
 
-        {/* Actions */}
-        <div className="flex items-center gap-3 shrink-0">
-          {/* Notifications - Direct Link instead of Dropdown */}
-          <Link
-            to="/notifications"
-            className="hidden xl:flex relative w-9 h-9 items-center justify-center text-white/60 hover:text-white transition-colors"
-          >
-            <FaBell size={16} />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-black text-[9px] font-bold rounded-full flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </Link>
+            {/* Profile Button */}
+            <Link
+              to="/profile"
+              className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            >
+              <FaUserCircle size={18} />
+            </Link>
 
-          {/* Profile Button */}
-          <Link
-            to="/profile"
-            className="relative w-9 h-9 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-          >
-            <FaUserCircle size={18} />
-          </Link>
-
-          {/* Mobile menu */}
-          <button
-            onClick={() => setIsOffcanvasOpen(true)}
-            className="xl:hidden w-9 h-9 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-          >
-            <FaBars size={18} />
-          </button>
+            {/* Mobile menu */}
+            <button
+              onClick={() => setIsOffcanvasOpen(true)}
+              className="xl:hidden w-9 h-9 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+            >
+              <FaBars size={18} />
+            </button>
+          </div>
         </div>
-      </div>
 
 
 
-    </header>
+      </header>
 
       {/* Mobile Offcanvas — header ke BAHAR, body level pe */}
       <AnimatePresence>
@@ -210,7 +210,7 @@ const Header = () => {
               <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
-                    <FaEnvelope style={{ color: '#FFD60A', flexShrink: 0 }} /> basantktv@gmail.com
+                    <FaEnvelope style={{ color: '#FFD60A', flexShrink: 0 }} /> kwikcabs9@gmail.com
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
                     <FaPhoneAlt style={{ color: '#FFD60A', flexShrink: 0 }} /> +91 7310221010
