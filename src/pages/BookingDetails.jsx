@@ -21,6 +21,8 @@ const BookingDetails = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [locationUpdateCount, setLocationUpdateCount] = useState(0);
     const [secondsRemaining, setSecondsRemaining] = useState(240); // 4 minutes timer
+    const [isDriverArrived, setIsDriverArrived] = useState(false);
+    const [waitingTime, setWaitingTime] = useState(0);
 
     // Map Refs
     const mapRef = useRef(null);
@@ -85,6 +87,30 @@ const BookingDetails = () => {
             if (window.timerInterval) clearInterval(window.timerInterval);
         };
     }, [booking]);
+
+    // Waiting Timer Sync (User Side)
+    useEffect(() => {
+        let interval;
+        const arrivedAt = booking?.tripData?.arrivedAt || (isDriverArrived ? new Date() : null);
+
+        if (arrivedAt && booking?.bookingStatus === 'Accepted') {
+            setIsDriverArrived(true);
+            const start = new Date(arrivedAt).getTime();
+            interval = setInterval(() => {
+                const now = Date.now();
+                setWaitingTime(Math.floor((now - start) / 1000));
+            }, 1000);
+        } else {
+            setWaitingTime(0);
+        }
+        return () => clearInterval(interval);
+    }, [booking?.tripData?.arrivedAt, booking?.bookingStatus, isDriverArrived]);
+
+    const formatWaitingTimer = (sec) => {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    };
 
 
     // 2. Map Initialization
@@ -294,6 +320,20 @@ const BookingDetails = () => {
             }
         });
 
+        // DRIVER ARRIVAL LISTENER
+        socket.on('driver_arrived', (data) => {
+            if (data.bookingId === bookingId) {
+                console.log("🚕 Driver Arrived Socket Event!");
+                setIsDriverArrived(true);
+                // If backend sent the arrivedAt time, we can sync the timer
+                if (data.arrivedAt) {
+                    const start = new Date(data.arrivedAt).getTime();
+                    const now = Date.now();
+                    setWaitingTime(Math.floor((now - start) / 1000));
+                }
+            }
+        });
+
         // LIVE DRIVER MOVEMENT LISTENER
         socket.on('driver_location_update', (data) => {
             // Logic moved to a ref-based or memoized handler to avoid dependency on booking state
@@ -366,20 +406,20 @@ const BookingDetails = () => {
     };
 
     if (loading) return (
-        <div className="min-h-screen bg-[#060606] flex items-center justify-center">
+        <div className="min-h-screen bg-black flex items-center justify-center">
             <motion.div animate={{ rotate: 360, scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-                <FaTaxi className="text-primary text-5xl drop-shadow-[0_0_15px_rgba(255,214,10,0.3)]" />
+                <FaTaxi className="text-[#FACD16] text-5xl drop-shadow-[0_0_15px_rgba(250,205,22,0.3)]" />
             </motion.div>
         </div>
     );
 
     if (error || !booking) return (
-        <div className="min-h-screen bg-[#060606] flex flex-col items-center justify-center px-6">
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6">
             <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mb-6 border border-red-500/20">
                 <FaTimesCircle size={32} />
             </div>
             <h2 className="text-white text-3xl font-black italic tracking-tighter mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>Oops! Ride Lost</h2>
-            <Link to="/my-booking" className="btn-primary">Back to History</Link>
+            <Link to="/my-booking" className="px-6 py-3 bg-[#FACD16] text-black font-bold rounded-full text-sm tracking-wide hover:bg-[#e5b800] transition-colors">Back to History</Link>
         </div>
     );
 
@@ -387,242 +427,226 @@ const BookingDetails = () => {
     const canCancel = ['Pending', 'Accepted', 'Ongoing', 'pending', 'accepted', 'ongoing'].includes(booking.bookingStatus || booking.status);
 
     return (
-        <div className="bg-[#060606] min-h-screen pt-[85px] md:pt-[130px] pb-0 md:pb-10">
+        <div className="bg-black min-h-screen pt-[85px] md:pt-[130px] pb-0 md:pb-10">
             <div className="container mx-auto px-0 md:px-4 max-w-7xl h-full md:h-[calc(100vh-180px)]">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 md:gap-8 h-full">
 
-                    {/* LEFT SIDE: THE LIVE MAP (DYNAMIC & INTERACTIVE) */}
-                    <div className="lg:col-span-7 h-[50vh] md:h-full sticky md:relative top-0 md:top-auto z-[60] md:z-auto w-full mt-0 mx-0 rounded-none md:rounded-[3.5rem] overflow-hidden border-b border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                    {/* LEFT SIDE: THE LIVE MAP */}
+                    <div className="lg:col-span-7 h-[50vh] md:h-full sticky md:relative top-0 md:top-auto z-[60] md:z-auto w-full mt-0 mx-0 rounded-none md:rounded-[2rem] overflow-hidden border-b md:border border-white/10 shadow-2xl">
                         <div ref={mapRef} className="w-full h-full" />
 
                         {/* Floating Navigation Controls */}
                         <div className="absolute top-6 left-6 z-10 hidden md:flex flex-col gap-3">
-                            <button onClick={() => window.history.back()} className="w-12 h-12 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl flex items-center justify-center text-black hover:scale-105 active:scale-95 transition-all">
+                            <button onClick={() => window.history.back()} className="w-12 h-12 bg-black/80 backdrop-blur-md rounded-2xl shadow-2xl flex items-center justify-center text-white border border-white/10 hover:bg-black transition-all">
                                 <FaChevronLeft size={16} />
                             </button>
-
-
                         </div>
 
                         <div className="absolute top-6 right-6 z-10 hidden md:flex items-center gap-3">
-                            <div className={`px-4 py-2.5 rounded-full backdrop-blur-md border ${isConnected ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} flex items-center gap-2 shadow-2xl`}>
+                            <div className={`px-4 py-2 rounded-full backdrop-blur-md border ${isConnected ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} flex items-center gap-2 shadow-2xl`}>
                                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                                 <span className="text-[9px] font-black uppercase tracking-widest">{isConnected ? 'Live' : 'Offline'}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* RIGHT SIDE: THE CONTENT DASHBOARD (BLACK & YELLOW) */}
-                    <div className="lg:col-span-5 flex flex-col gap-4 md:gap-6 overflow-y-auto no-scrollbar scroll-smooth p-4 md:p-0 h-full md:pb-10">
+                    {/* RIGHT SIDE: CONTENT DASHBOARD */}
+                    <div className="lg:col-span-5 flex flex-col gap-5 overflow-y-auto no-scrollbar scroll-smooth p-5 md:p-0 h-full md:pb-1">
 
-                        {/* 1. MAIN SUMMARY HEADER - COMPACT & SIMPLE */}
-                        <div className="bg-[#111] p-5 md:p-15 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-4 shadow-xl">
-
-                            <div className="w-full md:w-auto flex justify-between items-start md:block">
+                        {/* 1. MAIN SUMMARY CARD */}
+                        <div className="bg-[#0a0a0a] p-6 rounded-2xl border border-white/10 shadow-xl">
+                            <div className="flex items-start justify-between gap-3 mb-5">
                                 <div>
-                                    <h2 className="text-white font-black text-lg md:text-xl mb-1.5 md:mb-1 uppercase tracking-wider">Ride Summary</h2>
-                                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                                        <span className="bg-primary/10 border border-primary/20 px-2 py-1 rounded-md text-primary font-black text-[8px] md:text-[9px] uppercase tracking-widest leading-none">{booking.rideType || "Private"} Ride</span>
-                                        <span className="text-white/40 text-[9px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
-
-                                        {/* OTP Desktop Version */}
-                                        <span className="hidden md:flex bg-cyan-500/15 text-cyan-400 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-cyan-500/20 items-center gap-2 shadow-lg shadow-cyan-500/5">
-                                            <FaFingerprint className="text-cyan-500 text-[12px]" />
-                                            OTP: {booking.tripData?.startOtp || booking.otp || (isPending ? "SEARCHING..." : "---")}
-                                        </span>
+                                    <h2 className="text-white font-black text-xl uppercase tracking-wider">Ride Summary</h2>
+                                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                                        <span className="bg-[#FACD16]/10 border border-[#FACD16]/20 px-3 py-1 rounded-lg text-[#FACD16] font-black text-[10px] uppercase tracking-widest">{booking.rideType || "Private"} Ride</span>
+                                        <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest">ID: #{booking._id?.slice(-8).toUpperCase()}</span>
                                     </div>
                                 </div>
-
-                                {/* Mobile Status Box (Right aligned beside Title) */}
-                                <div className={`md:hidden px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest italic border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' :
+                                <div className={`shrink-0 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500' :
                                     (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
-                                        (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' :
+                                        (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-400' :
                                             'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
                                     {booking.bookingStatus || booking.status}
                                 </div>
                             </div>
 
-                            {/* Desktop Status Box */}
-                            <div className={`hidden md:block px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic border ${isPending ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500 animate-pulse' :
-                                (booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
-                                    (booking.bookingStatus === 'Expired' || booking.status === 'expired' ? 'bg-gray-500/10 border-gray-500/20 text-gray-500' :
-                                        'bg-green-500/10 border-green-500/20 text-green-500'))}`}>
-                                {booking.bookingStatus || booking.status}
-                            </div>
-
-                            {/* Mobile OTP Box (Full width aesthetic ticket) */}
-                            <div className="md:hidden w-full bg-cyan-500/10 text-cyan-400 px-4 py-3.5 rounded-[1rem] text-[12px] font-black uppercase tracking-[0.2em] border border-cyan-500/20 flex items-center justify-between shadow-lg shadow-cyan-500/5 mt-1">
+                            {/* OTP Row */}
+                            <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl px-4 py-3 flex items-center justify-between mb-5">
                                 <div className="flex items-center gap-2">
-                                    <FaFingerprint className="text-cyan-500 text-[18px]" />
-                                    <span className="text-white/60 text-[9px] tracking-widest">OTP SECURE PIN</span>
+                                    <FaFingerprint className="text-cyan-400 text-sm" />
+                                    <span className="text-white/40 text-[9px] font-black uppercase tracking-widest">OTP Secure Pin</span>
                                 </div>
-                                <span className="text-xl text-white leading-none tracking-[0.25em]">{booking.tripData?.startOtp || booking.otp || (isPending ? "---" : "---")}</span>
-                            </div>
-                        </div>
-
-                        {/* 2. ROUTE TRACKER DETAILS */}
-                        <div className="bg-[#111] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/5 shadow-xl">
-                            {/* Mobile Layout (Sleek Phone Design) */}
-                            <div className="md:hidden space-y-6 relative pl-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-[2px] before:bg-gradient-to-b before:from-white/20 before:to-primary/40">
-                                <div className="relative">
-                                    <div className="absolute -left-[28.5px] top-1 w-5 h-5 bg-[#111] border-[3px] border-white rounded-full z-10 shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
-                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-[0.25em] mb-0.5">Pickup Point</p>
-                                    <h4 className="text-white/90 text-[13px] font-medium leading-tight">{booking.pickup?.address || booking.pickupAddress}</h4>
-                                </div>
-                                <div className="relative">
-                                    <div className="absolute -left-[28.5px] top-1 w-5 h-5 bg-[#111] border-[3px] border-primary rounded-full z-10 shadow-[0_0_10px_rgba(255,214,10,0.1)]" />
-                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-[0.25em] mb-0.5">Destination</p>
-                                    <h4 className="text-white/90 text-[13px] font-medium leading-tight">{booking.drop?.address || booking.dropAddress}</h4>
-                                </div>
+                                <span className="text-cyan-400 font-black text-xl tracking-[0.2em]">
+                                    {booking.tripData?.startOtp || booking.otp || (isPending ? '----' : '----')}
+                                </span>
                             </div>
 
-                            {/* Desktop Layout (Original Pre-existing Design) */}
-                            <div className="hidden md:block space-y-10 relative pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
-                                {/* Pickup */}
-                                <div className="relative">
-                                    <div className="absolute -left-[28px] top-1.5 w-6 h-6 bg-black border-2 border-white rounded-full z-10 flex items-center justify-center shadow-lg">
-                                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                                    </div>
-                                    <p className="text-white text-[9px] font-black uppercase tracking-[0.25em] mb-2 italic">Pickup Point</p>
-                                    <h4 className="text-white font-bold text-sm leading-snug">{booking.pickup?.address || booking.pickupAddress}</h4>
-                                </div>
-                                {/* Dropoff */}
-                                <div className="relative">
-                                    <div className="absolute -left-[28px] top-1.5 w-6 h-6 bg-black border-2 border-primary rounded-lg z-10 flex items-center justify-center shadow-lg shadow-primary/10">
-                                        <div className="w-1.5 h-1.5 bg-primary rounded-sm" />
-                                    </div>
-                                    <p className="text-white text-[9px] font-black uppercase tracking-[0.25em] mb-2 italic">Destination</p>
-                                    <h4 className="text-white font-bold text-sm leading-snug">{booking.drop?.address || booking.dropAddress}</h4>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 3. DRIVER INFORMATION - DYNAMIC & HIGH FIDELITY */}
-                        <div className="bg-[#111] p-6 sm:p-8 pb-8 sm:pb-10 rounded-[2.5rem] border border-white/5 relative overflow-hidden shadow-xl min-h-fit">
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
-                            {booking.assignedDriver ? (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-1 relative overflow-hidden">
-                                            {booking.assignedDriver.image ? (
-                                                <img
-                                                    src={`${backendServer}/uploads/${booking.assignedDriver.image}`}
-                                                    alt={booking.assignedDriver.name}
-                                                    className="w-full h-full object-cover rounded-xl"
-                                                    onError={(e) => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; }}
-                                                />
-                                            ) : (
-                                                <FaUser className="text-white/10 text-3xl" />
-                                            )}
-                                            <div className="absolute -bottom-1 -right-1 bg-primary text-black w-5 h-5 rounded-lg flex items-center justify-center border-2 border-[#111] text-[8px] font-bold">
-                                                <FaStar />
-                                            </div>
+                            {/* DRIVER WAITING ALERT */}
+                            {isDriverArrived && booking.bookingStatus === 'Accepted' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mb-5 bg-[#FACD16] rounded-xl p-4 flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
+                                            <FaClock className="text-[#FACD16] animate-pulse" />
                                         </div>
                                         <div>
-                                            <h4 className="text-white font-black text-xl tracking-tighter uppercase italic">{booking.assignedDriver.name}</h4>
-                                            <p className="text-primary text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 mt-1">
+                                            <p className="text-black font-black text-[10px] uppercase tracking-widest">Driver arrived</p>
+                                            <p className="text-black/50 text-[8px] font-bold uppercase">Free waiting time applies</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-black font-black text-xl tabular-nums">{formatWaitingTimer(waitingTime)}</p>
+                                        <p className="text-black/40 text-[8px] font-bold uppercase tracking-widest">Timer</p>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* FARE CARD */}
+                            <div className="rounded-xl overflow-hidden border border-white/10">
+                                <div className="bg-[#111] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-[#FACD16]/10 rounded-lg flex items-center justify-center">
+                                            <FaCreditCard className="text-[#FACD16] text-xs" />
+                                        </div>
+                                        <span className="text-white font-black text-sm uppercase tracking-wider">Fare Details</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 bg-[#FACD16]/10 border border-[#FACD16]/20 px-3 py-1.5 rounded-lg">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[#FACD16] animate-pulse" />
+                                        <span className="text-[#FACD16] font-black text-[9px] uppercase tracking-widest">{booking.paymentMethod || 'Cash'}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-[#0a0a0a] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                                    <span className="text-white/50 font-bold text-sm">Base Fare</span>
+                                    <span className="text-white font-black text-xl">₹{(booking.fareEstimate || 0) - (booking.tripData?.waitingCharges || 0)}</span>
+                                </div>
+                                {booking.tripData?.waitingCharges > 0 && (
+                                    <div className="bg-[#0a0a0a] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                                        <span className="text-[#FACD16]/80 font-bold text-sm flex items-center gap-2">
+                                            <FaClock size={10} /> Waiting Fee ({booking.tripData.waitingTimeMin}m)
+                                        </span>
+                                        <span className="text-[#FACD16] font-black text-lg">+ ₹{booking.tripData.waitingCharges}</span>
+                                    </div>
+                                )}
+                                <div className="bg-gradient-to-r from-[#FACD16]/10 to-transparent px-4 py-4 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-white font-black text-sm uppercase tracking-wider">To Be Paid</p>
+                                        <p className="text-white/25 text-[8px] font-bold uppercase tracking-widest">Excluding tolls/parking</p>
+                                    </div>
+                                    <span className="text-[#FACD16] font-black text-3xl">₹{booking.fareEstimate || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. ROUTE CARD */}
+                        <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/10 shadow-xl">
+                            <div className="flex items-center gap-2 mb-4">
+                                <FaRoute className="text-[#FACD16] text-sm" />
+                                <h3 className="text-white font-black text-sm uppercase tracking-wider">Your Route</h3>
+                            </div>
+                            <div className="space-y-5 relative pl-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 bg-[#FACD16] rounded-full border-2 border-black" />
+                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-wider mb-1">PICKUP</p>
+                                    <p className="text-white/80 text-sm font-medium leading-tight">{booking.pickup?.address || booking.pickupAddress}</p>
+                                </div>
+                                <div className="relative">
+                                    <div className="absolute -left-[21px] top-1 w-3 h-3 bg-white/20 rounded-full border border-white/30" />
+                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-wider mb-1">DROPOFF</p>
+                                    <p className="text-white/80 text-sm font-medium leading-tight">{booking.drop?.address || booking.dropAddress}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 3. DRIVER CARD */}
+                        <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/10 shadow-xl">
+                            {booking.assignedDriver ? (
+                                <div>
+                                    <div className="flex items-center gap-4 mb-5">
+                                        <div className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                            {booking.assignedDriver.image ? (
+                                                <img src={`${backendServer}/uploads/${booking.assignedDriver.image}`} alt={booking.assignedDriver.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <FaUser className="text-white/20 text-2xl" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h4 className="text-white font-black text-lg uppercase tracking-tight">{booking.assignedDriver.name}</h4>
+                                            <p className="text-[#FACD16] text-[9px] font-black uppercase tracking-wider flex items-center gap-1 mt-1">
                                                 <FaStar size={8} /> 5.0 Driver Rating
                                             </p>
                                         </div>
                                     </div>
-
-                                    <div className="bg-black/40 p-4 rounded-2xl border border-white/5 flex items-center justify-between gap-3 overflow-hidden">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-white/30 border border-white/5 shrink-0">
-                                                <FaCar size={16} />
-                                            </div>
-                                            <div className="min-w-0 flex flex-col">
-                                                <span className="text-white/20 text-[8px] font-black uppercase tracking-widest block mb-0.5">Vehicle</span>
-                                                <span className="text-white font-bold text-[11px] uppercase tracking-tighter leading-none truncate">
-                                                    {booking.assignedDriver.carDetails.carModel}
-                                                </span>
-                                            </div>
+                                    <div className="bg-black/40 p-3 rounded-xl border border-white/5 flex items-center justify-between mb-5">
+                                        <div className="flex items-center gap-2">
+                                            <FaCar className="text-white/30 text-sm" />
+                                            <span className="text-white font-bold text-xs uppercase tracking-tight">{booking.assignedDriver.carDetails.carModel}</span>
                                         </div>
-                                        <span className="bg-primary px-3 py-1.5 text-black font-black text-[10px] rounded-lg tracking-widest shadow-lg shadow-primary/10 shrink-0 tabular-nums">
+                                        <span className="bg-[#FACD16]/10 px-2 py-1 text-[#FACD16] font-black text-[9px] rounded-lg tracking-wider">
                                             {booking.assignedDriver.carDetails.carNumber}
                                         </span>
                                     </div>
-
-                                    <div className="flex gap-2 sm:gap-3">
-                                        <a
-                                            href={`tel:${booking.assignedDriver.phone}`}
-                                            className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary transition-all flex-shrink-0"
-                                            title="Call Driver"
-                                        >
-                                            <FaPhoneAlt size={14} />
+                                    <div className="flex gap-3">
+                                        <a href={`tel:${booking.assignedDriver.phone}`} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-[#FACD16] transition-colors">
+                                            <FaPhoneAlt size={12} />
                                         </a>
-                                        <a
-                                            href={`sms:${booking.assignedDriver.phone}`}
-                                            className="flex-1 h-12 bg-primary text-black rounded-xl flex items-center justify-center gap-2 font-black text-[9px] xs:text-[10px] uppercase tracking-widest shadow-lg shadow-primary/10 transition-all active:scale-95"
-                                        >
-                                            <FaCommentDots size={16} className="hidden xs:block" />
-                                            <span>Send Message</span>
+                                        <a href={`sms:${booking.assignedDriver.phone}`} className="flex-1 h-10 bg-[#FACD16] text-black rounded-xl flex items-center justify-center gap-2 font-black text-[9px] uppercase tracking-wider hover:bg-[#e5b800] transition-colors">
+                                            <FaCommentDots size={12} />
+                                            <span>Message</span>
                                         </a>
                                         {canCancel && (
-                                            <button
-                                                onClick={handleCancel}
-                                                className="w-12 h-12 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all flex-shrink-0 shadow-lg shadow-red-500/5"
-                                                title="Cancel Ride"
-                                            >
-                                                <FaTimes size={16} />
+                                            <button onClick={handleCancel} className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                                                <FaTimes size={12} />
                                             </button>
                                         )}
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-center py-6">
+                                <div className="text-center py-4">
                                     {booking.bookingStatus === 'Expired' || booking.status === 'expired' ? (
                                         <>
-                                            <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-                                                <FaTimesCircle className="text-red-500 text-2xl" />
+                                            <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <FaTimesCircle className="text-red-500 text-xl" />
                                             </div>
-                                            <p className="text-red-500 font-black text-sm uppercase tracking-tighter italic mb-2">Ride Expired</p>
-                                            <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">We couldn't find a driver in time. Please try booking again.</p>
+                                            <p className="text-red-500 font-black text-sm uppercase tracking-tight">Ride Expired</p>
+                                            <p className="text-white/30 text-[8px] font-bold uppercase tracking-wider mt-1">No driver found in time</p>
                                         </>
                                     ) : booking.bookingStatus === 'Cancelled' || booking.status === 'cancelled' ? (
                                         <>
-                                            <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
-                                                <FaTimesCircle className="text-red-500 text-2xl" />
+                                            <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <FaTimesCircle className="text-red-500 text-xl" />
                                             </div>
-                                            <p className="text-red-500 font-black text-sm uppercase tracking-tighter italic mb-2">Ride Cancelled</p>
-                                            <p className="text-white/20 text-[8px] font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">This request has been cancelled by you or the system.</p>
+                                            <p className="text-red-500 font-black text-sm uppercase tracking-tight">Ride Cancelled</p>
+                                            <p className="text-white/30 text-[8px] font-bold uppercase tracking-wider mt-1">Request was cancelled</p>
                                         </>
                                     ) : (
                                         <>
-                                            {/* Minimal Clean Radar */}
-                                            <div className="flex flex-col items-center justify-center py-6">
-                                                {/* Clean Simple Icon */}
-                                                <div className="relative w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-lg">
-                                                    <div className="absolute inset-0 rounded-full border-t-2 border-primary animate-spin shadow-[0_0_15px_rgba(255,214,10,0.5)]" />
-                                                    <FaCar className="text-white/90 text-3xl" />
+                                            <div className="relative w-16 h-16 mx-auto mb-4">
+                                                <div className="absolute inset-0 rounded-full border-t-2 border-[#FACD16] animate-spin" />
+                                                <div className="w-full h-full bg-white/5 rounded-full flex items-center justify-center">
+                                                    <FaCar className="text-white/60 text-2xl" />
                                                 </div>
-
-                                                <h3 className="text-white/90 text-xl font-bold uppercase tracking-widest mb-3">Searching Driver</h3>
-
-                                                <div className="flex items-center gap-2 mb-8 bg-black/40 px-5 py-2.5 rounded-full border border-white/5 shadow-inner">
-                                                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                                    <p className="text-white/50 text-[10px] font-bold uppercase tracking-[0.2em]">
-                                                        Est. Time: <span className="text-primary ml-1 text-[12px]">{Math.floor(secondsRemaining / 60)}:{(secondsRemaining % 60).toString().padStart(2, '0')}</span>
-                                                    </p>
-                                                </div>
-
-                                                <p className="text-white/40 text-[9px] font-bold uppercase tracking-[0.2em] text-center max-w-[250px] mb-8 leading-relaxed">
-                                                    Matching your request with top active partners nearby
-                                                </p>
-
-                                                {canCancel && (
-                                                    <button onClick={handleCancel} className="w-full sm:w-[90%] mx-auto py-3.5 bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 rounded-[1.2rem] flex items-center justify-center gap-3 transition-all active:scale-[0.98] group">
-                                                        <FaTimes size={12} className="text-white/40 group-hover:text-red-500 transition-colors" />
-                                                        <span className="text-white/60 group-hover:text-red-500 font-bold text-[9px] uppercase tracking-[0.3em] transition-colors">Cancel Request</span>
-                                                    </button>
-                                                )}
                                             </div>
+                                            <h3 className="text-white font-bold text-base uppercase tracking-wider mb-2">Searching Driver</h3>
+                                            <div className="flex items-center justify-center gap-2 mb-4">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#FACD16] animate-pulse" />
+                                                <p className="text-white/40 text-[9px] font-bold uppercase tracking-wider">
+                                                    Est. Time: <span className="text-[#FACD16]">{Math.floor(secondsRemaining / 60)}:{(secondsRemaining % 60).toString().padStart(2, '0')}</span>
+                                                </p>
+                                            </div>
+                                            {canCancel && (
+                                                <button onClick={handleCancel} className="w-full py-2.5 bg-white/5 border border-white/10 rounded-xl text-white/60 font-bold text-[9px] uppercase tracking-wider hover:bg-red-500/10 hover:text-red-500 transition-colors">
+                                                    Cancel Request
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                 </div>
                             )}
                         </div>
-
 
                     </div>
                 </div>

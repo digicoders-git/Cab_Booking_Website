@@ -7,6 +7,8 @@ import {
 } from 'react-icons/fa';
 
 import PageHeader from '../components/PageHeader';
+import Swal from 'sweetalert2';
+import { API_BASE_URL } from '../config/api';
 
 const rideTypes = [
   { id: 'bike', label: 'Bike', icon: <FaMotorcycle size={22} />, tag: 'Fastest', color: 'from-orange-500 to-red-500' },
@@ -28,6 +30,7 @@ const Booking = () => {
   const [selectedCar, setSelectedCar] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const pickupRef = useRef(null);
   const dropoffRef = useRef(null);
@@ -72,7 +75,80 @@ const Booking = () => {
     setShowConfirm(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    const token = localStorage.getItem('token');
+    
+    // 1. Check Authentication
+    if (!token) {
+      const { value: phone } = await Swal.fire({
+        title: '🔒 Secure Checkout',
+        text: 'Please enter your phone number to continue',
+        input: 'tel',
+        inputPlaceholder: '9876543210',
+        showCancelButton: true,
+        confirmButtonText: 'Send OTP',
+        confirmButtonColor: '#FACD16',
+        background: '#111',
+        color: '#fff',
+        preConfirm: async (phone) => {
+          if (!phone || phone.length !== 10) {
+            Swal.showValidationMessage('Please enter a valid 10-digit number');
+            return false;
+          }
+          try {
+            const res = await fetch(`${API_BASE_URL}/users/send-otp`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            return { phone, otp: data.otp };
+          } catch (err) {
+            Swal.showValidationMessage(`Error: ${err.message}`);
+          }
+        }
+      });
+
+      if (!phone) return;
+
+      const { value: otp } = await Swal.fire({
+        title: '🔑 Verify OTP',
+        text: `Enter the 6-digit code sent to ${phone.phone}`,
+        input: 'text',
+        inputPlaceholder: '123456',
+        showCancelButton: true,
+        confirmButtonText: 'Verify & Book',
+        confirmButtonColor: '#FACD16',
+        background: '#111',
+        color: '#fff',
+        footer: `<span style="color: #666; font-size: 10px;">Demo OTP: ${phone.otp}</span>`,
+        preConfirm: async (otp) => {
+          try {
+            const res = await fetch(`${API_BASE_URL}/users/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: phone.phone, otp })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            return data;
+          } catch (err) {
+            Swal.showValidationMessage(`Error: ${err.message}`);
+          }
+        }
+      });
+
+      if (otp) {
+        localStorage.setItem('token', otp.token);
+        localStorage.setItem('user', JSON.stringify(otp.user));
+        localStorage.setItem('userId', otp.user._id);
+      } else {
+        return;
+      }
+    }
+
+    // 2. Finalize Booking
     setShowConfirm(false);
     setShowSheet(false);
     setIsSuccess(true);

@@ -578,22 +578,18 @@ const BookingForm = () => {
       const data = await response.json();
 
       if (data.success) {
-        // CASE: New User - Show Name and Email fields
-        if (data.isNewUser && (!userName || !userEmail)) {
+        // CASE: New User detected — sirf fields dikhao, koi alert nahi
+        if (data.isNewUser && !userName) {
           setIsNewUserDetected(true);
           setOtpError(false);
-          Swal.fire({
-            title: 'Welcome!',
-            text: "Since you're new, please provide your name and email to finish registration.",
-            icon: 'info',
-            confirmButtonColor: '#FFD60A',
-          });
+          setIsSearching(false);
           return;
         }
 
-        // CASE: Existing User or Registration Complete
+        // CASE: Existing User ya Registration complete (name fill ho gaya)
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userId', data.user?._id || '');
 
         setShowPhoneModal(false);
         setStep('phone');

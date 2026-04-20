@@ -49,11 +49,21 @@ self.addEventListener('notificationclick', (event) => {
   const urlToOpen = event.notification.data.url || '/';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // 1. Check if ANY tab is open on OUR domain (e.g., localhost:5173)
       for (var i = 0; i < windowClients.length; i++) {
         var client = windowClients[i];
-        if (client.url.includes(urlToOpen) && 'focus' in client) return client.focus();
+        
+        // If we found any tab of our website, redirect it and focus it
+        if ('navigate' in client && 'focus' in client) {
+          client.navigate(urlToOpen);
+          return client.focus();
+        }
       }
-      if (clients.openWindow) return clients.openWindow(urlToOpen);
+
+      // 2. If no tab is open at all, open a new one
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
     })
   );
 });
