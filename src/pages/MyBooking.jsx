@@ -154,7 +154,7 @@ const MyBooking = () => {
               {filteredBookings.map((booking, index) => {
                 const sc = getStatusConfig(booking.bookingStatus || booking.status || 'pending');
                 const StatusIcon = sc.icon;
-                const fare = Math.round(booking.totalFare || booking.fareEstimate || 0);
+                const fare = Math.round(booking.actualFare || booking.fareEstimate || 0);
 
                 return (
                   <motion.div

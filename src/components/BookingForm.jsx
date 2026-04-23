@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { API_BASE_URL, BASE_URL } from '../config/api';
-import { FaMapMarkerAlt, FaCheckCircle, FaTimes, FaUsers, FaUser, FaArrowRight, FaMobileAlt, FaDotCircle, FaSpinner, FaSearch, FaLocationArrow, FaTaxi, FaClock, FaCar } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCheckCircle, FaTimes, FaUsers, FaUser, FaArrowRight, FaMobileAlt, FaDotCircle, FaSpinner, FaSearch, FaLocationArrow, FaTaxi, FaClock, FaCar, FaExchangeAlt } from 'react-icons/fa';
 
 const cars = [
   { id: 1, name: 'Economy Bike', emoji: '🛵', price: 15, eta: '3 min', capacity: 1, desc: 'Quick bike ride' },
@@ -18,7 +18,8 @@ const BookingForm = () => {
     pickup: '',
     dropoff: '',
     pickupCoords: null,
-    dropoffCoords: null
+    dropoffCoords: null,
+    stops: [] // Array of { address: '', coords: null, pin: '' }
   });
   const [showMapModal, setShowMapModal] = useState(false);
   const [map, setMap] = useState(null);
@@ -145,6 +146,52 @@ const BookingForm = () => {
     });
   }, []);
 
+  // --- NEW: Multi-Stop Autocomplete Logic ---
+  const stopRefs = useRef([]);
+  useEffect(() => {
+    formData.stops.forEach((stop, index) => {
+      if (stopRefs.current[index] && !stopRefs.current[index].autocompleteInit) {
+        const autocomplete = new window.google.maps.places.Autocomplete(stopRefs.current[index], {
+          types: ['geocode', 'establishment'],
+          componentRestrictions: { country: 'in' }
+        });
+
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          if (place.geometry && place.geometry.location) {
+            const updatedStops = [...formData.stops];
+            updatedStops[index] = {
+              ...updatedStops[index],
+              address: place.formatted_address,
+              coords: place.geometry.location,
+              pin: place.address_components?.find(c => c.types.includes("postal_code"))?.long_name || ""
+            };
+            setFormData(prev => ({ ...prev, stops: updatedStops }));
+          }
+        });
+        stopRefs.current[index].autocompleteInit = true; // Mark as initialized
+      }
+    });
+  }, [formData.stops]);
+
+  const handleAddStop = () => {
+    if (formData.stops.length >= 10) {
+      Swal.fire({ icon: 'info', title: 'Limit Reached', text: 'You can add up to 10 stops only.' });
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      stops: [...prev.stops, { address: '', coords: null, pin: '' }]
+    }));
+  };
+
+  const handleRemoveStop = (index) => {
+    const updatedStops = [...formData.stops];
+    updatedStops.splice(index, 1);
+    setFormData(prev => ({ ...prev, stops: updatedStops }));
+    stopRefs.current.splice(index, 1);
+  };
+
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
       Swal.fire({
@@ -252,19 +299,26 @@ const BookingForm = () => {
   useEffect(() => {
     if (map && formData.pickupCoords && formData.dropoffCoords) {
       const directionsService = new window.google.maps.DirectionsService();
+      const waypoints = formData.stops
+        .filter(s => s.coords)
+        .map(s => ({ location: s.coords, stopover: true }));
+
       directionsService.route(
         {
           origin: formData.pickupCoords,
           destination: formData.dropoffCoords,
+          waypoints: waypoints,
           travelMode: window.google.maps.TravelMode.DRIVING,
         },
         (result, status) => {
           if (status === window.google.maps.DirectionsStatus.OK) {
             directionsRendererRef.current.setDirections(result);
             const route = result.routes[0];
-            if (route && route.legs[0]) {
-              setDistance(route.legs[0].distance.text);
-              setDistanceValue(route.legs[0].distance.value / 1000); // converting meters to km
+            if (route && route.legs) {
+              const totalMeters = route.legs.reduce((acc, leg) => acc + leg.distance.value, 0);
+              const totalKm = (totalMeters / 1000).toFixed(1);
+              setDistance(`${totalKm} KM`);
+              setDistanceValue(totalMeters / 1000);
             }
 
             // Handle Custom Markers (Suppressed default ones)
@@ -618,6 +672,18 @@ const BookingForm = () => {
     }
   };
 
+  const handleSwapLocations = () => {
+    setFormData(prev => ({
+      ...prev,
+      pickup: prev.dropoff,
+      dropoff: prev.pickup,
+      pickupCoords: prev.dropoffCoords,
+      dropoffCoords: prev.pickupCoords,
+      pickupPin: prev.dropoffPin,
+      dropoffPin: prev.pickupPin
+    }));
+  };
+
   const handleFinalBooking = () => {
     const token = localStorage.getItem('token');
 
@@ -633,6 +699,24 @@ const BookingForm = () => {
   };
 
   const handleCarTypeSelect = (car) => {
+    // --- NEW: Multi-Stop Shared Ride Validation ---
+    if (rideType === 'shared' && formData.stops.length > 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Private Ride Only',
+        text: 'Multi-stop journeys are only available for Private Rides to ensure other passengers reach their destination on time.',
+        confirmButtonColor: '#FFD60A',
+        background: '#0a0a0a',
+        color: '#fff',
+        customClass: {
+          popup: 'rounded-3xl border border-white/5 shadow-2xl',
+          title: 'text-lg font-bold uppercase tracking-tight',
+          htmlContainer: 'text-sm text-white/60'
+        }
+      });
+      return;
+    }
+
     setConfirmedCar(car);
     setShowCategoriesModal(false);
     if (rideType === 'shared') {
@@ -666,6 +750,13 @@ const BookingForm = () => {
     const dLat = getCoord(dropoffCoords, 'lat');
     const dLng = getCoord(dropoffCoords, 'lng');
 
+    const formattedStops = formData.stops.map(s => ({
+      address: s.address,
+      latitude: getCoord(s.coords, 'lat'),
+      longitude: getCoord(s.coords, 'lng'),
+      status: "Pending"
+    }));
+
     // Strict Validation
     if (!pLat || !dLat) {
       Swal.fire({
@@ -688,6 +779,7 @@ const BookingForm = () => {
       dropAddress: formData.dropoff,
       dropLat: Number(dLat),
       dropLng: Number(dLng),
+      stops: formattedStops, // NEW: Full Stops Data
       distanceKm: Number(distanceValue) || 0,
       pickupDate: new Date().toISOString().split('T')[0],
       pickupTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -824,9 +916,72 @@ const BookingForm = () => {
               </button>
             </div>
 
-            <div className="flex items-center gap-3 px-4">
-              <div className="w-px h-4 bg-white/20 ml-[3px]" />
+            <div className="flex items-center justify-between px-4 h-6">
+              <div className="w-px h-full bg-white/10 ml-[3px]" />
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ rotate: 180, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  type="button"
+                  onClick={handleSwapLocations}
+                  className="w-8 h-8 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/30 transition-all shadow-lg"
+                  title="Swap Locations"
+                >
+                  <FaExchangeAlt className="text-[10px] rotate-90" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  type="button"
+                  onClick={handleAddStop}
+                  className="bg-white/5 border border-white/10 px-3 py-1 rounded-full flex items-center gap-2 text-white/40 hover:text-primary hover:border-primary/30 transition-all text-[9px] font-black uppercase tracking-widest"
+                >
+                  <span className="text-sm">+</span> Add Stop
+                </motion.button>
+              </div>
+              <div className="flex-1 border-t border-dashed border-white/5 mx-4 hidden sm:block" />
             </div>
+
+            {/* Render Stops */}
+            <AnimatePresence>
+              {formData.stops.map((stop, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, height: 0, x: -20 }}
+                  animate={{ opacity: 1, height: 'auto', x: 0 }}
+                  exit={{ opacity: 0, height: 0, x: 20 }}
+                  className="space-y-3"
+                >
+                  <div className="relative flex items-center group">
+                    <div className="absolute left-4 w-1.5 h-1.5 rounded-full border border-white/40 z-10" />
+                    <input
+                      ref={el => stopRefs.current[index] = el}
+                      type="text"
+                      required
+                      placeholder={`Stop ${index + 1}`}
+                      value={stop.address}
+                      onChange={(e) => {
+                        const updated = [...formData.stops];
+                        updated[index].address = e.target.value;
+                        setFormData({ ...formData, stops: updated });
+                      }}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-12 py-4 text-white text-sm outline-none focus:border-primary/50 transition-all placeholder:text-white/30"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveStop(index)}
+                      className="absolute right-4 p-2 text-white/20 hover:text-red-500 transition-all"
+                    >
+                      <FaTimes className="text-xs" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3 px-4">
+                    <div className="w-px h-4 bg-white/10 ml-[3px]" />
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
             <div className="relative flex items-center">
               <FaMapMarkerAlt className="absolute left-4 text-white/40 text-xs" />

@@ -23,6 +23,7 @@ const BookingDetails = () => {
     const [secondsRemaining, setSecondsRemaining] = useState(240); // 4 minutes timer
     const [isDriverArrived, setIsDriverArrived] = useState(false);
     const [waitingTime, setWaitingTime] = useState(0);
+    const [activeStopArrival, setActiveStopArrival] = useState(null);
 
     // Map Refs
     const mapRef = useRef(null);
@@ -48,6 +49,10 @@ const BookingDetails = () => {
                 setBooking(data.booking);
                 if (data.booking.driverLocation?.latitude) {
                     setDriverLocation(data.booking.driverLocation);
+                }
+                // Sync arrival state
+                if (data.booking.tripData?.arrivedAt) {
+                    setIsDriverArrived(true);
                 }
             } else {
                 setError(data.message || "Ride not found");
@@ -88,13 +93,18 @@ const BookingDetails = () => {
         };
     }, [booking]);
 
-    // Waiting Timer Sync (User Side)
+    // Waiting Timer Sync (Updated for Multi-Stops)
     useEffect(() => {
         let interval;
-        const arrivedAt = booking?.tripData?.arrivedAt || (isDriverArrived ? new Date() : null);
+        // Prioritize stop arrival if trip is ongoing, otherwise use pickup arrival
+        const isOngoing = booking?.bookingStatus === 'Ongoing';
+        const arrivedAt = isOngoing ? activeStopArrival : (booking?.tripData?.arrivedAt || activeStopArrival);
+        
+        const shouldShowTimer = 
+            (!isOngoing && booking?.bookingStatus === 'Accepted' && booking?.tripData?.arrivedAt) || 
+            (isOngoing && activeStopArrival);
 
-        if (arrivedAt && booking?.bookingStatus === 'Accepted') {
-            setIsDriverArrived(true);
+        if (arrivedAt && shouldShowTimer) {
             const start = new Date(arrivedAt).getTime();
             interval = setInterval(() => {
                 const now = Date.now();
@@ -104,12 +114,36 @@ const BookingDetails = () => {
             setWaitingTime(0);
         }
         return () => clearInterval(interval);
-    }, [booking?.tripData?.arrivedAt, booking?.bookingStatus, isDriverArrived]);
+    }, [booking?.tripData?.arrivedAt, booking?.bookingStatus, activeStopArrival]);
+
+    useEffect(() => {
+        if (booking?.stops?.length > 0) {
+            const arrivingStop = booking.stops.find(s => s.status === 'Arrived');
+            if (arrivingStop) {
+                setActiveStopArrival(arrivingStop.arrivedAt);
+            } else {
+                setActiveStopArrival(null);
+            }
+        }
+    }, [booking?.stops]);
 
     const formatWaitingTimer = (sec) => {
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        return `${m}:${s.toString().padStart(2, '0')}`;
+        const freeSecs = (booking?.carCategory?.freeWaitingMin || 5) * 60;
+        const isExtra = sec > freeSecs;
+        const displaySecs = isExtra ? sec - freeSecs : freeSecs - sec;
+        
+        const m = Math.floor(displaySecs / 60);
+        const s = displaySecs % 60;
+        const timeStr = `${m}:${s.toString().padStart(2, '0')}`;
+        const isStopArrival = !!activeStopArrival;
+
+        return {
+            label: isExtra ? "EXTRA TIME" : "FREE TIME LEFT",
+            header: isStopArrival ? "STOP WAITING" : "PICKUP WAITING",
+            time: timeStr,
+            isExtra,
+            charges: isExtra ? Math.ceil((sec - freeSecs) / 60) * (booking?.carCategory?.waitingChargePerMin || 2) : 0
+        };
     };
 
 
@@ -320,17 +354,20 @@ const BookingDetails = () => {
             }
         });
 
+        // STOP UPDATE LISTENER (New)
+        socket.on('stop_update', (data) => {
+            if (data.bookingId === bookingId) {
+                console.log("📍 Stop Update Received:", data.status);
+                fetchBooking();
+            }
+        });
+
         // DRIVER ARRIVAL LISTENER
         socket.on('driver_arrived', (data) => {
             if (data.bookingId === bookingId) {
                 console.log("🚕 Driver Arrived Socket Event!");
                 setIsDriverArrived(true);
-                // If backend sent the arrivedAt time, we can sync the timer
-                if (data.arrivedAt) {
-                    const start = new Date(data.arrivedAt).getTime();
-                    const now = Date.now();
-                    setWaitingTime(Math.floor((now - start) / 1000));
-                }
+                fetchBooking(); // Refresh to get arrivedAt and other data
             }
         });
 
@@ -482,25 +519,37 @@ const BookingDetails = () => {
                                 </span>
                             </div>
 
-                            {/* DRIVER WAITING ALERT */}
-                            {isDriverArrived && booking.bookingStatus === 'Accepted' && (
+                            {/* DRIVER WAITING ALERT (Enhanced for Multi-Stops) */}
+                            {((isDriverArrived && booking.bookingStatus === 'Accepted') || (activeStopArrival && booking.bookingStatus === 'Ongoing')) && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="mb-5 bg-[#FACD16] rounded-xl p-4 flex items-center justify-between"
+                                    className={`mb-5 rounded-xl p-4 flex items-center justify-between border ${
+                                        formatWaitingTimer(waitingTime).isExtra 
+                                        ? 'bg-red-500/10 border-red-500/20 text-red-500' 
+                                        : 'bg-[#FACD16]/10 border border-[#FACD16]/20 text-[#FACD16]'
+                                    }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
-                                            <FaClock className="text-[#FACD16] animate-pulse" />
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${formatWaitingTimer(waitingTime).isExtra ? 'bg-red-500' : 'bg-black'}`}>
+                                            <FaClock className={formatWaitingTimer(waitingTime).isExtra ? 'text-white' : 'text-[#FACD16] animate-pulse'} />
                                         </div>
                                         <div>
-                                            <p className="text-black font-black text-[10px] uppercase tracking-widest">Driver arrived</p>
-                                            <p className="text-black/50 text-[8px] font-bold uppercase">Free waiting time applies</p>
+                                            <p className={`font-black text-[10px] uppercase tracking-widest ${formatWaitingTimer(waitingTime).isExtra ? 'text-red-500' : 'text-[#FACD16]'}`}>
+                                                {formatWaitingTimer(waitingTime).header} : {formatWaitingTimer(waitingTime).label}
+                                            </p>
+                                            <p className="text-white/40 text-[8px] font-bold uppercase">
+                                                {formatWaitingTimer(waitingTime).isExtra ? 'Chargeable waiting active' : 'Complimentary waiting period'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-black font-black text-xl tabular-nums">{formatWaitingTimer(waitingTime)}</p>
-                                        <p className="text-black/40 text-[8px] font-bold uppercase tracking-widest">Timer</p>
+                                        <p className="text-white font-black text-xl tabular-nums">{formatWaitingTimer(waitingTime).time}</p>
+                                        {formatWaitingTimer(waitingTime).isExtra && (
+                                            <p className="bg-red-600 text-white px-2 py-0.5 rounded text-[9px] font-black uppercase animate-bounce mt-1">
+                                                CHARGES: ₹{formatWaitingTimer(waitingTime).charges}
+                                            </p>
+                                        )}
                                     </div>
                                 </motion.div>
                             )}
@@ -519,27 +568,46 @@ const BookingDetails = () => {
                                         <span className="text-[#FACD16] font-black text-[9px] uppercase tracking-widest">{booking.paymentMethod || 'Cash'}</span>
                                     </div>
                                 </div>
-                                <div className="bg-[#0a0a0a] px-4 py-3 flex items-center justify-between border-b border-white/5">
-                                    <span className="text-white/50 font-bold text-sm">Base Fare</span>
-                                    <span className="text-white font-black text-xl">₹{(booking.fareEstimate || 0) - (booking.tripData?.waitingCharges || 0)}</span>
-                                </div>
-                                {booking.tripData?.waitingCharges > 0 && (
-                                    <div className="bg-[#0a0a0a] px-4 py-3 flex items-center justify-between border-b border-white/5">
-                                        <span className="text-[#FACD16]/80 font-bold text-sm flex items-center gap-2">
-                                            <FaClock size={10} /> Waiting Fee ({booking.tripData.waitingTimeMin}m)
-                                        </span>
-                                        <span className="text-[#FACD16] font-black text-lg">+ ₹{booking.tripData.waitingCharges}</span>
-                                    </div>
-                                )}
-                                <div className="bg-gradient-to-r from-[#FACD16]/10 to-transparent px-4 py-4 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-white font-black text-sm uppercase tracking-wider">To Be Paid</p>
-                                        <p className="text-white/25 text-[8px] font-bold uppercase tracking-widest">Excluding tolls/parking</p>
-                                    </div>
-                                    <span className="text-[#FACD16] font-black text-3xl">₹{booking.fareEstimate || 0}</span>
+                                    {(() => {
+                                        const pickupWait = booking?.tripData?.waitingCharges || 0;
+                                        const stopsWait = (booking?.stops || []).reduce((sum, s) => sum + (s.waitingCharges || 0), 0);
+                                        const totalWaitCharges = pickupWait + stopsWait;
+                                        
+                                        const pickupWaitMin = booking?.tripData?.waitingTimeMin || 0;
+                                        const stopsWaitMin = (booking?.stops || []).reduce((sum, s) => sum + (s.waitingTimeMin || 0), 0);
+                                        const totalWaitMin = pickupWaitMin + stopsWaitMin;
+
+                                        const currentTotal = booking?.actualFare || booking?.fareEstimate || 0;
+                                        const baseFareOnly = currentTotal - totalWaitCharges;
+
+                                        return (
+                                            <>
+                                                <div className="bg-[#0a0a0a] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                                                    <span className="text-white/50 font-bold text-sm">Ride Base Fare</span>
+                                                    <span className="text-white font-black text-xl">₹{baseFareOnly}</span>
+                                                </div>
+                                                
+                                                {totalWaitCharges > 0 && (
+                                                    <div className="bg-[#0a0a0a] px-4 py-3 flex items-center justify-between border-b border-white/5">
+                                                        <span className="text-[#FACD16]/80 font-bold text-sm flex items-center gap-2">
+                                                            <FaClock size={10} /> Waiting Charges ({totalWaitMin}m)
+                                                        </span>
+                                                        <span className="text-[#FACD16] font-black text-lg">+ ₹{totalWaitCharges}</span>
+                                                    </div>
+                                                )}
+
+                                                <div className="bg-gradient-to-r from-[#FACD16]/10 to-transparent px-4 py-4 flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-white font-black text-sm uppercase tracking-wider">Total Amount</p>
+                                                        <p className="text-white/25 text-[8px] font-bold uppercase tracking-widest">Final amount to be paid</p>
+                                                    </div>
+                                                    <span className="text-[#FACD16] font-black text-3xl">₹{currentTotal}</span>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
-                        </div>
 
                         {/* 2. ROUTE CARD */}
                         <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/10 shadow-xl">
@@ -547,16 +615,47 @@ const BookingDetails = () => {
                                 <FaRoute className="text-[#FACD16] text-sm" />
                                 <h3 className="text-white font-black text-sm uppercase tracking-wider">Your Route</h3>
                             </div>
-                            <div className="space-y-5 relative pl-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
+                            <div className="space-y-4 relative pl-5 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-white/10">
+                                {/* Pickup */}
                                 <div className="relative">
-                                    <div className="absolute -left-[21px] top-1 w-3 h-3 bg-[#FACD16] rounded-full border-2 border-black" />
+                                    <div className="absolute -left-[21px] top-1 w-3.5 h-3.5 bg-[#FACD16] rounded-full border-2 border-black" />
                                     <p className="text-white/40 text-[8px] font-black uppercase tracking-wider mb-1">PICKUP</p>
-                                    <p className="text-white/80 text-sm font-medium leading-tight">{booking.pickup?.address || booking.pickupAddress}</p>
+                                    <p className="text-white text-sm font-semibold leading-tight">{booking.pickup?.address || '—'}</p>
                                 </div>
+
+                                {/* Intermediate Stops */}
+                                {booking.stops && booking.stops.map((stop, sIdx) => (
+                                    <div key={sIdx} className="relative py-1">
+                                        <div className={`absolute -left-[21px] top-2 w-3 h-3 rounded-full border-2 border-black ${stop.status === 'Completed' ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex-1">
+                                                <p className="text-orange-500/60 text-[8px] font-black uppercase tracking-wider mb-1">
+                                                    STOP {sIdx + 1} 
+                                                    {stop.status === 'Completed' && <span className="ml-2 text-green-500">• COMPLETED</span>}
+                                                </p>
+                                                <p className="text-white/80 text-xs font-medium leading-tight">{stop.address}</p>
+                                            </div>
+                                            {stop.waitingCharges > 0 && (
+                                                <div className="flex flex-col items-end">
+                                                    <div className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 rounded text-[#FACD16] text-[8px] font-bold">
+                                                        Wait Fee: ₹{stop.waitingCharges.toLocaleString()}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {stop.status === 'Arrived' && (
+                                                <div className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 rounded text-green-500 text-[8px] font-bold animate-pulse">
+                                                    DRIVER ARRIVED
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Dropoff */}
                                 <div className="relative">
-                                    <div className="absolute -left-[21px] top-1 w-3 h-3 bg-white/20 rounded-full border border-white/30" />
-                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-wider mb-1">DROPOFF</p>
-                                    <p className="text-white/80 text-sm font-medium leading-tight">{booking.drop?.address || booking.dropAddress}</p>
+                                    <div className="absolute -left-[21px] top-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-black" />
+                                    <p className="text-white/40 text-[8px] font-black uppercase tracking-wider mb-1">DESTINATION</p>
+                                    <p className="text-white text-sm font-semibold leading-tight">{booking.drop?.address || '—'}</p>
                                 </div>
                             </div>
                         </div>

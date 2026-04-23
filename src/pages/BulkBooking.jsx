@@ -22,6 +22,8 @@ const BulkBooking = () => {
     dropCoords: { lat: 0, lng: 0 },
     date: '',
     time: '',
+    tripType: 'OneWay',
+    returnDate: '',
     days: 1,
     notes: '',
     distance: 0,
@@ -39,6 +41,25 @@ const BulkBooking = () => {
     initAutocomplete();
     fetchMyRequests();
   }, []);
+
+  // ⏱️ Auto-calculate Days based on Dates for Round Trip
+  useEffect(() => {
+    if (formData.tripType === 'RoundTrip' && formData.date && formData.returnDate) {
+      const start = new Date(formData.date);
+      const end = new Date(formData.returnDate);
+      
+      if (end >= start) {
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both days
+        setFormData(prev => ({ ...prev, days: diffDays }));
+      } else {
+        setFormData(prev => ({ ...prev, days: 1 }));
+      }
+    } else if (formData.tripType === 'OneWay') {
+        // Optional: Reset to 1 day for One Way if you want, but often 1 day is default
+        // setFormData(prev => ({ ...prev, days: 1 }));
+    }
+  }, [formData.date, formData.returnDate, formData.tripType]);
 
   const fetchMyRequests = async () => {
     try {
@@ -148,16 +169,46 @@ const handleRemoveCar = (catId) => {
 
 const calculateTotal = () => {
   // Formula: Rate (KM) * Quantity * Days * Distance (KM)
-  const baseTotal = selectedCars.reduce((acc, car) => acc + (car.price * car.quantity * formData.days * (formData.distance || 0)), 0);
+  // Multiplier for Round Trip
+  const distanceMultiplier = formData.tripType === 'RoundTrip' ? 2 : 1;
+  
+  const baseTotal = selectedCars.reduce((acc, car) => acc + (car.price * car.quantity * formData.days * ((formData.distance || 0) * distanceMultiplier)), 0);
   const modified = baseTotal + (baseTotal * (formData.priceModifier / 100));
   return Math.round(modified);
+};
+
+const getTodayDate = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
 };
 
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError(null);
-  setLoading(true);
 
+  // 🛡️ FRONTEND VALIDATION
+  if (!formData.pickup || !formData.drop) {
+      setError("Please select both Pickup and Drop locations.");
+      return;
+  }
+  if (!formData.date || !formData.time) {
+      setError("Please select Pickup Date and Time.");
+      return;
+  }
+  if (formData.tripType === 'RoundTrip' && !formData.returnDate) {
+      setError("Please select a Return Date for Round Trip.");
+      return;
+  }
+  if (selectedCars.length === 0) {
+      setError("Please select at least one vehicle category.");
+      return;
+  }
+  if (formData.distance <= 0) {
+      setError("Waiting for Google Maps to calculate distance. Please wait a moment...");
+      return;
+  }
+
+  setLoading(true);
   try {
     const token = localStorage.getItem('token');
     const payload = {
@@ -172,6 +223,8 @@ const handleSubmit = async (e) => {
         longitude: formData.dropCoords.lng 
       },
       pickupDateTime: `${formData.date}T${formData.time}`,
+      tripType: formData.tripType,
+      returnDateTime: formData.tripType === 'RoundTrip' ? `${formData.returnDate}T${formData.time}` : null,
       numberOfDays: formData.days,
       totalDistance: formData.distance,
       carsRequired: selectedCars.map(c => ({ category: c.id, quantity: c.quantity })),
@@ -316,8 +369,23 @@ return (
           {/* Step 2: Trip Details */}
           <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 transition-all ${step === 2 ? 'border-primary/50' : ''}`}>
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center font-bold">2</div>
               <h3 className="text-xl font-bold text-white">Journey Details</h3>
+            </div>
+
+            {/* Trip Type Selector */}
+            <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-8 max-w-sm">
+                <button 
+                  onClick={() => setFormData({...formData, tripType: 'OneWay'})}
+                  className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.tripType === 'OneWay' ? 'bg-primary text-black' : 'text-white/60 hover:text-white'}`}
+                >
+                  One Way
+                </button>
+                <button 
+                  onClick={() => setFormData({...formData, tripType: 'RoundTrip'})}
+                  className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.tripType === 'RoundTrip' ? 'bg-primary text-black' : 'text-white/60 hover:text-white'}`}
+                >
+                  Round Trip
+                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -352,7 +420,15 @@ return (
                   <input
                     type="date"
                     value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    min={getTodayDate()}
+                    onChange={(e) => {
+                        const newDate = e.target.value;
+                        setFormData(prev => ({ 
+                            ...prev, 
+                            date: newDate, 
+                            returnDate: prev.returnDate < newDate ? newDate : prev.returnDate 
+                        }));
+                    }}
                     className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary/50 outline-none transition-all [color-scheme:dark]"
                   />
                 </div>
@@ -369,29 +445,54 @@ return (
                   />
                 </div>
               </div>
+
+              {formData.tripType === 'RoundTrip' && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <label className="text-white/40 text-xs uppercase font-bold mb-2 block">Return Date</label>
+                  <div className="relative">
+                    <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" />
+                    <input
+                      type="date"
+                      value={formData.returnDate}
+                      min={formData.date || getTodayDate()}
+                      onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white focus:border-primary/50 outline-none transition-all [color-scheme:dark]"
+                    />
+                  </div>
+                </motion.div>
+              )}
+
               <div>
                 <label className="text-white/40 text-xs uppercase font-bold mb-2 block">Number of Days</label>
                 <div className="relative flex items-center bg-white/5 border border-white/10 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, days: Math.max(1, formData.days - 1) })}
-                    className="w-14 h-14 flex items-center justify-center text-white/40 hover:text-white"
-                  >
-                    <FaMinus size={12} />
-                  </button>
-                  <input
-                    type="number"
-                    value={formData.days}
-                    readOnly
-                    className="flex-1 bg-transparent text-center text-white font-bold outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, days: formData.days + 1 })}
-                    className="w-14 h-14 flex items-center justify-center text-white/40 hover:text-white"
-                  >
-                    <FaPlus size={12} />
-                  </button>
+                  {formData.tripType === 'OneWay' ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, days: Math.max(1, formData.days - 1) })}
+                        className="w-14 h-14 flex items-center justify-center text-white/40 hover:text-white"
+                      >
+                        <FaMinus size={12} />
+                      </button>
+                      <input
+                        type="number"
+                        value={formData.days}
+                        readOnly
+                        className="flex-1 bg-transparent text-center text-white font-bold outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, days: formData.days + 1 })}
+                        className="w-14 h-14 flex items-center justify-center text-white/40 hover:text-white"
+                      >
+                        <FaPlus size={12} />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex-1 py-4 text-center text-white font-bold bg-white/10 rounded-xl">
+                      {formData.days} Day(s) <span className="text-[10px] text-primary block mt-0.5">Calculated from dates</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -294,10 +294,20 @@ const MyBulkBookings = () => {
                                                 {cfg.label}
                                             </div>
 
+                                            {/* Trip Type Badge */}
+                                            <div className={`px-3 py-1.5 rounded-full border text-[9px] font-black uppercase tracking-widest ${booking.tripType === 'RoundTrip' ? 'bg-primary text-black border-primary/20' : 'bg-white/5 text-white/40 border-white/10'}`}>
+                                                {booking.tripType === 'RoundTrip' ? 'Round Trip' : 'One Way'}
+                                            </div>
+
                                             {/* Price + ID */}
-                                            <div className="text-right">
+                                            <div className="text-right shrink-0">
                                                 <p className="text-xl font-black text-primary">₹{booking.offeredPrice.toLocaleString()}</p>
-                                                <p className="text-[9px] text-white/20 font-mono uppercase">#{booking._id.slice(-6).toUpperCase()}</p>
+                                                {booking.startOtp && (
+                                                    <div className="mt-1 bg-primary/20 border border-primary/30 rounded px-2 py-0.5 inline-block">
+                                                        <p className="text-[10px] text-primary font-black tracking-[0.15em] uppercase">OTP: {booking.startOtp}</p>
+                                                    </div>
+                                                )}
+                                                <p className="text-[9px] text-white/20 font-mono uppercase mt-1">#{booking._id.slice(-6).toUpperCase()}</p>
                                             </div>
                                         </div>
 
@@ -330,18 +340,27 @@ const MyBulkBookings = () => {
                                                 <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 text-center">
                                                     <FaCalendarAlt className="text-primary mx-auto mb-1.5" size={12} />
                                                     <p className="text-white text-xs font-black">{new Date(booking.pickupDateTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</p>
-                                                    <p className="text-[9px] text-white/20 uppercase font-bold mt-0.5">Date</p>
+                                                    <p className="text-[9px] text-white/20 uppercase font-bold mt-0.5">{booking.tripType === 'RoundTrip' ? 'Pickup' : 'Date'}</p>
                                                 </div>
+                                                {booking.tripType === 'RoundTrip' && (
+                                                <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 text-center">
+                                                    <FaCalendarAlt className="text-primary mx-auto mb-1.5" size={12} />
+                                                    <p className="text-white text-xs font-black">{booking.returnDateTime ? new Date(booking.returnDateTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'N/A'}</p>
+                                                    <p className="text-[9px] text-primary/50 uppercase font-bold mt-0.5">Return</p>
+                                                </div>
+                                                )}
                                                 <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 text-center">
                                                     <FaClock className="text-primary mx-auto mb-1.5" size={12} />
                                                     <p className="text-white text-xs font-black">{booking.numberOfDays}d</p>
                                                     <p className="text-[9px] text-white/20 uppercase font-bold mt-0.5">Duration</p>
                                                 </div>
+                                                {booking.tripType !== 'RoundTrip' && (
                                                 <div className="bg-white/[0.03] border border-white/5 rounded-xl p-3 text-center">
                                                     <FaRoute className="text-primary mx-auto mb-1.5" size={12} />
                                                     <p className="text-white text-xs font-black">{booking.totalDistance}km</p>
                                                     <p className="text-[9px] text-white/20 uppercase font-bold mt-0.5">Distance</p>
                                                 </div>
+                                                )}
                                             </div>
 
                                             {/* Fleet Tags */}
@@ -384,17 +403,7 @@ const MyBulkBookings = () => {
                                                 )}
                                             </div>
 
-                                            {booking.status === 'Accepted' && (
-                                                <div className="bg-green-500/5 border border-green-500/15 rounded-2xl p-4 flex items-center gap-4">
-                                                    <div className="w-9 h-9 bg-green-500/10 rounded-xl flex items-center justify-center shrink-0">
-                                                        <FaCheckCircle className="text-green-400" size={16} />
-                                                    </div>
-                                                    <div>
-                                                        <h5 className="text-white text-[10px] font-black mb-0.5 uppercase tracking-wider">Fleet Owner Accepted!</h5>
-                                                        <p className="text-[10px] text-white/30 tracking-tight">OTP to Start: <span className="text-primary font-black text-xs ml-1 tracking-[0.2em]">{booking.startOtp}</span></p>
-                                                    </div>
-                                                </div>
-                                            )}
+                                            {/* Action Area Removed redundant OTP box from here */}
 
 
                                             {booking.status === 'Completed' && (
