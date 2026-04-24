@@ -9,6 +9,17 @@ import {
 import PageHeader from '../components/PageHeader';
 import { API_BASE_URL, BASE_URL } from '../config/api';
 
+// --- Helper: Load Razorpay Script ---
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const BulkBooking = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
@@ -244,8 +255,61 @@ const handleSubmit = async (e) => {
     const data = await response.json();
 
     if (data.success) {
-      setSuccess(true);
-      fetchMyRequests(); // Refresh table
+      const { bookingId, advanceAmount } = data;
+      
+      // 💳 START RAZORPAY PAYMENT
+      const resScript = await loadRazorpay();
+      if (!resScript) {
+        setError("Razorpay SDK failed to load. Check your connection.");
+        setLoading(false);
+        return;
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: advanceAmount * 100, // in paise
+        currency: "INR",
+        name: "Cab Booking Bulk",
+        description: "25% Advance for Bulk Booking",
+        handler: async (response) => {
+          // Verify on backend
+          try {
+            setLoading(true);
+            const verifyRes = await fetch(`${API_BASE_URL}/bulk-bookings/verify-payment`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                bookingId,
+                paymentId: response.razorpay_payment_id,
+                type: 'advance'
+              })
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              setSuccess(true);
+              fetchMyRequests();
+            } else {
+              setError("Payment verification failed. Contact support.");
+            }
+          } catch (err) {
+            setError("Verification error.");
+          } finally {
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: localStorage.getItem('userName') || '',
+          contact: localStorage.getItem('userPhone') || ''
+        },
+        theme: { color: "#FFB600" },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+
     } else {
       setError(data.message || "Booking failed.");
     }
