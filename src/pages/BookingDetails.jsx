@@ -421,19 +421,46 @@ const BookingDetails = () => {
                     const currentPos = new window.google.maps.LatLng(lat, lng);
                     driverMarker.current.setPosition(currentPos);
                     
-                    // --- CAR ROTATION LOGIC (FIXED) ---
+                    // --- CAR ROTATION LOGIC (Canvas Magic) ---
                     if (data.heading !== undefined) {
-                        const carSymbol = {
-                            path: 'M23.5,17h-15c-1.4,0-2.5-1.1-2.5-2.5V12c0-1.4,1.1-2.5,2.5-2.5h15c1.4,0,2.5,1.1,2.5,2.5v2.5C26,15.9,24.9,17,23.5,17z M16,4 c-4.4,0-8,3.6-8,8h16C24,7.6,20.4,4,16,4z M5,12c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h22c1.1,0,2-0.9,2-2V14c0-1.1-0.9-2-2-2',
-                            fillColor: '#FACD16', // Car color (System color)
-                            fillOpacity: 1,
-                            strokeWeight: 2,
-                            strokeColor: '#000',
-                            scale: 1.5,
-                            rotation: data.heading, // Native rotation!
-                            anchor: new window.google.maps.Point(16, 16)
+                        let iconUrl = 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png'; // Default
+                        if (currentBooking.carCategory?.image) {
+                            iconUrl = `${backendServer}/uploads/${currentBooking.carCategory.image}`;
+                        }
+
+                        // Canvas logic to rotate IMAGE
+                        const img = new Image();
+                        img.crossOrigin = "anonymous"; 
+                        img.src = iconUrl;
+                        
+                        // Error handle: Agar photo nahi aayi toh standard icon dikhao
+                        img.onerror = () => {
+                            const fallbackIcon = {
+                                url: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png',
+                                scaledSize: new window.google.maps.Size(50, 50),
+                                anchor: new window.google.maps.Point(25, 25)
+                            };
+                            if (driverMarker.current) driverMarker.current.setIcon(fallbackIcon);
                         };
-                        driverMarker.current.setIcon(carSymbol);
+
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const size = 64; 
+                            canvas.width = size;
+                            canvas.height = size;
+                            const ctx = canvas.getContext('2d');
+                            
+                            ctx.translate(size/2, size/2);
+                            ctx.rotate(data.heading * Math.PI / 180);
+                            ctx.drawImage(img, -size/2, -size/2, size, size);
+                            
+                            const rotatedIcon = {
+                                url: canvas.toDataURL(),
+                                scaledSize: new window.google.maps.Size(50, 50),
+                                anchor: new window.google.maps.Point(25, 25)
+                            };
+                            if (driverMarker.current) driverMarker.current.setIcon(rotatedIcon);
+                        };
                     }
 
                     if (count < frames) {
