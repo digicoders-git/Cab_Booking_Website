@@ -121,6 +121,7 @@ const DriverTracking = () => {
         });
 
         socketRef.current.on('driver_location_update', (data) => {
+            console.log("🚗 [User Panel] Received Live Data:", data); // debugging ke liye
             if (data.bookingId === bookingId || data.driverId === booking?.assignedDriver?._id) {
                 setDriverLocation({ latitude: data.latitude, longitude: data.longitude, heading: data.heading });
                 
