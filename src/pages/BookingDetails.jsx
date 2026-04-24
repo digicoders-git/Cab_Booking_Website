@@ -64,9 +64,16 @@ const BookingDetails = () => {
         }
     };
 
+    const bookingRef = useRef(null);
+
     useEffect(() => {
         fetchBooking();
     }, [bookingId]);
+
+    // Latest booking ko ref mein rakho taaki socket stale na ho
+    useEffect(() => {
+        bookingRef.current = booking;
+    }, [booking]);
 
     // Timer Sync Logic
     useEffect(() => {
@@ -388,9 +395,10 @@ const BookingDetails = () => {
 
     // Robust location update handler
     const handleLocationUpdate = (data) => {
-        if (!data.driverId || !booking) return;
+        const currentBooking = bookingRef.current;
+        if (!data.driverId || !currentBooking) return;
 
-        const currentDriverId = (booking?.assignedDriver?._id || booking?.assignedDriver || '').toString().toLowerCase().trim();
+        const currentDriverId = (currentBooking?.assignedDriver?._id || currentBooking?.assignedDriver || '').toString().toLowerCase().trim();
         const incomingId = (data.driverId?._id || data.driverId || '').toString().toLowerCase().trim();
 
         if (currentDriverId && incomingId && currentDriverId === incomingId) {
@@ -407,11 +415,37 @@ const BookingDetails = () => {
                     count++;
                     const lat = startPos.lat() + (endPos.lat() - startPos.lat()) * (count / frames);
                     const lng = startPos.lng() + (endPos.lng() - startPos.lng()) * (count / frames);
-                    driverMarker.current.setPosition(new window.google.maps.LatLng(lat, lng));
+                    
+                    // Naya Position set karo
+                    const currentPos = new window.google.maps.LatLng(lat, lng);
+                    driverMarker.current.setPosition(currentPos);
+                    
+                    // --- CAR ROTATION LOGIC (Naya) ---
+                    if (data.heading !== undefined) {
+                        let iconUrl = 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png'; // Default
+                        if (currentBooking.carCategory?.image) {
+                            iconUrl = `${backendServer}/uploads/${currentBooking.carCategory.image}`;
+                        }
+
+                        // SVG ke zariye image ko rotate kar rahe hain
+                        const rotatedIcon = {
+                            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                                <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                                    <g transform="rotate(${data.heading} 25 25)">
+                                        <image href="${iconUrl}" width="40" height="40" x="5" y="5" />
+                                    </g>
+                                </svg>
+                            `)}`,
+                            scaledSize: new window.google.maps.Size(50, 50),
+                            anchor: new window.google.maps.Point(25, 25)
+                        };
+                        driverMarker.current.setIcon(rotatedIcon);
+                    }
+
                     if (count < frames) {
                         requestAnimationFrame(animate);
                     } else {
-                        setDriverLocation({ latitude: data.latitude, longitude: data.longitude });
+                        setDriverLocation({ latitude: data.latitude, longitude: data.longitude, heading: data.heading });
                     }
                 };
                 requestAnimationFrame(animate);
