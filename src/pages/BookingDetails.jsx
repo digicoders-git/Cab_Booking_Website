@@ -189,6 +189,7 @@ const BookingDetails = () => {
         directionsRenderer.current = new window.google.maps.DirectionsRenderer({
             map: googleMap.current,
             suppressMarkers: true,
+            preserveViewport: true, // <--- YEH FIX HAI! Isse zoom reset nahi hoga
             polylineOptions: {
                 strokeColor: '#FACD16',
                 strokeWeight: 6,
@@ -420,26 +421,19 @@ const BookingDetails = () => {
                     const currentPos = new window.google.maps.LatLng(lat, lng);
                     driverMarker.current.setPosition(currentPos);
                     
-                    // --- CAR ROTATION LOGIC (Naya) ---
+                    // --- CAR ROTATION LOGIC (FIXED) ---
                     if (data.heading !== undefined) {
-                        let iconUrl = 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png'; // Default
-                        if (currentBooking.carCategory?.image) {
-                            iconUrl = `${backendServer}/uploads/${currentBooking.carCategory.image}`;
-                        }
-
-                        // SVG ke zariye image ko rotate kar rahe hain
-                        const rotatedIcon = {
-                            url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                                <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                                    <g transform="rotate(${data.heading} 25 25)">
-                                        <image href="${iconUrl}" width="40" height="40" x="5" y="5" />
-                                    </g>
-                                </svg>
-                            `)}`,
-                            scaledSize: new window.google.maps.Size(50, 50),
-                            anchor: new window.google.maps.Point(25, 25)
+                        const carSymbol = {
+                            path: 'M23.5,17h-15c-1.4,0-2.5-1.1-2.5-2.5V12c0-1.4,1.1-2.5,2.5-2.5h15c1.4,0,2.5,1.1,2.5,2.5v2.5C26,15.9,24.9,17,23.5,17z M16,4 c-4.4,0-8,3.6-8,8h16C24,7.6,20.4,4,16,4z M5,12c-1.1,0-2,0.9-2,2v10c0,1.1,0.9,2,2,2h22c1.1,0,2-0.9,2-2V14c0-1.1-0.9-2-2-2',
+                            fillColor: '#FACD16', // Car color (System color)
+                            fillOpacity: 1,
+                            strokeWeight: 2,
+                            strokeColor: '#000',
+                            scale: 1.5,
+                            rotation: data.heading, // Native rotation!
+                            anchor: new window.google.maps.Point(16, 16)
                         };
-                        driverMarker.current.setIcon(rotatedIcon);
+                        driverMarker.current.setIcon(carSymbol);
                     }
 
                     if (count < frames) {
