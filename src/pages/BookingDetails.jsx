@@ -480,6 +480,16 @@ const BookingDetails = () => {
                         </div>
 
                         <div className="absolute top-6 right-6 z-10 hidden md:flex items-center gap-3">
+                            {/* --- DEBUG BOX: Driver Live Data (Bada kiya gaya hai) --- */}
+                            {driverLocation && (
+                                <div className="bg-black/80 backdrop-blur-md border-2 border-[#FACD16] p-4 rounded-2xl shadow-[0_0_20px_rgba(250,205,22,0.3)] text-xs font-mono text-white space-y-1.5">
+                                    <div className="font-black text-[#FACD16] border-b border-white/20 pb-2 mb-2 uppercase tracking-wider text-sm">Live Driver Data</div>
+                                    <div className="flex justify-between gap-4"><span>LAT:</span> <span className="text-cyan-400 font-bold">{driverLocation.latitude.toFixed(6)}</span></div>
+                                    <div className="flex justify-between gap-4"><span>LNG:</span> <span className="text-cyan-400 font-bold">{driverLocation.longitude.toFixed(6)}</span></div>
+                                    <div className="flex justify-between gap-4 border-t border-white/10 pt-1 mt-1"><span>HEADING:</span> <span className="text-red-500 font-black text-base">{driverLocation.heading?.toFixed(2) || 0}°</span></div>
+                                </div>
+                            )}
+
                             <div className={`px-4 py-2 rounded-full backdrop-blur-md border ${isConnected ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} flex items-center gap-2 shadow-2xl`}>
                                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                                 <span className="text-[9px] font-black uppercase tracking-widest">{isConnected ? 'Live' : 'Offline'}</span>

@@ -199,6 +199,17 @@ const DriverTracking = () => {
                                     <div className="text-xl font-extrabold leading-none">{eta} min</div>
                                 </div>
                             </div>
+                            
+                            {/* --- DEBUG BOX: Driver Live Data --- */}
+                            {driverLocation && (
+                                <div className="bg-white/90 backdrop-blur-md border border-primary/30 p-3 rounded-xl shadow-xl text-[10px] font-mono text-black space-y-1">
+                                    <div className="font-bold text-primary border-b border-gray-200 pb-1 mb-1 uppercase">Live Debug Data</div>
+                                    <div>LAT: <span className="text-blue-600">{driverLocation.latitude.toFixed(6)}</span></div>
+                                    <div>LNG: <span className="text-blue-600">{driverLocation.longitude.toFixed(6)}</span></div>
+                                    <div>HDG: <span className="text-red-600 font-bold">{driverLocation.heading?.toFixed(2) || 0}°</span></div>
+                                </div>
+                            )}
+
                             <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest w-fit shadow-lg ${isConnected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                                 {isConnected ? '● Live' : '○ Offline'}
                             </div>
