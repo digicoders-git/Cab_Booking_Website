@@ -4,7 +4,7 @@ import {
   FaUser, FaEnvelope, FaPhoneAlt, FaCamera,
   FaSignOutAlt, FaTaxi, FaEdit, FaCheck, FaTimes,
   FaShieldAlt, FaCalendarAlt, FaUniversity, FaCreditCard,
-  FaIdCard, FaBuilding, FaWallet, FaChartLine
+  FaIdCard, FaBuilding, FaWallet, FaChartLine, FaHistory
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import PageHeader from '../components/PageHeader';
@@ -225,7 +225,7 @@ const Profile = () => {
 
                 {/* Wallet & Earnings */}
                 <div className="mt-6 grid grid-cols-2 gap-3">
-                  <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center group hover:border-primary/30 transition-all cursor-pointer" onClick={() => navigate('/my-transactions')}>
                     <FaWallet className="text-primary text-sm mx-auto mb-2" />
                     <p className="text-white font-black text-lg">₹{user?.walletBalance || 0}</p>
                     <p className="text-white/20 text-[8px] font-black uppercase tracking-widest">Wallet</p>
@@ -236,6 +236,13 @@ const Profile = () => {
                     <p className="text-white/20 text-[8px] font-black uppercase tracking-widest">Earnings</p>
                   </div>
                 </div>
+
+                <button
+                  onClick={() => navigate('/my-transactions')}
+                  className="w-full mt-4 bg-white/5 border border-white/10 text-white/40 font-black py-3.5 rounded-2xl flex items-center justify-center gap-3 hover:bg-primary hover:text-black hover:border-primary transition-all text-[10px] uppercase tracking-[0.2em]"
+                >
+                  <FaHistory /> View History
+                </button>
 
                 {/* Stats */}
                 <div className="mt-4 space-y-3">

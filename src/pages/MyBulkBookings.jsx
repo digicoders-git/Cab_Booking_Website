@@ -371,6 +371,12 @@ const MyBulkBookings = () => {
                                                         {car.quantity}× {car.category?.name || 'Vehicle'}
                                                     </span>
                                                 ))}
+                                                {booking.assignedDrivers && booking.assignedDrivers.length > 0 && (
+                                                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black text-primary uppercase tracking-wider">
+                                                        <FaUsers size={9} />
+                                                        {booking.assignedDrivers.length} Drivers Ready
+                                                    </span>
+                                                )}
                                             </div>
 
                                             {/* Action Area */}
@@ -405,6 +411,58 @@ const MyBulkBookings = () => {
 
                                             {/* Action Area Removed redundant OTP box from here */}
 
+
+                                            {/* Assigned Fleet Info - QUICK VIEW ON CARD */}
+                                            {booking.assignedFleet && (
+                                                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3 group-hover:bg-primary/10 transition-all">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-xl overflow-hidden border border-primary/20 bg-primary/10 flex items-center justify-center shrink-0">
+                                                                {booking.assignedFleet.image ? (
+                                                                    <img 
+                                                                        src={`${API_BASE_URL.replace('/api', '')}/uploads/${booking.assignedFleet.image}`} 
+                                                                        alt="" 
+                                                                        className="w-full h-full object-cover" 
+                                                                    />
+                                                                ) : (
+                                                                    <FaBuilding size={16} className="text-primary" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[9px] text-primary font-black uppercase tracking-widest">Fleet Owner</p>
+                                                                <h5 className="text-white text-xs font-black leading-tight mt-0.5">{booking.assignedFleet.companyName || booking.assignedFleet.name}</h5>
+                                                            </div>
+                                                        </div>
+                                                        <a 
+                                                            href={`tel:${booking.assignedFleet.phone}`}
+                                                            className="w-8 h-8 bg-primary text-black rounded-lg flex items-center justify-center hover:bg-yellow-400 transition-all shadow-lg shadow-primary/20"
+                                                        >
+                                                            <FaPhoneAlt size={10} />
+                                                        </a>
+                                                    </div>
+
+                                                    {/* DRIVERS LIST ON CARD */}
+                                                    {booking.assignedDrivers && booking.assignedDrivers.length > 0 && (
+                                                        <div className="pt-3 border-t border-white/5 flex flex-wrap gap-3">
+                                                            {booking.assignedDrivers.map((item, dIdx) => (
+                                                                <div key={dIdx} className="flex items-center gap-2 bg-white/5 pr-3 py-1 rounded-full border border-white/5">
+                                                                    <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 flex items-center justify-center">
+                                                                        {item.driver?.image ? (
+                                                                            <img src={`${API_BASE_URL.replace('/api', '')}/uploads/${item.driver.image}`} alt="" className="w-full h-full object-cover" />
+                                                                        ) : (
+                                                                            <FaUsers size={10} className="text-white/20" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <p className="text-[10px] font-black text-white leading-none truncate max-w-[80px]">{item.driver?.name}</p>
+                                                                        <p className="text-[8px] text-white/40 font-bold mt-0.5 leading-none">{item.driver?.phone}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
 
                                             {booking.status === 'Completed' && (
                                                 <div className="bg-blue-500/5 border border-blue-500/15 rounded-2xl p-4 flex items-center gap-4">
@@ -456,12 +514,21 @@ const MyBulkBookings = () => {
                                 {selectedBooking.assignedFleet && (
                                     <div className="bg-primary/10 border border-primary/20 rounded-2xl p-5">
                                         <div className="flex items-center gap-4 mb-4">
-                                            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-black">
-                                                <FaBuilding size={20} />
+                                            <div className="w-14 h-14 bg-primary/20 rounded-xl flex items-center justify-center text-black overflow-hidden border border-primary/30">
+                                                {selectedBooking.assignedFleet.image ? (
+                                                    <img 
+                                                        src={`${API_BASE_URL.replace('/api', '')}/uploads/${selectedBooking.assignedFleet.image}`} 
+                                                        alt="" 
+                                                        className="w-full h-full object-cover" 
+                                                    />
+                                                ) : (
+                                                    <FaBuilding size={20} className="text-primary" />
+                                                )}
                                             </div>
                                             <div>
                                                 <p className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mb-0.5">Assigned Fleet</p>
-                                                <h4 className="text-white font-black text-base">{selectedBooking.assignedFleet.companyName || 'Unknown Fleet'}</h4>
+                                                <h4 className="text-white font-black text-base leading-tight">{selectedBooking.assignedFleet.companyName || 'Premium Fleet'}</h4>
+                                                <p className="text-white/40 text-[10px] font-bold mt-0.5">Owner: {selectedBooking.assignedFleet.name}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
@@ -517,6 +584,47 @@ const MyBulkBookings = () => {
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* Assigned Drivers Section */}
+                                {selectedBooking.assignedDrivers && selectedBooking.assignedDrivers.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h5 className="text-primary/40 text-[10px] uppercase font-black tracking-widest border-b border-primary/10 pb-2 flex items-center justify-between">
+                                            Assigned Drivers
+                                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px]">{selectedBooking.assignedDrivers.length} Ready</span>
+                                        </h5>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {selectedBooking.assignedDrivers.map((item, idx) => (
+                                                <div key={idx} className="flex items-center justify-between bg-white/[0.03] p-4 rounded-2xl border border-white/5 hover:border-primary/20 transition-all group">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-white/5 flex items-center justify-center shrink-0">
+                                                            {item.driver?.image ? (
+                                                                <img 
+                                                                    src={`${API_BASE_URL.replace('/api', '')}/uploads/${item.driver.image}`} 
+                                                                    alt="" 
+                                                                    className="w-full h-full object-cover" 
+                                                                />
+                                                            ) : (
+                                                                <FaUserCircle size={16} className="text-white/20" />
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <h6 className="text-white text-sm font-black leading-tight">{item.driver?.name || 'Assigned Driver'}</h6>
+                                                            <p className="text-[10px] text-white/30 font-bold mt-0.5">{item.driver?.phone || 'No phone'}</p>
+                                                        </div>
+                                                    </div>
+                                                    {item.driver?.phone && (
+                                                        <a 
+                                                            href={`tel:${item.driver.phone}`}
+                                                            className="w-8 h-8 bg-white/5 text-white/40 rounded-lg flex items-center justify-center hover:bg-primary hover:text-black transition-all"
+                                                        >
+                                                            <FaPhoneAlt size={10} />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Pricing */}
                                 <div className="flex items-center justify-between bg-white/5 p-5 rounded-2xl border border-white/10">

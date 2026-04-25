@@ -19,6 +19,7 @@ const navLinks = [
   { name: 'Bulk Booking', path: '/bulk-booking', hasDropdown: false },
   { name: 'My Rides', path: '/my-booking', hasDropdown: false },
   { name: 'My Bulk Rides', path: '/my-bulk-bookings', hasDropdown: false },
+  { name: 'Wallet History', path: '/my-transactions', hasDropdown: false },
   { name: 'Support', path: '/support', hasDropdown: false },
 ];
 
