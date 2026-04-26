@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logo.png';
 import {
-  FaTaxi, FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram,
+  FaTaxi, FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaWhatsapp,
   FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaCaretRight, FaPaperPlane, FaArrowUp
 } from 'react-icons/fa';
 
@@ -33,12 +33,20 @@ const Footer = () => {
               {[
                 { icon: FaPhoneAlt, text: '+91 7310221010', href: 'tel:+917310221010' },
                 { icon: FaPhoneAlt, text: '+91 7310231010', href: 'tel:+917310231010' },
-                { icon: FaMapMarkerAlt, text: '25/B Milford Road, New York', href: null },
+                { icon: FaMapMarkerAlt, text: 'Arun Bhawan Kalu Kuwan Baberu Road, Banda UP', href: 'https://www.google.com/maps/search/?api=1&query=Arun+Bhawan+Kalu+Kuwan+Baberu+Road+Banda+UP' },
                 { icon: FaEnvelope, text: 'kwikcabs9@gmail.com ', href: 'mailto:kwikcabs9@gmail.com ' },
               ].map(({ icon: Icon, text, href }) => (
                 <div key={text} className="flex items-center gap-3 text-white/50 text-sm hover:text-white/80 transition-colors">
                   <Icon className="text-primary text-xs shrink-0" />
-                  {href ? <a href={href}>{text}</a> : text}
+                  {href ? (
+                    <a 
+                      href={href} 
+                      target={href.startsWith('http') ? "_blank" : undefined} 
+                      rel={href.startsWith('http') ? "noopener noreferrer" : undefined}
+                    >
+                      {text}
+                    </a>
+                  ) : text}
                 </div>
               ))}
             </div>
@@ -119,8 +127,20 @@ const Footer = () => {
             </a>
           </p>
           <div className="flex gap-3">
-            {[FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn].map((Icon, i) => (
-              <a key={i} href="#" className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/40 transition-all">
+            {[
+              { Icon: FaFacebookF, href: '#' },
+              { Icon: FaTwitter, href: '#' },
+              { Icon: FaInstagram, href: '#' },
+              { Icon: FaLinkedinIn, href: 'https://www.linkedin.com/my-items/client-projects/' },
+              { Icon: FaWhatsapp, href: 'https://wa.me/7310221010' },
+            ].map(({ Icon, href }, i) => (
+              <a 
+                key={i} 
+                href={href} 
+                target={href !== '#' ? "_blank" : undefined}
+                rel={href !== '#' ? "noopener noreferrer" : undefined}
+                className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/40 transition-all"
+              >
                 <Icon size={12} />
               </a>
             ))}
