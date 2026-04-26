@@ -206,6 +206,12 @@ const MyBulkBookings = () => {
         
         // 6. Table Body (Dynamic Data)
         let currentY = tableTop + 17;
+
+        // Calculate Total Base Weight for proportional distribution
+        const totalBaseWeight = booking.carsRequired.reduce((sum, item) => {
+            return sum + (item.category?.bulkBookingBasePrice || 0) * item.quantity;
+        }, 0);
+
         booking.carsRequired.forEach((item, index) => {
            doc.setFont("helvetica", "normal");
            doc.text(`${index + 1}`, 11, currentY);
@@ -213,7 +219,15 @@ const MyBulkBookings = () => {
            doc.text("NOS", 129, currentY);
            doc.text(`${item.quantity}`, 152, currentY);
            
-           const totalForCategory = Math.round(booking.offeredPrice / booking.carsRequired.length);
+           // Calculate proportional share
+           let totalForCategory = 0;
+           if (totalBaseWeight > 0) {
+               const weight = (item.category?.bulkBookingBasePrice || 0) * item.quantity;
+               totalForCategory = Math.round((weight / totalBaseWeight) * booking.offeredPrice);
+           } else {
+               totalForCategory = Math.round(booking.offeredPrice / booking.carsRequired.length);
+           }
+           
            const rate = Math.round(totalForCategory / item.quantity);
            
            doc.text(`${rate}`, 168, currentY);
@@ -232,14 +246,14 @@ const MyBulkBookings = () => {
         
         // 7. Totals Section
         doc.setFont("helvetica", "bold");
-        const advancePaid = Math.round(booking.offeredPrice * 0.25);
+        const advancePaid = booking.advancePayment?.amount || 0;
         const remainingBalance = booking.offeredPrice - advancePaid;
 
         doc.text("TOTAL PRICE", 130, tableBottom + 7);
         doc.text(`${booking.offeredPrice.toLocaleString()}`, 185, tableBottom + 7);
         doc.line(80, tableBottom + 10, 205, tableBottom + 10);
         
-        doc.text("ADVANCE PAID (25%)", 130, tableBottom + 17);
+        doc.text("ADVANCE PAID", 130, tableBottom + 17);
         doc.text(`${advancePaid.toLocaleString()}`, 185, tableBottom + 17);
         doc.line(80, tableBottom + 20, 205, tableBottom + 20);
         
