@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaEnvelope, FaUser, FaPhoneAlt, FaShieldAlt, FaArrowRight, FaBolt, FaCheckCircle, FaTaxi, FaStar } from 'react-icons/fa';
 import { API_BASE_URL } from '../config/api';
 import logo from '../assets/logo.png';
@@ -12,6 +12,9 @@ const Register = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  // Jahan se aaya tha wahan wapas bhejo, default home
+  const redirectTo = location.state?.from || '/';
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -63,7 +66,7 @@ const Register = () => {
           color: '#fff',
           customClass: { popup: 'rounded-[30px] border border-white/10' }
         });
-        setTimeout(() => window.location.reload(), 2100);
+        setTimeout(() => navigate(redirectTo, { replace: true }), 2100);
       } else {
         Swal.fire({ icon: 'error', title: 'Authentication Failed', text: data.message, background: '#111', color: '#fff', customClass: { popup: 'rounded-[30px] border border-white/10' } });
       }

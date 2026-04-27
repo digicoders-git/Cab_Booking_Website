@@ -26,6 +26,14 @@ const BulkBooking = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
 
+  // 🛡️ Auth Guard — agar login nahi toh Register page pe bhejo
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/register', { replace: true, state: { from: '/bulk-booking' } });
+    }
+  }, []);
+
   const generateReceipt = (booking) => {
     const doc = new jsPDF();
     
@@ -241,6 +249,8 @@ const BulkBooking = () => {
   const dropRef = useRef();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
     fetchCategories();
     initAutocomplete();
     fetchMyRequests();
