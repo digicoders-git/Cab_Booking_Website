@@ -21,6 +21,8 @@ const navLinks = [
   { name: 'My Bulk Rides', path: '/my-bulk-bookings', hasDropdown: false },
   { name: 'Wallet History', path: '/my-transactions', hasDropdown: false },
   { name: 'Support', path: '/support', hasDropdown: false },
+  { name: 'Driver Register', path: 'https://driver.kwikcabs.in/driver/register', isExternal: true, hasDropdown: false },
+  { name: 'Agent Login', path: 'https://agent.kwikcabs.in/agent/login', isExternal: true, hasDropdown: false },
 ];
 
 const Header = () => {
@@ -67,7 +69,7 @@ const Header = () => {
   return (
     <>
       <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl' : 'bg-transparent'}`}>
-        <div className="container mx-auto 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8 flex justify-between items-center py-2 lg:py-3">
+        <div className="container mx-auto 2xl:max-w-[1500px] px-4 sm:px-6 lg:px-3 flex justify-between items-center py-2 lg:py-3">
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 z-50 shrink-0">
@@ -78,13 +80,25 @@ const Header = () => {
           <nav className="hidden xl:flex items-center gap-8">
             {navLinks.map((link) => (
               <div key={link.name} className="relative group">
-                <Link
-                  to={link.path}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors py-2 ${isActive(link.path) ? 'text-primary' : 'text-white/70 hover:text-white'}`}
-                >
-                  {link.name}
-                  {link.hasDropdown && <FaChevronDown className="text-[10px] transition-transform group-hover:rotate-180" />}
-                </Link>
+                {link.isExternal ? (
+                  <a
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-[13px] font-medium transition-colors py-2 text-white/70 hover:text-white"
+                  >
+                    {link.name}
+                    {link.hasDropdown && <FaChevronDown className="text-[10px] transition-transform group-hover:rotate-180" />}
+                  </a>
+                ) : (
+                  <Link
+                    to={link.path}
+                    className={`flex items-center gap-1.5 text-[13px] font-medium transition-colors py-2 ${isActive(link.path) ? 'text-primary' : 'text-white/70 hover:text-white'}`}
+                  >
+                    {link.name}
+                    {link.hasDropdown && <FaChevronDown className="text-[10px] transition-transform group-hover:rotate-180" />}
+                  </Link>
+                )}
 
                 {link.hasDropdown && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-[1000]">
@@ -176,21 +190,41 @@ const Header = () => {
               {/* Nav Links */}
               <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 {navLinks.map((link, idx) => (
-                  <Link
-                    key={idx}
-                    to={link.path}
-                    onClick={() => setIsOffcanvasOpen(false)}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '14px 16px', borderRadius: '12px',
-                      color: isActive(link.path) ? '#FFD60A' : 'rgba(255,255,255,0.7)',
-                      fontSize: '15px', fontWeight: '500', textDecoration: 'none',
-                      background: isActive(link.path) ? 'rgba(255,214,10,0.08)' : 'transparent',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {link.name}
-                  </Link>
+                  link.isExternal ? (
+                    <a
+                      key={idx}
+                      href={link.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsOffcanvasOpen(false)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '14px 16px', borderRadius: '12px',
+                        color: 'rgba(255,255,255,0.7)',
+                        fontSize: '14px', fontWeight: '500', textDecoration: 'none',
+                        background: 'transparent',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {link.name}
+                    </a>
+                  ) : (
+                    <Link
+                      key={idx}
+                      to={link.path}
+                      onClick={() => setIsOffcanvasOpen(false)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '14px 16px', borderRadius: '12px',
+                        color: isActive(link.path) ? '#FFD60A' : 'rgba(255,255,255,0.7)',
+                        fontSize: '14px', fontWeight: '500', textDecoration: 'none',
+                        background: isActive(link.path) ? 'rgba(255,214,10,0.08)' : 'transparent',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {link.name}
+                    </Link>
+                  )
                 ))}
 
                 <Link

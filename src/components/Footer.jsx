@@ -65,12 +65,21 @@ const Footer = () => {
                 { to: '/my-bulk-bookings', label: 'My Bulk Rides' },
                 { to: '/my-booking', label: 'My Rides' },
                 { to: '/support', label: 'Support' },
-              ].map(({ to, label }) => (
+                { to: 'https://driver.kwikcabs.in/driver/register', label: 'Driver Register', isExternal: true },
+                { to: 'https://agent.kwikcabs.in/agent/login', label: 'Agent Login', isExternal: true },
+              ].map(({ to, label, isExternal }) => (
                 <li key={to}>
-                  <Link to={to} className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
-                    <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity text-xs" />
-                    {label}
-                  </Link>
+                  {isExternal ? (
+                    <a href={to} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
+                      <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity text-xs" />
+                      {label}
+                    </a>
+                  ) : (
+                    <Link to={to} className="flex items-center gap-2 text-white/40 hover:text-primary transition-colors text-sm group">
+                      <FaCaretRight className="text-primary opacity-0 group-hover:opacity-100 transition-opacity text-xs" />
+                      {label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
