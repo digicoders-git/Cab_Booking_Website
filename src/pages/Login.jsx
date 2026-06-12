@@ -45,7 +45,7 @@ const Login = () => {
                 Swal.fire({
                     icon: 'success',
                     title: 'OTP Sent!',
-                    text: `Demo OTP is ${data.otp}.`,
+                    text: `Succesfully .`,
                     background: '#111',
                     color: '#fff',
                     timer: 3000
@@ -180,7 +180,7 @@ const Login = () => {
                                                 onChange={handleChange}
                                                 className="w-full bg-primary/5 border-2 border-primary/20 py-4 pl-12 pr-4 rounded-2xl outline-none focus:bg-white focus:border-primary transition-all font-black text-[#111] placeholder:text-gray-300"
                                             />
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onClick={() => setOtpSent(false)}
                                                 className="absolute right-4 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-red-500"

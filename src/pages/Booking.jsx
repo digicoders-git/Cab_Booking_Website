@@ -77,7 +77,7 @@ const Booking = () => {
 
   const handleConfirm = async () => {
     const token = localStorage.getItem('token');
-    
+
     // 1. Check Authentication
     if (!token) {
       const { value: phone } = await Swal.fire({
@@ -122,7 +122,7 @@ const Booking = () => {
         confirmButtonColor: '#FACD16',
         background: '#111',
         color: '#fff',
-        footer: `<span style="color: #666; font-size: 10px;">Demo OTP: ${phone.otp}</span>`,
+        footer: `<span style="color: #666; font-size: 10px;">Otp send Succesfully</span>`,
         preConfirm: async (otp) => {
           try {
             const res = await fetch(`${API_BASE_URL}/users/login`, {
