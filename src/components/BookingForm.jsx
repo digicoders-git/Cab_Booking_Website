@@ -70,11 +70,11 @@ const BookingForm = () => {
         if (status === "OK" && results) {
           const pin = results.find(r => r.types.includes("postal_code"))?.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
           if (!pin) {
-             // Fallback: check all components of the first result
-             const altPin = results[0]?.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
-             callback(altPin);
+            // Fallback: check all components of the first result
+            const altPin = results[0]?.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
+            callback(altPin);
           } else {
-             callback(pin);
+            callback(pin);
           }
         } else {
           callback(null);
@@ -97,7 +97,7 @@ const BookingForm = () => {
       if (place.geometry && place.geometry.location) {
         const latlng = place.geometry.location;
         const directPin = place.address_components?.find(c => c.types.includes("postal_code"))?.long_name;
-        
+
         if (!directPin) {
           fetchPincode(latlng, (pin) => {
             setFormData(prev => ({
@@ -402,7 +402,7 @@ const BookingForm = () => {
       console.error("Error searching cabs:", error);
       setIsSearching(false);
       setShowCategoriesModal(false);
-      
+
       Swal.fire({
         icon: 'info',
         title: 'No Rides Available',
@@ -585,14 +585,41 @@ const BookingForm = () => {
     }
   };
 
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
-    const mock = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(mock);
-    setOtp(['', '', '', '', '', '']);
-    setOtpError(false);
-    setStep('otp');
-    console.log('OTP (mock):', mock);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone: phone }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setOtp(['', '', '', '', '', '']);
+        setOtpError(false);
+        setStep('otp');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message || "Failed to send OTP",
+          confirmButtonColor: '#FFD60A',
+        });
+      }
+    } catch (error) {
+      console.error("OTP Error:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'Failed to connect to the server.',
+        confirmButtonColor: '#FFD60A',
+      });
+    }
   };
 
   const handleOtpChange = (val, idx) => {
@@ -827,7 +854,7 @@ const BookingForm = () => {
             timerProgressBar: 'bg-primary h-0.5'
           }
         });
-        
+
         setIsSearching(true);
         setTimeout(() => {
           setIsSearching(false);
@@ -1363,13 +1390,13 @@ const BookingForm = () => {
             >
               {/* Minimal Animated Spinner */}
               <div className="relative w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-xl">
-                  <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin duration-1000" />
-                  <FaCar className="text-white/90 text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
+                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin duration-1000" />
+                <FaCar className="text-white/90 text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]" />
               </div>
               <h2 className="text-white/90 text-xl md:text-2xl font-black uppercase tracking-widest mb-3">Connecting</h2>
               <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                  <p className="text-white/50 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.25em]">Locating nearest partners...</p>
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                <p className="text-white/50 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.25em]">Locating nearest partners...</p>
               </div>
             </motion.div>
           </motion.div>
@@ -1524,7 +1551,7 @@ const BookingForm = () => {
                   <h3 className="text-white font-black text-3xl mb-1 tracking-tighter">Final Step</h3>
                   <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">Review your ride details</p>
                 </div>
-                
+
                 {/* Mobile-only Header - Simple and Straight Style */}
                 <div className="md:hidden mb-8 text-center pt-2">
                   <h3 className="text-white font-black text-2xl mb-1 tracking-tight uppercase">Confirm Pickup</h3>
