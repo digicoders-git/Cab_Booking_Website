@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import PageHeader from '../components/PageHeader';
 import { API_BASE_URL, BASE_URL } from '../config/api';
+import Swal from 'sweetalert2';
 
 
 const BulkBooking = () => {
@@ -214,6 +215,7 @@ const BulkBooking = () => {
   };
   const [loading, setLoading] = useState(true);
   const [selectedCars, setSelectedCars] = useState([]);
+  const [estimatedTax, setEstimatedTax] = useState(0);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     pickup: '',
@@ -227,7 +229,8 @@ const BulkBooking = () => {
     days: 1,
     notes: '',
     distance: 0,
-    priceModifier: 0 // Percentage
+    priceModifier: 0, // Percentage
+    isOutstation: false
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -278,6 +281,21 @@ const BulkBooking = () => {
       // setFormData(prev => ({ ...prev, days: 1 }));
     }
   }, [formData.date, formData.returnDate, formData.tripType]);
+
+  // 🕒 Check MCD/State Tax
+  useEffect(() => {
+      if (formData.isOutstation && formData.pickupCoords?.lat) {
+          fetch(`${API_BASE_URL}/area-pricing/check-tax?lat=${formData.pickupCoords.lat}&lng=${formData.pickupCoords.lng}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) setEstimatedTax(data.tax);
+                else setEstimatedTax(0);
+            })
+            .catch(() => setEstimatedTax(0));
+      } else {
+          setEstimatedTax(0);
+      }
+  }, [formData.isOutstation, formData.pickupCoords]);
 
   const fetchMyRequests = async () => {
     try {
@@ -395,6 +413,12 @@ const BulkBooking = () => {
     return Math.round(modified);
   };
 
+  const getUiTotal = () => {
+      const base = calculateTotal();
+      const totalTax = estimatedTax * selectedCars.reduce((a, c) => a + c.quantity, 0);
+      return formData.isOutstation ? base + totalTax : base;
+  };
+
   const getTodayDate = () => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -425,6 +449,10 @@ const BulkBooking = () => {
       setError("Waiting for Google Maps to calculate distance. Please wait a moment...");
       return;
     }
+    if (!formData.isOutstation) {
+      setError("Please confirm if this is an Outstation Ride by checking the box.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -447,7 +475,8 @@ const BulkBooking = () => {
         totalDistance: formData.distance,
         carsRequired: selectedCars.map(c => ({ category: c.id, quantity: c.quantity })),
         offeredPrice: calculateTotal(),
-        notes: formData.notes
+        notes: formData.notes,
+        isOutstation: formData.isOutstation
       };
 
       const response = await fetch(`${API_BASE_URL}/bulk-bookings/create`, {
@@ -462,6 +491,20 @@ const BulkBooking = () => {
       const data = await response.json();
 
       if (data.success) {
+        if (data.tollTaxMessage) {
+          await Swal.fire({
+            icon: 'info',
+            title: 'Toll & Tax Info',
+            text: data.tollTaxMessage,
+            confirmButtonColor: '#3B82F6',
+            background: '#0a0a0a',
+            color: '#fff',
+            customClass: {
+              popup: 'rounded-3xl border border-white/5 shadow-2xl',
+            }
+          });
+        }
+
         if (data.walletDeducted) {
           setSuccess(true);
         } else if (data.paymentLinks && data.paymentLinks.web) {
@@ -639,6 +682,20 @@ const BulkBooking = () => {
                 </button>
               </div>
 
+              {/* Outstation Checkbox */}
+              <div className="mb-8 flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="outstationCheckWeb"
+                  checked={formData.isOutstation}
+                  onChange={(e) => setFormData({ ...formData, isOutstation: e.target.checked })}
+                  className="w-5 h-5 text-primary rounded border-white/20 bg-white/5 focus:ring-primary accent-primary"
+                />
+                <label htmlFor="outstationCheckWeb" className="text-sm font-bold text-white/80 cursor-pointer hover:text-white transition-colors">
+                  Is this an Outstation Ride?
+                </label>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="text-white/40 text-xs uppercase font-bold mb-2 block">Pickup Location</label>
@@ -814,10 +871,25 @@ const BulkBooking = () => {
                   <p className="text-[9px] text-white/30 italic">Tip: +10% boost ensures faster fleet acceptance.</p>
                 </div>
 
+                {/* Total Tax (Outstation) */}
+                {formData.isOutstation && estimatedTax > 0 && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 mb-6">
+                    <div className="flex justify-between items-center mb-1 font-bold">
+                      <span className="text-red-500/80 text-[10px] uppercase tracking-widest">MCD/State Tax (Included)</span>
+                      <span className="text-red-500 text-lg">
+                        ₹{(estimatedTax * selectedCars.reduce((a, c) => a + c.quantity, 0)).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-red-500/50 text-right uppercase tracking-tighter">
+                      ₹{estimatedTax} per car × {selectedCars.reduce((a, c) => a + c.quantity, 0)} cars. To be paid directly to driver.
+                    </p>
+                  </div>
+                )}
+
                 <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 mb-8">
                   <div className="flex justify-between items-center mb-1 font-bold">
                     <span className="text-white/40 text-[10px] uppercase tracking-widest">Total Offer</span>
-                    <span className="text-primary text-2xl">₹{calculateTotal()}</span>
+                    <span className="text-primary text-2xl">₹{getUiTotal().toLocaleString()}</span>
                   </div>
                   <p className="text-[9px] text-white/30 text-right uppercase tracking-tighter">*Final marketplace bid</p>
                 </div>
