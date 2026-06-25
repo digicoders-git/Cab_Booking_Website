@@ -60,6 +60,12 @@ const BookingForm = () => {
   const driverMarkers = useRef([]);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
 
+  // PROMO CODE STATE
+  const [promoCode, setPromoCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoMessage, setPromoMessage] = useState(null);
+
   useEffect(() => {
     if (!window.google) return;
 
@@ -759,6 +765,42 @@ const BookingForm = () => {
     setShowFinalSummaryModal(true);
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      setPromoMessage({ type: 'error', text: 'Enter a promo code' });
+      return;
+    }
+    setIsApplyingPromo(true);
+    setPromoMessage(null);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/offers/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: promoCode.trim(),
+          bookingType: 'Normal'
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDiscountAmount(data.discountAmount);
+        setPromoMessage({ type: 'success', text: `₹${data.discountAmount} discount applied!` });
+      } else {
+        setDiscountAmount(0);
+        setPromoMessage({ type: 'error', text: data.message });
+      }
+    } catch (error) {
+      setDiscountAmount(0);
+      setPromoMessage({ type: 'error', text: 'Error applying promo code' });
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
+
   const handleBookNow = async () => {
     const token = localStorage.getItem('token');
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -811,7 +853,8 @@ const BookingForm = () => {
       pickupDate: new Date().toISOString().split('T')[0],
       pickupTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
       pickupPin: formData.pickupPin, // 🚀 SMART PIN
-      dropoffPin: formData.dropoffPin // 🚀 SMART PIN
+      dropoffPin: formData.dropoffPin, // 🚀 SMART PIN
+      offerCode: discountAmount > 0 ? promoCode.trim() : null
     };
 
     if (rideType === 'shared') {
@@ -1604,13 +1647,45 @@ const BookingForm = () => {
                     </div>
                   </div>
 
-                  {/* Fare Summary - MORE COMPACT - Hidden on mobile */}
-                  <div className="hidden md:flex p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/20 justify-between items-center mt-4">
+                  {/* PROMO CODE SECTION */}
+                  <div className="block mt-6">
+                    <div className="flex gap-2 mb-2">
+                      <input 
+                        type="text" 
+                        placeholder="Enter Promo Code"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all uppercase tracking-wide font-bold placeholder:font-normal placeholder:normal-case placeholder:text-white/30"
+                      />
+                      <button 
+                        onClick={handleApplyPromo}
+                        disabled={isApplyingPromo || !promoCode.trim()}
+                        className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+                      >
+                        {isApplyingPromo ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                    {promoMessage && (
+                      <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ml-1 ${promoMessage.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                        {promoMessage.text}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Fare Summary - MORE COMPACT */}
+                  <div className="flex p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/20 justify-between items-center mt-4">
                     <div>
                       <p className="text-black/60 text-[9px] font-black uppercase tracking-widest mb-0.5">Total Payable</p>
-                      <h2 className="text-3xl font-black text-black tracking-tighter italic">
-                        ₹{Math.round((confirmedCar.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1))}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        {discountAmount > 0 && (
+                          <span className="text-lg font-black text-black/40 line-through tracking-tighter">
+                            ₹{Math.round((confirmedCar.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1))}
+                          </span>
+                        )}
+                        <h2 className="text-3xl font-black text-black tracking-tighter italic">
+                          ₹{Math.max(0, Math.round((confirmedCar.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1)) - discountAmount)}
+                        </h2>
+                      </div>
                     </div>
                     <FaCheckCircle className="text-black/20 text-4xl" />
                   </div>

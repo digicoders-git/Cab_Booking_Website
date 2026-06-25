@@ -238,6 +238,12 @@ const BulkBooking = () => {
   const [pendingPaymentData, setPendingPaymentData] = useState(null); // NEW: Store ID & Amount for retry
   const [myRequests, setMyRequests] = useState([]);
 
+  // PROMO CODE STATE
+  const [promoCode, setPromoCode] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoMessage, setPromoMessage] = useState(null);
+
   const location = useLocation();
 
   useEffect(() => {
@@ -424,6 +430,42 @@ const BulkBooking = () => {
     return today.toISOString().split('T')[0];
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      setPromoMessage({ type: 'error', text: 'Enter a promo code' });
+      return;
+    }
+    setIsApplyingPromo(true);
+    setPromoMessage(null);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/offers/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          code: promoCode.trim(),
+          bookingType: 'Bulk'
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setDiscountAmount(data.discountAmount);
+        setPromoMessage({ type: 'success', text: `₹${data.discountAmount} discount applied!` });
+      } else {
+        setDiscountAmount(0);
+        setPromoMessage({ type: 'error', text: data.message });
+      }
+    } catch (error) {
+      setDiscountAmount(0);
+      setPromoMessage({ type: 'error', text: 'Error applying promo code' });
+    } finally {
+      setIsApplyingPromo(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -474,9 +516,10 @@ const BulkBooking = () => {
         numberOfDays: formData.days,
         totalDistance: formData.distance,
         carsRequired: selectedCars.map(c => ({ category: c.id, quantity: c.quantity })),
-        offeredPrice: calculateTotal(),
+        offeredPrice: Math.max(0, calculateTotal() - discountAmount),
         notes: formData.notes,
-        isOutstation: formData.isOutstation
+        isOutstation: formData.isOutstation,
+        offerCode: discountAmount > 0 ? promoCode.trim() : null
       };
 
       const response = await fetch(`${API_BASE_URL}/bulk-bookings/create`, {
@@ -886,12 +929,47 @@ const BulkBooking = () => {
                   </div>
                 )}
 
-                <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 mb-8">
-                  <div className="flex justify-between items-center mb-1 font-bold">
-                    <span className="text-white/40 text-[10px] uppercase tracking-widest">Total Offer</span>
-                    <span className="text-primary text-2xl">₹{getUiTotal().toLocaleString()}</span>
+                {/* PROMO CODE SECTION FOR BULK BOOKING */}
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
+                  <div className="flex gap-2 mb-2">
+                    <input 
+                      type="text" 
+                      placeholder="Enter Promo Code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all uppercase tracking-wide font-bold placeholder:font-normal placeholder:normal-case placeholder:text-white/30"
+                    />
+                    <button 
+                      onClick={handleApplyPromo}
+                      disabled={isApplyingPromo || !promoCode.trim()}
+                      className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/20 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+                    >
+                      {isApplyingPromo ? '...' : 'Apply'}
+                    </button>
                   </div>
-                  <p className="text-[9px] text-white/30 text-right uppercase tracking-tighter">*Final marketplace bid</p>
+                  {promoMessage && (
+                    <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ml-1 ${promoMessage.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                      {promoMessage.text}
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 mb-8 relative overflow-hidden">
+                  <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
+                  <div className="flex justify-between items-center mb-1 font-bold relative z-10">
+                    <span className="text-white/40 text-[10px] uppercase tracking-widest">Total Offer</span>
+                    <div className="flex items-center gap-2">
+                      {discountAmount > 0 && (
+                        <span className="text-lg font-black text-white/30 line-through tracking-tighter">
+                          ₹{getUiTotal().toLocaleString()}
+                        </span>
+                      )}
+                      <span className="text-primary text-3xl italic">
+                        ₹{Math.max(0, getUiTotal() - discountAmount).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[9px] text-white/30 text-right uppercase tracking-tighter relative z-10">*Final marketplace bid</p>
                 </div>
 
                 {error && (
