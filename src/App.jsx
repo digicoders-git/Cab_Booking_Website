@@ -39,6 +39,7 @@ import Support from './pages/Support';
 import BulkBooking from './pages/BulkBooking';
 import MyBulkBookings from './pages/MyBulkBookings';
 import MyTransactions from './pages/MyTransactions';
+import Offers from './pages/Offers';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -139,6 +140,7 @@ function App() {
           <Route path="bulk-booking" element={<BulkBooking />} />
           <Route path="my-bulk-bookings" element={<MyBulkBookings />} />
           <Route path="my-transactions" element={<MyTransactions />} />
+          <Route path="offers" element={<Offers />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
