@@ -78,7 +78,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center gap-8">
+          <nav className="hidden xl:flex items-center gap-4">
             {navLinks.map((link) => (
               <div key={link.name} className="relative group">
                 {link.isExternal ? (
