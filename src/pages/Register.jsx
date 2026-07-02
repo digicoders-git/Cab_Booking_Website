@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaEnvelope, FaUser, FaPhoneAlt, FaShieldAlt, FaArrowRight, FaBolt, FaCheckCircle, FaTaxi, FaStar } from 'react-icons/fa';
+import { FaEnvelope, FaUser, FaPhoneAlt, FaShieldAlt, FaArrowRight, FaBolt, FaCheckCircle, FaTaxi, FaStar, FaIdCard } from 'react-icons/fa';
 import { API_BASE_URL } from '../config/api';
 import logo from '../assets/logo.png';
 import Swal from 'sweetalert2';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', phone: '', email: '', otp: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', otp: '', aadhaarCard: '' });
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -295,6 +295,22 @@ const Register = () => {
                     type="email"
                     placeholder="user@kwikcabs.com"
                     value={formData.email}
+                    onChange={handleChange}
+                    className="w-full bg-white/[0.04] border border-white/8 py-4 pl-12 pr-5 rounded-2xl outline-none focus:bg-white/[0.07] focus:border-primary/50 transition-all text-white text-sm placeholder:text-white/15 font-medium"
+                  />
+                </div>
+              </motion.div>
+
+              {/* Aadhaar Card */}
+              <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.27 }}>
+                <label className="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-2 ml-1">Aadhaar Card <span className="text-white/15 normal-case tracking-normal font-medium">(Optional)</span></label>
+                <div className="relative group">
+                  <FaIdCard className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-primary transition-colors text-sm" />
+                  <input
+                    name="aadhaarCard"
+                    type="text"
+                    placeholder="1234 5678 9012"
+                    value={formData.aadhaarCard}
                     onChange={handleChange}
                     className="w-full bg-white/[0.04] border border-white/8 py-4 pl-12 pr-5 rounded-2xl outline-none focus:bg-white/[0.07] focus:border-primary/50 transition-all text-white text-sm placeholder:text-white/15 font-medium"
                   />

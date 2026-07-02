@@ -290,6 +290,8 @@ const BulkBooking = () => {
 
   // 🕒 Check MCD/State Tax
   useEffect(() => {
+      // API endpoint /area-pricing/check-tax doesn't exist, using calculate endpoint or 0 for now.
+      /*
       if (formData.isOutstation && formData.pickupCoords?.lat) {
           fetch(`${API_BASE_URL}/area-pricing/check-tax?lat=${formData.pickupCoords.lat}&lng=${formData.pickupCoords.lng}`)
             .then(res => res.json())
@@ -301,6 +303,8 @@ const BulkBooking = () => {
       } else {
           setEstimatedTax(0);
       }
+      */
+     setEstimatedTax(0);
   }, [formData.isOutstation, formData.pickupCoords]);
 
   const fetchMyRequests = async () => {

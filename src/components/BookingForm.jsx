@@ -1009,6 +1009,16 @@ const BookingForm = () => {
                 >
                   <span className="text-sm">+</span> Add Stop
                 </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => navigate('/bulk-booking')}
+                  className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2 text-primary hover:bg-primary hover:text-black transition-all text-[9px] font-black uppercase tracking-widest ml-auto"
+                >
+                  <FaExchangeAlt size={10} /> Round Trip
+                </motion.button>
               </div>
               <div className="flex-1 border-t border-dashed border-white/5 mx-4 hidden sm:block" />
             </div>
@@ -1352,7 +1362,7 @@ const BookingForm = () => {
                 </div>
 
                 {/* Ride Type Selection Cards - Refined */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mb-8 md:mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-8 md:mb-10">
                   <motion.div
                     whileHover={{ y: -2 }}
                     onClick={() => setRideType('private')}
@@ -1391,6 +1401,18 @@ const BookingForm = () => {
                         <FaCheckCircle size={10} className="text-white" />
                       </div>
                     )}
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ y: -2 }}
+                    onClick={() => navigate('/bulk-booking')}
+                    className={`relative p-6 rounded-[2rem] border transition-all bg-white/[0.02] border-white/5 hover:border-primary/30 cursor-pointer`}
+                  >
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 bg-white/5 text-white/20`}>
+                      <FaExchangeAlt size={16} />
+                    </div>
+                    <h5 className="text-white font-black text-lg mb-1">Round Trip</h5>
+                    <p className="text-white/20 text-[10px] font-medium tracking-wide">Outstation & Return</p>
                   </motion.div>
                 </div>
 

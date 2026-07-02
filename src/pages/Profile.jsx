@@ -19,7 +19,7 @@ const Profile = () => {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    name: '', email: '',
+    name: '', email: '', aadhaarCard: '',
     accountNumber: '', ifscCode: '', accountHolderName: '', bankName: ''
   });
   const [imageFile, setImageFile] = useState(null);
@@ -43,6 +43,7 @@ const Profile = () => {
         setForm({
           name: data.user.name || '',
           email: data.user.email || '',
+          aadhaarCard: data.user.aadhaarCard || '',
           accountNumber: data.user.bankDetails?.accountNumber || '',
           ifscCode: data.user.bankDetails?.ifscCode || '',
           accountHolderName: data.user.bankDetails?.accountHolderName || '',
@@ -76,6 +77,7 @@ const Profile = () => {
       const fd = new FormData();
       fd.append('name', form.name);
       fd.append('email', form.email);
+      fd.append('aadhaarCard', form.aadhaarCard);
       fd.append('accountNumber', form.accountNumber);
       fd.append('ifscCode', form.ifscCode);
       fd.append('accountHolderName', form.accountHolderName);
@@ -147,6 +149,7 @@ const Profile = () => {
       setForm({
         name: user.name || '',
         email: user.email || '',
+        aadhaarCard: user.aadhaarCard || '',
         accountNumber: user.bankDetails?.accountNumber || '',
         ifscCode: user.bankDetails?.ifscCode || '',
         accountHolderName: user.bankDetails?.accountHolderName || '',
@@ -334,6 +337,14 @@ const Profile = () => {
                   {/* Phone (read-only) */}
                   <Field label="Phone Number" icon={<FaPhoneAlt />} editMode={false}>
                     <span className="text-white font-bold text-sm">+91 {user?.phone || '—'}</span>
+                  </Field>
+
+                  {/* Aadhaar Card */}
+                  <Field label="Aadhaar Card" icon={<FaIdCard />} editMode={editMode}>
+                    {editMode
+                      ? <input value={form.aadhaarCard} onChange={handleFormChange('aadhaarCard')} className="bg-transparent text-white font-bold text-sm w-full outline-none placeholder:text-white/20" placeholder="Your Aadhaar Number" />
+                      : <span className="text-white font-bold text-sm">{user?.aadhaarCard || '—'}</span>
+                    }
                   </Field>
 
                   {/* Joined */}
