@@ -4,7 +4,7 @@ import {
   FaUser, FaEnvelope, FaPhoneAlt, FaCamera,
   FaSignOutAlt, FaTaxi, FaEdit, FaCheck, FaTimes,
   FaShieldAlt, FaCalendarAlt, FaUniversity, FaCreditCard,
-  FaIdCard, FaBuilding, FaWallet, FaChartLine, FaHistory
+  FaIdCard, FaBuilding, FaWallet, FaChartLine, FaHistory, FaStar
 } from 'react-icons/fa';
 import { HiSparkles } from 'react-icons/hi';
 import PageHeader from '../components/PageHeader';
@@ -222,8 +222,13 @@ const Profile = () => {
                 <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{user?.email || '—'}</p>
                 <p className="text-white/20 text-[10px] font-bold mb-3">+91 {user?.phone || '—'}</p>
 
-                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
-                  <HiSparkles /> Verified Member
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
+                    <HiSparkles /> Verified Member
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full">
+                    <FaStar size={10} /> {user?.averageRating ? Number(user.averageRating).toFixed(1) : 'New'} Rating
+                  </div>
                 </div>
 
                 {/* Wallet & Earnings */}

@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
+import RateDriverModal from '../components/RateDriverModal';
 
 const BookingDetails = () => {
     const { bookingId } = useParams();
@@ -24,6 +25,15 @@ const BookingDetails = () => {
     const [isDriverArrived, setIsDriverArrived] = useState(false);
     const [waitingTime, setWaitingTime] = useState(0);
     const [activeStopArrival, setActiveStopArrival] = useState(null);
+    const [isRateModalOpen, setIsRateModalOpen] = useState(false);
+    const hasPromptedRating = useRef(false);
+
+    useEffect(() => {
+        if (booking && (booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && !booking.driverRating && !hasPromptedRating.current) {
+            setIsRateModalOpen(true);
+            hasPromptedRating.current = true;
+        }
+    }, [booking]);
 
     // Map Refs
     const mapRef = useRef(null);
@@ -730,7 +740,7 @@ const BookingDetails = () => {
                                         <div>
                                             <h4 className="text-white font-black text-lg uppercase tracking-tight">{booking.assignedDriver.name}</h4>
                                             <p className="text-[#FACD16] text-[9px] font-black uppercase tracking-wider flex items-center gap-1 mt-1">
-                                                <FaStar size={8} /> 5.0 Driver Rating
+                                                <FaStar size={8} /> {booking.assignedDriver.averageRating ? Number(booking.assignedDriver.averageRating).toFixed(1) : 'New'} Driver Rating
                                             </p>
                                         </div>
                                     </div>
@@ -757,6 +767,28 @@ const BookingDetails = () => {
                                             </button>
                                         )}
                                     </div>
+
+                                    {/* Rating Section for Completed Rides */}
+                                    {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && (
+                                        <div className="mt-4 pt-4 border-t border-white/5">
+                                            {!booking.driverRating ? (
+                                                <button
+                                                    onClick={() => setIsRateModalOpen(true)}
+                                                    className="w-full bg-[#FACD16] text-black font-black uppercase tracking-widest py-3 rounded-xl hover:bg-yellow-400 transition-all shadow-[0_0_15px_rgba(250,205,22,0.3)] flex items-center justify-center gap-2 text-xs"
+                                                >
+                                                    <FaStar /> Rate This Driver
+                                                </button>
+                                            ) : (
+                                                <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
+                                                    <span className="text-white/40 text-[9px] font-black uppercase tracking-widest">Your Rating</span>
+                                                    <div className="flex items-center gap-1.5 text-[#FACD16]">
+                                                        <FaStar size={12} />
+                                                        <span className="font-black text-sm">{booking.driverRating}/5</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="text-center py-4">
@@ -805,6 +837,16 @@ const BookingDetails = () => {
                     </div>
                 </div>
             </div>
+
+            <RateDriverModal 
+                isOpen={isRateModalOpen}
+                bookingId={booking._id}
+                onClose={() => setIsRateModalOpen(false)}
+                onSuccess={() => {
+                    setIsRateModalOpen(false);
+                    fetchBooking();
+                }}
+            />
         </div>
     );
 };

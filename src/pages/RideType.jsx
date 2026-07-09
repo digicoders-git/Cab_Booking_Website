@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUser, FaUsers, FaArrowRight, FaCheckCircle, FaTaxi, FaLock, FaBolt, FaMapMarkerAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -14,6 +15,18 @@ const RideType = () => {
     date: '',
     time: ''
   });
+  const [isShareRideEnabled, setIsShareRideEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/settings`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.settings) {
+          setIsShareRideEnabled(data.settings.isShareRideEnabled);
+        }
+      })
+      .catch(err => console.error("Error fetching app settings:", err));
+  }, []);
   const navigate = useNavigate();
 
   const types = [
@@ -65,7 +78,7 @@ const RideType = () => {
       
       <div className="section-padding container mx-auto px-4 relative">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {types.map((type, index) => (
+          {types.filter(type => isShareRideEnabled ? true : type.id !== 'shared').map((type, index) => (
             <motion.div
               key={type.id}
               initial={{ opacity: 0, y: 30 }}

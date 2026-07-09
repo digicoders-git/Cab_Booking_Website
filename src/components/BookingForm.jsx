@@ -42,6 +42,7 @@ const BookingForm = () => {
   const [distance, setDistance] = useState(null);
   const [distanceValue, setDistanceValue] = useState(0); // in meters or km
   const [rideType, setRideType] = useState('private');
+  const [isShareRideEnabled, setIsShareRideEnabled] = useState(true);
   const [categories, setCategories] = useState([]);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
@@ -245,6 +246,18 @@ const BookingForm = () => {
       { enableHighAccuracy: true }
     );
   };
+
+  // Load app settings
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/settings`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.settings) {
+          setIsShareRideEnabled(data.settings.isShareRideEnabled);
+        }
+      })
+      .catch(err => console.error("Error fetching app settings:", err));
+  }, []);
 
   // Map initialization and route calculation
   useEffect(() => {
@@ -1362,7 +1375,7 @@ const BookingForm = () => {
                 </div>
 
                 {/* Ride Type Selection Cards - Refined */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-8 md:mb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mb-8 md:mb-10">
                   <motion.div
                     whileHover={{ y: -2 }}
                     onClick={() => setRideType('private')}
@@ -1383,37 +1396,29 @@ const BookingForm = () => {
                     )}
                   </motion.div>
 
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    onClick={() => setRideType('shared')}
-                    className={`relative p-6 rounded-[2rem] border transition-all ${rideType === 'shared'
-                      ? 'bg-blue-500/5 border-blue-500 shadow-xl shadow-blue-500/5'
-                      : 'bg-white/[0.02] border-white/5 hover:border-white/10'
-                      }`}
-                  >
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ${rideType === 'shared' ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/20'}`}>
-                      <FaUsers size={18} />
-                    </div>
-                    <h5 className="text-white font-black text-lg mb-1">Shared Ride</h5>
-                    <p className="text-white/20 text-[10px] font-medium tracking-wide">Economic & Social</p>
-                    {rideType === 'shared' && (
-                      <div className="absolute top-6 right-6 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                        <FaCheckCircle size={10} className="text-white" />
+                  {isShareRideEnabled && (
+                    <motion.div
+                      whileHover={{ y: -2 }}
+                      onClick={() => setRideType('shared')}
+                      className={`relative p-6 rounded-[2rem] border transition-all ${rideType === 'shared'
+                        ? 'bg-blue-500/5 border-blue-500 shadow-xl shadow-blue-500/5'
+                        : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                        }`}
+                    >
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 ${rideType === 'shared' ? 'bg-blue-500 text-white' : 'bg-white/5 text-white/20'}`}>
+                        <FaUsers size={18} />
                       </div>
-                    )}
-                  </motion.div>
+                      <h5 className="text-white font-black text-lg mb-1">Shared Ride</h5>
+                      <p className="text-white/20 text-[10px] font-medium tracking-wide">Economic & Social</p>
+                      {rideType === 'shared' && (
+                        <div className="absolute top-6 right-6 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                          <FaCheckCircle size={10} className="text-white" />
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
 
-                  <motion.div
-                    whileHover={{ y: -2 }}
-                    onClick={() => navigate('/bulk-booking')}
-                    className={`relative p-6 rounded-[2rem] border transition-all bg-white/[0.02] border-white/5 hover:border-primary/30 cursor-pointer`}
-                  >
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 bg-white/5 text-white/20`}>
-                      <FaExchangeAlt size={16} />
-                    </div>
-                    <h5 className="text-white font-black text-lg mb-1">Round Trip</h5>
-                    <p className="text-white/20 text-[10px] font-medium tracking-wide">Outstation & Return</p>
-                  </motion.div>
+
                 </div>
 
                 {/* Action Buttons - Premium & Simple */}

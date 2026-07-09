@@ -10,11 +10,14 @@ import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { io } from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
+import RateDriverModal from '../components/RateDriverModal';
+import { FaStar } from 'react-icons/fa';
 
 const MyBooking = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Upcoming');
+  const [rateModalBooking, setRateModalBooking] = useState(null);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -259,6 +262,19 @@ const MyBooking = () => {
                               Cancel
                             </button>
                           )}
+                          {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && !booking.driverRating && (
+                            <button
+                                onClick={() => setRateModalBooking(booking._id)}
+                                className="px-5 py-2.5 rounded-xl bg-primary text-black hover:bg-yellow-400 font-black text-[9px] uppercase tracking-widest shadow-[0_0_15px_rgba(250,205,22,0.3)] transition-all flex items-center gap-2"
+                            >
+                                <FaStar /> Rate Driver
+                            </button>
+                          )}
+                          {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && booking.driverRating && (
+                            <div className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-black text-[9px] uppercase tracking-widest flex items-center gap-1.5">
+                                <FaStar className="text-primary text-[10px]" /> Rated {booking.driverRating}/5
+                            </div>
+                          )}
                           <Link
                             to={`/booking-details/${booking._id}`}
                             className="inline-flex items-center gap-2 bg-white/5 hover:bg-primary hover:text-black text-white/70 px-6 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border border-white/5 hover:border-primary group"
@@ -276,6 +292,16 @@ const MyBooking = () => {
           </div>
         )}
       </div>
+
+      <RateDriverModal 
+        isOpen={!!rateModalBooking}
+        bookingId={rateModalBooking}
+        onClose={() => setRateModalBooking(null)}
+        onSuccess={() => {
+          setRateModalBooking(null);
+          fetchBookings();
+        }}
+      />
     </div>
   );
 };
