@@ -495,10 +495,6 @@ const BulkBooking = () => {
       setError("Waiting for Google Maps to calculate distance. Please wait a moment...");
       return;
     }
-    if (!formData.isOutstation) {
-      setError("Please confirm if this is an Outstation Ride by checking the box.");
-      return;
-    }
 
     setLoading(true);
     try {

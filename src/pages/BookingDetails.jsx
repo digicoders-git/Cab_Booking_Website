@@ -11,7 +11,7 @@ import {
 import { io } from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
 import RateDriverModal from '../components/RateDriverModal';
-
+import Swal from 'sweetalert2';
 const BookingDetails = () => {
     const { bookingId } = useParams();
     const navigate = useNavigate();
@@ -368,6 +368,23 @@ const BookingDetails = () => {
         socket.on('booking_update', (data) => {
             if (data.bookingId === bookingId) {
                 console.log("Booking Status Updated 🔔", data.status);
+                if (data.status === 'Payment_Requested' && data.paymentMethod === 'Online') {
+                    Swal.fire({
+                        title: 'Pay Online 💳',
+                        text: `Please pay ₹${data.finalFare} online via the link provided by the Driver.`,
+                        icon: 'info',
+                        confirmButtonColor: '#3b82f6',
+                        confirmButtonText: 'OK, I Understand'
+                    });
+                } else if (data.status === 'Completed' && data.paymentMethod === 'Cash') {
+                    Swal.fire({
+                        title: 'Cash Payment 💵',
+                        text: `Please hand over ₹${data.finalFare} in Cash to the Driver.`,
+                        icon: 'success',
+                        confirmButtonColor: '#22c55e',
+                        confirmButtonText: 'OK'
+                    });
+                }
                 fetchBooking();
             }
         });

@@ -9,6 +9,7 @@ import {
 import PageHeader from '../components/PageHeader';
 import { io } from 'socket.io-client';
 import { API_BASE_URL, BASE_URL } from '../config/api';
+import Swal from 'sweetalert2';
 
 const DriverTracking = () => {
     const { bookingId } = useParams();
@@ -58,6 +59,30 @@ const DriverTracking = () => {
     useEffect(() => {
         if (bookingId) fetchBookingDetails();
     }, [bookingId]);
+
+    // Handle Payment Popups on Completion
+    useEffect(() => {
+        if (booking && booking.bookingStatus === 'Completed') {
+            const amount = booking.actualFare || booking.fareEstimate || 0;
+            if (booking.paymentMethod === 'Cash') {
+                Swal.fire({
+                    title: 'Payment Required',
+                    text: `Please pay ₹${amount} in Cash to the driver.`,
+                    icon: 'info',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#FACD16'
+                });
+            } else if (booking.paymentMethod === 'Online') {
+                Swal.fire({
+                    title: 'Online Payment',
+                    text: `Please pay ₹${amount} online.`,
+                    icon: 'info',
+                    confirmButtonText: 'Pay Now',
+                    confirmButtonColor: '#3B82F6',
+                });
+            }
+        }
+    }, [booking]);
 
     // 2. Initialize Google Map
     useEffect(() => {
@@ -140,7 +165,26 @@ const DriverTracking = () => {
         });
 
         socketRef.current.on('booking_update', (data) => {
-            if (data.bookingId === bookingId) fetchBookingDetails();
+            if (data.bookingId === bookingId) {
+                if (data.status === 'Payment_Requested' && data.paymentMethod === 'Online') {
+                    Swal.fire({
+                        title: 'Pay Online 💳',
+                        text: `Please pay ₹${data.finalFare} online via the link provided by the Driver.`,
+                        icon: 'info',
+                        confirmButtonColor: '#3b82f6',
+                        confirmButtonText: 'OK, I Understand'
+                    });
+                } else if (data.status === 'Completed' && data.paymentMethod === 'Cash') {
+                    Swal.fire({
+                        title: 'Cash Payment 💵',
+                        text: `Please hand over ₹${data.finalFare} in Cash to the Driver.`,
+                        icon: 'success',
+                        confirmButtonColor: '#22c55e',
+                        confirmButtonText: 'OK'
+                    });
+                }
+                fetchBookingDetails();
+            }
         });
 
         return () => socketRef.current.disconnect();

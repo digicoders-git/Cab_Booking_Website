@@ -81,6 +81,42 @@ function App() {
 
     setupFCM();
 
+    // 🔥 First Location Tracking
+    const setupFirstLocation = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          try {
+            const res = await fetch(`${API_BASE_URL}/users/first-location`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ 
+                latitude: position.coords.latitude, 
+                longitude: position.coords.longitude 
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+               console.log("First location check:", data.message);
+            }
+          } catch (error) {
+            console.error("Error saving first location:", error);
+          }
+        }, (error) => {
+          console.warn("Geolocation permission denied or error:", error.message);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+      }
+    };
+
+    setupFirstLocation();
+
     // Listen for foreground messages
     const unsubscribeFCM = onMessageListener((payload) => {
       console.log('User Notification:', payload);
