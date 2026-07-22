@@ -2,6 +2,7 @@ import BookingForm from '../components/BookingForm';
 import AboutSection from '../components/AboutSection';
 import ServicesSection from '../components/ServicesSection';
 import CarFleet from '../components/CarFleet';
+import PopularPackages from '../components/PopularPackages';
 import WhyChooseUs from '../components/WhyChooseUs';
 import ExpertDrivers from '../components/ExpertDrivers';
 import QualityServiceSection from '../components/QualityServiceSection';
@@ -19,6 +20,7 @@ const Home = () => {
       <AboutSection />
       <ServicesSection />
       <CarFleet />
+      <PopularPackages />
       <WhyChooseUs />
       {/* <ExpertDrivers /> */}
       {/* <QualityServiceSection /> */}

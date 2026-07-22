@@ -13,8 +13,19 @@ import { API_BASE_URL } from '../config/api';
 import RateDriverModal from '../components/RateDriverModal';
 import { FaStar } from 'react-icons/fa';
 
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  background: '#111',
+  color: '#fff'
+});
+
 const MyBooking = () => {
   const [bookings, setBookings] = useState([]);
+  const [fixedBookings, setFixedBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Upcoming');
   const [rateModalBooking, setRateModalBooking] = useState(null);
@@ -23,12 +34,15 @@ const MyBooking = () => {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const [response, fixedRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/bookings/my-bookings`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_BASE_URL}/fixed-routes/bookings/my-bookings`, { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
       const data = await response.json();
-      console.log('--- ALL BOOKINGS FROM BACKEND ---', data.bookings);
+      const fixedData = await fixedRes.json();
+      
       if (data.success) setBookings(data.bookings || []);
+      if (fixedData.success) setFixedBookings(fixedData.bookings || []);
     } catch (error) {
       console.error('Fetch Error:', error);
     } finally {
@@ -43,12 +57,48 @@ const MyBooking = () => {
     const userRole = localStorage.getItem('role') || 'user';
     if (!userId) return;
     const socket = io(API_BASE_URL.replace('/api', ''));
-    socket.emit('join_room', { userId, role: userRole });
+    
+    // 🔥 Re-join room on every reconnect!
+    socket.on('connect', () => {
+      console.log('Socket Connected! Joining room for user:', userId);
+      socket.emit('join_room', { userId, role: userRole });
+    });
+
     socket.on('booking_update', () => fetchBookings());
+    socket.on('fixedBookingPaymentSuccess', () => fetchBookings());
+    
+    // Specific events for Toasts
+    socket.on('fixedBookingAccepted', () => {
+      Toast.fire({ icon: 'success', title: 'A driver has accepted your package ride!' });
+      fetchBookings();
+    });
+    socket.on('fixedBookingCompleted', () => {
+      Swal.fire({
+        title: 'Ride Completed', 
+        text: 'Your package ride is complete. Please pay if pending.', 
+        icon: 'success',
+        background: '#111',
+        color: '#fff'
+      });
+      fetchBookings();
+    });
+    socket.on('fixedBookingCancelled', () => {
+      Toast.fire({ icon: 'error', title: 'Your package ride was cancelled.' });
+      fetchBookings();
+    });
+
     return () => socket.disconnect();
   }, []);
 
-  const handleCancelBooking = async (bookingId) => {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment_success') === 'true') {
+      Swal.fire('Success', 'Payment completed successfully!', 'success');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleCancelBooking = async (bookingId, isPackageBooking = false) => {
     const { value: reason } = await Swal.fire({
       title: 'Cancel Booking?',
       input: 'text',
@@ -61,7 +111,11 @@ const MyBooking = () => {
     if (reason) {
       const token = localStorage.getItem('token');
       try {
-        const res = await fetch(`${API_BASE_URL}/bookings/cancel/${bookingId}`, {
+        const url = isPackageBooking 
+          ? `${API_BASE_URL}/fixed-routes/bookings/${bookingId}/cancel`
+          : `${API_BASE_URL}/bookings/cancel/${bookingId}`;
+          
+        const res = await fetch(url, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ reason })
@@ -79,18 +133,51 @@ const MyBooking = () => {
     }
   };
 
+  const handlePayment = async (bookingId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/fixed-routes/bookings/${bookingId}/pay`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!data.success) {
+        return Swal.fire('Error', data.message || 'Failed to initialize payment', 'error');
+      }
+
+      if (data.session && data.session.payment_links && data.session.payment_links.web) {
+          window.location.href = data.session.payment_links.web;
+      } else {
+          Swal.fire('Error', 'Invalid payment link from server', 'error');
+      }
+    } catch (err) {
+      Swal.fire('Error', 'Server connection failed', 'error');
+    }
+  };
+
   const filteredBookings = bookings.filter(b => {
     if (!b) return false;
-    // Map status from potential fields and lowercase it
     const status = (b.bookingStatus || b.status || '').toLowerCase().trim();
-
     if (activeTab === 'Upcoming') {
       return ['pending', 'accepted', 'ongoing', 'confirmed', 'driver_assigned', 'accepted_by_driver'].includes(status);
-    } else {
-      // Past Rides: Completed, Cancelled, Expired
+    } else if (activeTab === 'Past Rides') {
       return ['completed', 'cancelled', 'expired', 'rejected', 'timeout'].includes(status);
     }
+    return false;
   });
+
+  const filteredFixedBookings = fixedBookings.filter(b => {
+    if (!b) return false;
+    const status = (b.status || '').toLowerCase().trim();
+    if (activeTab === 'Upcoming Packages') {
+      return ['marketplace', 'accepted'].includes(status);
+    } else if (activeTab === 'Past Packages') {
+      return ['completed', 'cancelled'].includes(status);
+    }
+    return false;
+  });
+
+  const displayBookings = activeTab.includes('Packages') ? filteredFixedBookings : filteredBookings;
 
   const getStatusConfig = (status) => {
     const s = status.toLowerCase();
@@ -98,6 +185,7 @@ const MyBooking = () => {
     if (s === 'cancelled') return { bg: 'bg-red-500/10 border-red-500/20', text: 'text-red-400', strip: 'bg-red-500', icon: FaTimesCircle, label: 'Cancelled' };
     if (s === 'accepted' || s === 'driver_assigned') return { bg: 'bg-primary/10 border-primary/20', text: 'text-primary', strip: 'bg-primary', icon: FaShieldAlt, label: 'Accepted' };
     if (s === 'ongoing') return { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-400', strip: 'bg-amber-500', icon: FaClock, label: 'Trip Live' };
+    if (s === 'marketplace') return { bg: 'bg-blue-500/10 border-blue-500/20', text: 'text-blue-400', strip: 'bg-blue-500', icon: FaClock, label: 'Finding Driver' };
     if (s === 'expired') return { bg: 'bg-gray-500/10 border-gray-500/20', text: 'text-gray-400', strip: 'bg-gray-500', icon: FaHistory, label: 'Expired' };
     return { bg: 'bg-primary/10 border-primary/20', text: 'text-primary', strip: 'bg-primary', icon: FaSpinner, label: 'Processing...' };
   };
@@ -114,15 +202,15 @@ const MyBooking = () => {
             <h2 className="text-white font-black text-2xl uppercase tracking-widest">Ride History</h2>
             <div className="flex items-center gap-2 mt-2">
               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">Total Journeys: {bookings.length}</p>
+              <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">Total Bookings: {bookings.length + fixedBookings.length}</p>
             </div>
           </div>
-          <div className="flex bg-[#111] p-1.5 rounded-2xl border border-white/5">
-            {['Upcoming', 'Past Rides'].map(tab => (
+          <div className="flex bg-[#111] p-1.5 rounded-2xl border border-white/5 flex-wrap gap-1 justify-center">
+            {['Upcoming', 'Past Rides', 'Upcoming Packages', 'Past Packages'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-7 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-primary text-black' : 'text-white/20 hover:text-white/50'
+                className={`px-4 py-2.5 rounded-xl font-black text-[9px] sm:text-[10px] uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'bg-primary text-black' : 'text-white/40 hover:text-white'
                   }`}
               >
                 {tab}
@@ -137,7 +225,7 @@ const MyBooking = () => {
             <FaTaxi className="text-primary text-5xl animate-bounce" />
             <p className="text-white/20 font-black text-[10px] uppercase tracking-[0.4em] animate-pulse">Syncing Trips...</p>
           </div>
-        ) : filteredBookings.length === 0 ? (
+        ) : displayBookings.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
             className="bg-[#0d0d0d] p-20 rounded-[3rem] border border-white/5 text-center"
@@ -154,10 +242,11 @@ const MyBooking = () => {
         ) : (
           <div className="space-y-5">
             <AnimatePresence mode="popLayout">
-              {filteredBookings.map((booking, index) => {
+              {displayBookings.map((booking, index) => {
                 const sc = getStatusConfig(booking.bookingStatus || booking.status || 'pending');
                 const StatusIcon = sc.icon;
-                const fare = Math.round(booking.actualFare || booking.fareEstimate || 0);
+                const fare = Math.round(booking.actualFare || booking.fareEstimate || booking.price || 0);
+                const isPackage = activeTab.includes('Packages');
 
                 return (
                   <motion.div
@@ -181,11 +270,13 @@ const MyBooking = () => {
                             {sc.label}
                           </span>
                           <span className="bg-white/5 border border-white/5 text-primary/70 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">
-                            {booking.rideType || booking.carCategory?.name || 'Ride'}
+                            {isPackage ? 'Fixed Package' : (booking.rideType || booking.carCategory?.name || 'Ride')}
                           </span>
-                          <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
-                            <FaFingerprint size={9} /> OTP: {booking.tripData?.startOtp || booking.otp || '---'}
-                          </span>
+                          {!isPackage && (
+                            <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <FaFingerprint size={9} /> OTP: {booking.tripData?.startOtp || booking.otp || '---'}
+                            </span>
+                          )}
                           <span className="text-white/20 text-[9px] font-black uppercase tracking-widest sm:ml-auto">
                             #{booking._id?.slice(-8).toUpperCase()}
                           </span>
@@ -200,14 +291,14 @@ const MyBooking = () => {
                               <FaDotCircle className="absolute -left-[25px] top-1 text-primary text-[10px] bg-[#0d0d0d]" />
                               <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-0.5">Pickup</p>
                               <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
-                                {booking.pickupAddress || booking.pickup?.address}
+                                {isPackage ? booking.pickupLocation : (booking.pickupAddress || booking.pickup?.address)}
                               </p>
                             </div>
                             <div className="relative">
                               <FaMapMarkerAlt className="absolute -left-[25px] top-1 text-red-500 text-[10px] bg-[#0d0d0d]" />
                               <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-0.5">Destination</p>
                               <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
-                                {booking.dropAddress || booking.drop?.address}
+                                {isPackage ? booking.dropLocation : (booking.dropAddress || booking.drop?.address)}
                               </p>
                             </div>
                           </div>
@@ -239,8 +330,9 @@ const MyBooking = () => {
                             <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-2">Ride Date</p>
                             <div className="flex items-center gap-1.5">
                               <FaCalendarAlt className="text-primary text-[10px]" />
-                              <span className="text-white font-bold text-xs">
-                                {new Date(booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              <span className="text-white font-bold text-xs flex flex-col gap-1">
+                                <span>{new Date(isPackage ? booking.pickupDate : booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                {isPackage && <span className="text-white/60 text-[10px]">{booking.pickupTime}</span>}
                               </span>
                             </div>
                           </div>
@@ -254,15 +346,33 @@ const MyBooking = () => {
 
                         {/* Row 3 — Actions */}
                         <div className="flex items-center justify-end gap-3 mt-6 pt-5 border-t border-white/5">
-                          {['pending', 'accepted', 'ongoing'].includes((booking.bookingStatus || booking.status || '').toLowerCase()) && (
+                          {['pending', 'accepted', 'ongoing', 'marketplace'].includes((booking.bookingStatus || booking.status || '').toLowerCase()) && (
                             <button
-                              onClick={() => handleCancelBooking(booking._id)}
+                              onClick={() => handleCancelBooking(booking._id, isPackage)}
                               className="px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white font-black text-[9px] uppercase tracking-widest transition-all"
                             >
                               Cancel
                             </button>
                           )}
-                          {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && !booking.driverRating && (
+                          {isPackage && ['marketplace', 'accepted'].includes((booking.status || '').toLowerCase()) && (
+                            <span className="px-5 py-2.5 rounded-xl border border-yellow-500/20 text-yellow-500/60 font-black text-[9px] uppercase tracking-widest mr-auto">
+                              Package Confirmed
+                            </span>
+                          )}
+                          {isPackage && (booking.status || '').toLowerCase() === 'completed' && booking.paymentMethod === 'Online' && booking.paymentStatus === 'Pending' && (
+                            <button
+                              onClick={() => handlePayment(booking._id)}
+                              className="px-6 py-2.5 rounded-xl bg-green-500 text-black hover:bg-green-400 font-black text-[9px] uppercase tracking-widest shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all flex items-center gap-2 mr-auto animate-pulse"
+                            >
+                              Pay ₹{fare} Now
+                            </button>
+                          )}
+                          {isPackage && (booking.status || '').toLowerCase() === 'completed' && booking.paymentMethod === 'Online' && booking.paymentStatus === 'Completed' && (
+                            <span className="px-5 py-2.5 rounded-xl border border-green-500/20 text-green-500 font-black text-[9px] uppercase tracking-widest mr-auto flex items-center gap-2">
+                              <FaCheckCircle /> Paid Online
+                            </span>
+                          )}
+                          {!isPackage && (booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && !booking.driverRating && (
                             <button
                                 onClick={() => setRateModalBooking(booking._id)}
                                 className="px-5 py-2.5 rounded-xl bg-primary text-black hover:bg-yellow-400 font-black text-[9px] uppercase tracking-widest shadow-[0_0_15px_rgba(250,205,22,0.3)] transition-all flex items-center gap-2"
@@ -270,17 +380,19 @@ const MyBooking = () => {
                                 <FaStar /> Rate Driver
                             </button>
                           )}
-                          {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && booking.driverRating && (
+                          {!isPackage && (booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && booking.driverRating && (
                             <div className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-black text-[9px] uppercase tracking-widest flex items-center gap-1.5">
                                 <FaStar className="text-primary text-[10px]" /> Rated {booking.driverRating}/5
                             </div>
                           )}
-                          <Link
-                            to={`/booking-details/${booking._id}`}
-                            className="inline-flex items-center gap-2 bg-white/5 hover:bg-primary hover:text-black text-white/70 px-6 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border border-white/5 hover:border-primary group"
-                          >
-                            View Details <FaChevronRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
-                          </Link>
+                          {!isPackage && (
+                            <Link
+                              to={`/booking-details/${booking._id}`}
+                              className="inline-flex items-center gap-2 bg-white/5 hover:bg-primary hover:text-black text-white/70 px-6 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border border-white/5 hover:border-primary group"
+                            >
+                              View Details <FaChevronRight size={8} className="group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
+                          )}
                         </div>
 
                       </div>

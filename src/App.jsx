@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { requestForToken, onMessageListener } from './firebase';
 import { API_BASE_URL } from './config/api';
 import Loader from './components/Loader';
+import Swal from 'sweetalert2';
 import MainLayout from './layout/MainLayout';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
@@ -119,8 +120,28 @@ function App() {
 
     // Listen for foreground messages
     const unsubscribeFCM = onMessageListener((payload) => {
-      console.log('User Notification:', payload);
-      // You could show a custom toast here if needed
+      console.log('🔥 [FCM-DEBUG-FRONTEND] User Notification Received:', JSON.stringify(payload, null, 2));
+      // Backend sends data-only messages to prevent duplicates, so title and body are in payload.data
+      const fcmData = payload?.data || payload?.notification;
+      
+      console.log('🔥 [FCM-DEBUG-FRONTEND] Extracted fcmData:', fcmData);
+      
+      if (fcmData && fcmData.title) {
+        Swal.fire({
+          title: fcmData.title,
+          text: fcmData.body,
+          icon: 'info',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 5000,
+          timerProgressBar: true,
+          background: '#111',
+          color: '#fff'
+        });
+      } else {
+        console.log('🔥 [FCM-DEBUG-FRONTEND] Missing title/body, toast skipped.');
+      }
     });
 
     return () => {
