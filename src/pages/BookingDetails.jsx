@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     FaTaxi, FaMapMarkerAlt, FaUser, FaPhoneAlt,
@@ -12,9 +12,12 @@ import { io } from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
 import RateDriverModal from '../components/RateDriverModal';
 import Swal from 'sweetalert2';
+
 const BookingDetails = () => {
     const { bookingId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -28,6 +31,22 @@ const BookingDetails = () => {
     const [isRateModalOpen, setIsRateModalOpen] = useState(false);
     const hasPromptedRating = useRef(false);
 
+    // Check for Razorpay Payment Success Return
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        if (queryParams.get('success') === 'true') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Successful! 🎉',
+                text: 'Your online payment was received successfully.',
+                confirmButtonColor: '#10b981',
+                background: '#111',
+                color: '#fff'
+            });
+            // Clean up the URL
+            navigate(`/booking-details/${bookingId}`, { replace: true });
+        }
+    }, [location.search, navigate, bookingId]);
     useEffect(() => {
         if (booking && (booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && !booking.driverRating && !hasPromptedRating.current) {
             setIsRateModalOpen(true);
@@ -368,15 +387,7 @@ const BookingDetails = () => {
         socket.on('booking_update', (data) => {
             if (data.bookingId === bookingId) {
                 console.log("Booking Status Updated 🔔", data.status);
-                if (data.status === 'Payment_Requested' && data.paymentMethod === 'Online') {
-                    Swal.fire({
-                        title: 'Pay Online 💳',
-                        text: `Please pay ₹${data.finalFare} online via the link provided by the Driver.`,
-                        icon: 'info',
-                        confirmButtonColor: '#3b82f6',
-                        confirmButtonText: 'OK, I Understand'
-                    });
-                } else if (data.status === 'Completed' && data.paymentMethod === 'Cash') {
+                if (data.status === 'Completed' && data.paymentMethod === 'Cash') {
                     Swal.fire({
                         title: 'Cash Payment 💵',
                         text: `Please hand over ₹${data.finalFare} in Cash to the Driver.`,
@@ -386,6 +397,13 @@ const BookingDetails = () => {
                     });
                 }
                 fetchBooking();
+            }
+        });
+
+        socket.on('payment_requested', (data) => {
+            if (data.bookingId === bookingId) {
+                console.log("💰 Payment Requested Event:", data);
+                handleShowPaymentModal(data.finalFare);
             }
         });
 
@@ -420,6 +438,70 @@ const BookingDetails = () => {
             socket.disconnect();
         };
     }, [bookingId]);
+
+    const handleShowPaymentModal = async (finalFare) => {
+        const result = await Swal.fire({
+            title: '🏁 Trip Completed!',
+            html: `
+                <div class="mb-4">
+                    <p class="text-gray-500 mb-1">Your Total Fare is</p>
+                    <p class="text-4xl font-black text-green-600">₹${finalFare}</p>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Please select your payment method to complete the trip.</p>
+            `,
+            showCancelButton: false,
+            showDenyButton: true,
+            showConfirmButton: true,
+            confirmButtonText: '💵 Pay Cash',
+            denyButtonText: '💳 Pay Online',
+            confirmButtonColor: '#22c55e',
+            denyButtonColor: '#3b82f6',
+            allowOutsideClick: false
+        });
+
+        if (result.isConfirmed) {
+            processPaymentSelection('Cash');
+        } else if (result.isDenied) {
+            processPaymentSelection('Online');
+        }
+    };
+
+    const processPaymentSelection = async (method) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${backendServer}/api/trips/execute/${bookingId}/select-payment`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ paymentMethod: method })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                if (method === 'Cash') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cash Selected',
+                        text: 'Please hand over the cash to the driver. The driver will confirm receipt.',
+                        confirmButtonText: 'OK',
+                        allowOutsideClick: false
+                    });
+                } else {
+                    if (data.paymentLinks && data.paymentLinks.web) {
+                         window.location.href = data.paymentLinks.web;
+                    } else {
+                         Swal.fire('Error', 'Payment link not received', 'error');
+                    }
+                }
+            } else {
+                Swal.fire('Error', data.message || 'Failed to process payment selection', 'error');
+            }
+        } catch(err) {
+            Swal.fire('Error', 'Network error or failed to process payment selection', 'error');
+        }
+    };
 
     // Robust location update handler
     const handleLocationUpdate = (data) => {
@@ -784,6 +866,18 @@ const BookingDetails = () => {
                                             </button>
                                         )}
                                     </div>
+
+                                    {/* Pay Now Section for Payment_Pending Rides */}
+                                    {(booking.bookingStatus || booking.status || '') === 'Payment_Pending' && (
+                                        <div className="mt-4 pt-4 border-t border-white/5">
+                                            <button
+                                                onClick={() => handleShowPaymentModal(booking.actualFare || booking.fareEstimate)}
+                                                className="w-full bg-[#10b981] text-black font-black uppercase tracking-widest py-3 rounded-xl hover:bg-[#059669] transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 text-xs"
+                                            >
+                                                <FaCreditCard size={14} /> Pay Now (₹{booking.actualFare || booking.fareEstimate})
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* Rating Section for Completed Rides */}
                                     {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && (
