@@ -235,11 +235,22 @@ const Offers = () => {
                         </div>
 
                         <h3 className="text-3xl font-black text-white mb-2">
-                          Save <span className="text-primary">₹{offer.discountAmount}</span>
+                          Save{' '}
+                          <span className="text-primary">
+                            {offer.discountType === 'PERCENTAGE'
+                              ? `${offer.discountAmount}%`
+                              : `₹${offer.discountAmount}`}
+                          </span>
+                          {offer.discountType === 'PERCENTAGE' && offer.maxDiscountAmount > 0 && (
+                            <span className="text-lg font-bold text-white/50 ml-2">Upto ₹{offer.maxDiscountAmount}</span>
+                          )}
                         </h3>
                         
                         <p className="text-white/60 text-sm mb-8 flex-grow">
-                          Valid on your next {offer.bookingType.toLowerCase()} ride. Apply the promo code during checkout to avail this exclusive discount.
+                          {offer.discountType === 'PERCENTAGE'
+                            ? `Get ${offer.discountAmount}% off${offer.maxDiscountAmount > 0 ? ` (max ₹${offer.maxDiscountAmount})` : ''} on your next ${offer.bookingType.toLowerCase()} ride.`
+                            : `Flat ₹${offer.discountAmount} off on your next ${offer.bookingType.toLowerCase()} ride. Apply the promo code during checkout.`
+                          }
                         </p>
 
                         <div className="mt-auto">
@@ -296,14 +307,22 @@ const Offers = () => {
                       whileHover={{ y: -5 }}
                       className="group relative bg-[#111] rounded-3xl p-6 border border-white/10 overflow-hidden shadow-2xl transition-all duration-300 hover:border-primary/50 flex flex-col"
                     >
-                      <div className="absolute top-0 right-0 p-4">
+                      {/* Top badges row */}
+                      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                         <div className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full text-primary text-xs font-bold uppercase tracking-widest flex items-center space-x-1">
                           <FaCar />
                           <span>{pkg.carCategory?.name}</span>
                         </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${
+                          pkg.tripType === 'Round-Trip'
+                            ? 'bg-purple-500/20 border-purple-500/30 text-purple-400'
+                            : 'bg-blue-500/20 border-blue-500/30 text-blue-400'
+                        }`}>
+                          {pkg.tripType === 'Round-Trip' ? '🔄 Round-Trip' : '➡️ One-Way'}
+                        </div>
                       </div>
                       
-                      <div className="mt-6 space-y-4 flex-grow">
+                      <div className="mt-2 space-y-4 flex-grow">
                         <div className="relative pl-6 pb-4 border-l-2 border-dashed border-white/20 ml-2">
                           <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-green-500 border-4 border-[#111]"></div>
                           <p className="text-xs text-white/40 uppercase font-bold tracking-wider mb-1">Pickup</p>
@@ -316,10 +335,26 @@ const Offers = () => {
                         </div>
                       </div>
 
-                      <div className="mt-8 pt-6 border-t border-white/10 flex items-end justify-between">
+                      {/* Time limit info */}
+                      {pkg.maxTimeHours > 0 && (
+                        <div className="mt-4 bg-orange-500/10 border border-orange-500/20 rounded-xl px-4 py-2.5 flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-orange-400 text-xs font-bold">
+                            <FaClock />
+                            <span>Includes {pkg.maxTimeHours} Hours</span>
+                          </div>
+                          <span className="text-orange-400/70 text-xs font-semibold">
+                            +₹{pkg.extraTimeChargePerHour}/hr after
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="mt-6 pt-5 border-t border-white/10 flex items-end justify-between">
                         <div>
                           <p className="text-xs text-white/40 uppercase font-bold tracking-wider mb-1">Fixed Fare</p>
                           <p className="text-3xl font-black text-white">₹{pkg.price}</p>
+                          {pkg.maxTimeHours > 0 && (
+                            <p className="text-white/40 text-[10px] mt-0.5">Extra time billed separately</p>
+                          )}
                         </div>
                         <button 
                           onClick={() => openBookingModal(pkg)}
@@ -365,10 +400,25 @@ const Offers = () => {
 
               <div className="bg-black/50 rounded-2xl p-4 mb-6 border border-white/5">
                 <p className="text-primary font-bold text-lg mb-1">{bookingModal.pkg?.pickupLocation} ➔ {bookingModal.pkg?.dropLocation}</p>
-                <div className="flex justify-between items-center text-sm text-white/60 mt-2">
-                  <span><FaCar className="inline mr-1" /> {bookingModal.pkg?.carCategory?.name}</span>
+                <div className="flex flex-wrap justify-between items-center text-sm text-white/60 mt-2 gap-2">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span><FaCar className="inline mr-1" /> {bookingModal.pkg?.carCategory?.name}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
+                      bookingModal.pkg?.tripType === 'Round-Trip'
+                        ? 'bg-purple-500/20 border-purple-500/30 text-purple-400'
+                        : 'bg-blue-500/20 border-blue-500/30 text-blue-400'
+                    }`}>
+                      {bookingModal.pkg?.tripType === 'Round-Trip' ? '🔄 Round-Trip' : '➡️ One-Way'}
+                    </span>
+                  </div>
                   <span className="text-white font-bold text-lg">₹{bookingModal.pkg?.price}</span>
                 </div>
+                {bookingModal.pkg?.maxTimeHours > 0 && (
+                  <div className="mt-3 flex items-center gap-2 text-orange-400 text-xs font-semibold bg-orange-500/10 border border-orange-500/20 rounded-lg px-3 py-2">
+                    <FaClock />
+                    <span>Package includes {bookingModal.pkg?.maxTimeHours} hours. Extra time billed at ₹{bookingModal.pkg?.extraTimeChargePerHour}/hr.</span>
+                  </div>
+                )}
               </div>
 
               <form onSubmit={handleBookingSubmit} className="space-y-5">

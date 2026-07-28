@@ -72,6 +72,10 @@ const MyBooking = () => {
       Toast.fire({ icon: 'success', title: 'A driver has accepted your package ride!' });
       fetchBookings();
     });
+    socket.on('fixedBookingStarted', () => {
+      Toast.fire({ icon: 'info', title: '🚖 Your package ride has started!' });
+      fetchBookings();
+    });
     socket.on('fixedBookingCompleted', () => {
       Swal.fire({
         title: 'Ride Completed', 
@@ -170,7 +174,7 @@ const MyBooking = () => {
     if (!b) return false;
     const status = (b.status || '').toLowerCase().trim();
     if (activeTab === 'Upcoming Packages') {
-      return ['marketplace', 'accepted'].includes(status);
+      return ['marketplace', 'accepted', 'started'].includes(status);
     } else if (activeTab === 'Past Packages') {
       return ['completed', 'cancelled'].includes(status);
     }
@@ -184,6 +188,7 @@ const MyBooking = () => {
     if (s === 'completed') return { bg: 'bg-emerald-500/10 border-emerald-500/20', text: 'text-emerald-400', strip: 'bg-emerald-500', icon: FaCheckCircle, label: 'Completed' };
     if (s === 'cancelled') return { bg: 'bg-red-500/10 border-red-500/20', text: 'text-red-400', strip: 'bg-red-500', icon: FaTimesCircle, label: 'Cancelled' };
     if (s === 'accepted' || s === 'driver_assigned') return { bg: 'bg-primary/10 border-primary/20', text: 'text-primary', strip: 'bg-primary', icon: FaShieldAlt, label: 'Accepted' };
+    if (s === 'started') return { bg: 'bg-green-500/10 border-green-500/20', text: 'text-green-400', strip: 'bg-green-500', icon: FaClock, label: 'Trip Live 🚀' };
     if (s === 'ongoing') return { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-400', strip: 'bg-amber-500', icon: FaClock, label: 'Trip Live' };
     if (s === 'marketplace') return { bg: 'bg-blue-500/10 border-blue-500/20', text: 'text-blue-400', strip: 'bg-blue-500', icon: FaClock, label: 'Finding Driver' };
     if (s === 'expired') return { bg: 'bg-gray-500/10 border-gray-500/20', text: 'text-gray-400', strip: 'bg-gray-500', icon: FaHistory, label: 'Expired' };
@@ -245,8 +250,13 @@ const MyBooking = () => {
               {displayBookings.map((booking, index) => {
                 const sc = getStatusConfig(booking.bookingStatus || booking.status || 'pending');
                 const StatusIcon = sc.icon;
-                const fare = Math.round(booking.actualFare || booking.fareEstimate || booking.price || 0);
                 const isPackage = activeTab.includes('Packages');
+                // For packages: use finalPrice if extra charges were applied, else use base price
+                const fare = Math.round(
+                  (isPackage && booking.finalPrice > 0)
+                    ? booking.finalPrice
+                    : (booking.actualFare || booking.fareEstimate || booking.price || 0)
+                );
 
                 return (
                   <motion.div
@@ -270,11 +280,27 @@ const MyBooking = () => {
                             {sc.label}
                           </span>
                           <span className="bg-white/5 border border-white/5 text-primary/70 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">
-                            {isPackage ? 'Fixed Package' : (booking.rideType || booking.carCategory?.name || 'Ride')}
+                            {isPackage ? (booking.tripType || 'One-Way') + ' Package' : (booking.rideType || booking.carCategory?.name || 'Ride')}
                           </span>
+                          {/* OTP: Show for normal rides AND for package rides when trip is not yet started */}
                           {!isPackage && (
                             <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
                               <FaFingerprint size={9} /> OTP: {booking.tripData?.startOtp || booking.otp || '---'}
+                            </span>
+                          )}
+                          {isPackage && booking.startOtp && ['marketplace', 'accepted', 'started'].includes((booking.status || '').toLowerCase()) && (
+                            <span className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <FaFingerprint size={9} /> Start OTP: {booking.startOtp}
+                            </span>
+                          )}
+                          {isPackage && booking.maxTimeHours > 0 && (
+                            <span className="bg-orange-500/10 border border-orange-500/20 text-orange-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">
+                              ⏱ {booking.maxTimeHours}h Limit | +₹{booking.extraTimeChargePerHour}/hr extra
+                            </span>
+                          )}
+                          {isPackage && booking.extraTimeCharges > 0 && (
+                            <span className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">
+                              Extra Charges: +₹{booking.extraTimeCharges}
                             </span>
                           )}
                           <span className="text-white/20 text-[9px] font-black uppercase tracking-widest sm:ml-auto">
@@ -341,6 +367,11 @@ const MyBooking = () => {
                           <div className="lg:border-l lg:border-white/5 lg:pl-6">
                             <p className="text-white/20 text-[8px] font-black uppercase tracking-widest mb-1">Total Fare</p>
                             <span className="text-primary font-black text-3xl tracking-tighter">₹{fare}</span>
+                            {isPackage && booking.extraTimeCharges > 0 && (
+                              <p className="text-orange-400 text-[9px] font-black mt-0.5">
+                                Base ₹{booking.price} + Extra ₹{booking.extraTimeCharges}
+                              </p>
+                            )}
                           </div>
                         </div>
 
