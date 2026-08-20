@@ -41,6 +41,7 @@ const BookingForm = () => {
   const [isLocating, setIsLocating] = useState(false);
   const [distance, setDistance] = useState(null);
   const [distanceValue, setDistanceValue] = useState(0); // in meters or km
+  const [durationValue, setDurationValue] = useState(0); // NEW
   const [rideType, setRideType] = useState('private');
   const [isShareRideEnabled, setIsShareRideEnabled] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -335,9 +336,12 @@ const BookingForm = () => {
             const route = result.routes[0];
             if (route && route.legs) {
               const totalMeters = route.legs.reduce((acc, leg) => acc + leg.distance.value, 0);
+              const totalSeconds = route.legs.reduce((acc, leg) => acc + leg.duration.value, 0);
               const totalKm = (totalMeters / 1000).toFixed(1);
+              const totalMin = Math.ceil(totalSeconds / 60);
               setDistance(`${totalKm} KM`);
               setDistanceValue(totalMeters / 1000);
+              setDurationValue(totalMin);
             }
 
             // Handle Custom Markers (Suppressed default ones)
@@ -863,6 +867,7 @@ const BookingForm = () => {
       dropLng: Number(dLng),
       stops: formattedStops, // NEW: Full Stops Data
       distanceKm: Number(distanceValue) || 0,
+      estimatedTimeMin: Number(durationValue) || 0,
       pickupDate: new Date().toISOString().split('T')[0],
       pickupTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
       pickupPin: formData.pickupPin, // 🚀 SMART PIN

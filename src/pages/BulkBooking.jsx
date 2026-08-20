@@ -243,8 +243,28 @@ const BulkBooking = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
   const [promoMessage, setPromoMessage] = useState(null);
+  
+  // NEW: Area Pricing Surcharge State
+  const [areaMultiplier, setAreaMultiplier] = useState(1);
 
   const location = useLocation();
+
+  // 🚀 Fetch Area Surcharge when Pickup Coords change
+  useEffect(() => {
+    if (formData.pickupCoords?.lat && formData.pickupCoords?.lng) {
+      fetch(`${API_BASE_URL}/bulk-bookings/check-surcharge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ latitude: formData.pickupCoords.lat, longitude: formData.pickupCoords.lng })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.multiplier) setAreaMultiplier(data.multiplier);
+        else setAreaMultiplier(1);
+      })
+      .catch(() => setAreaMultiplier(1));
+    }
+  }, [formData.pickupCoords]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -418,7 +438,7 @@ const BulkBooking = () => {
     // Multiplier for Round Trip
     const distanceMultiplier = formData.tripType === 'RoundTrip' ? 2 : 1;
 
-    const baseTotal = selectedCars.reduce((acc, car) => acc + (car.price * car.quantity * formData.days * ((formData.distance || 0) * distanceMultiplier)), 0);
+    const baseTotal = selectedCars.reduce((acc, car) => acc + (car.price * car.quantity * formData.days * ((formData.distance || 0) * distanceMultiplier) * areaMultiplier), 0);
     const modified = baseTotal + (baseTotal * (formData.priceModifier / 100));
     return Math.round(modified);
   };
@@ -649,63 +669,10 @@ const BulkBooking = () => {
           {/* Left Column: Form & Selection */}
           <div className="lg:col-span-8 space-y-8">
 
-            {/* Step 1: Car Selection */}
-            <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-5 sm:p-8 transition-all ${step === 1 ? 'border-primary/50' : ''}`}>
-              <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-black flex items-center justify-center font-bold text-sm shrink-0">1</div>
-                <h3 className="text-lg sm:text-xl font-bold text-white">Select Your Fleet</h3>
-              </div>
-
-              {loading ? (
-                <div className="h-40 flex items-center justify-center text-white/30">Loading approved cars...</div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {(categories || []).map((cat) => (
-                    <motion.div
-                      key={cat._id}
-                      whileHover={{ scale: 1.01 }}
-                      className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3"
-                    >
-                      {/* Left: Image + Info */}
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={`${BASE_URL}/uploads/${cat.image}`}
-                          alt={cat.name}
-                          className="w-14 h-10 sm:w-16 sm:h-12 object-contain rounded-lg bg-black/50 p-1.5 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <h4 className="text-white font-bold text-sm truncate">{cat.name}</h4>
-                          <p className="text-primary text-[10px] font-bold mt-0.5">Rate: ₹{cat.bulkBookingBasePrice || 0} / KM</p>
-                        </div>
-                      </div>
-
-                      {/* Right: Counter */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={() => handleRemoveCar(cat._id)}
-                          className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
-                        >
-                          <FaMinus size={11} />
-                        </button>
-                        <span className="text-white font-bold w-5 text-center text-sm">
-                          {selectedCars.find(c => c.id === cat._id)?.quantity || 0}
-                        </span>
-                        <button
-                          onClick={() => handleAddCar(cat)}
-                          className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-colors"
-                        >
-                          <FaPlus size={11} />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Step 2: Trip Details */}
-            <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 transition-all ${step === 2 ? 'border-primary/50' : ''}`}>
+            {/* Step 1: Trip Details */}
+            <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-8 transition-all ${step === 1 ? 'border-primary/50' : ''}`}>
               <div className="flex items-center gap-4 mb-8">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-black flex items-center justify-center font-bold text-sm shrink-0">1</div>
                 <h3 className="text-xl font-bold text-white">Journey Details</h3>
               </div>
 
@@ -864,6 +831,60 @@ const BulkBooking = () => {
               </div>
             </div>
 
+            {/* Step 2: Car Selection */}
+            <div className={`bg-[#0A0A0A] border border-white/5 rounded-3xl p-5 sm:p-8 transition-all ${step === 2 ? 'border-primary/50' : ''}`}>
+              <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary text-black flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                <h3 className="text-lg sm:text-xl font-bold text-white">Select Your Fleet</h3>
+              </div>
+
+              {loading ? (
+                <div className="h-40 flex items-center justify-center text-white/30">Loading approved cars...</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {(categories || []).map((cat) => (
+                    <motion.div
+                      key={cat._id}
+                      whileHover={{ scale: 1.01 }}
+                      className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center justify-between gap-3"
+                    >
+                      {/* Left: Image + Info */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={`${BASE_URL}/uploads/${cat.image}`}
+                          alt={cat.name}
+                          className="w-14 h-10 sm:w-16 sm:h-12 object-contain rounded-lg bg-black/50 p-1.5 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <h4 className="text-white font-bold text-sm truncate">{cat.name}</h4>
+                          <p className="text-primary text-[10px] font-bold mt-0.5">Rate: ₹{(cat.bulkBookingBasePrice || 0) * areaMultiplier} / KM</p>
+                        </div>
+                      </div>
+
+                      {/* Right: Counter */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => handleRemoveCar(cat._id)}
+                          className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500/20 hover:text-red-500 transition-colors"
+                        >
+                          <FaMinus size={11} />
+                        </button>
+                        <span className="text-white font-bold w-5 text-center text-sm">
+                          {selectedCars.find(c => c.id === cat._id)?.quantity || 0}
+                        </span>
+                        <button
+                          onClick={() => handleAddCar(cat)}
+                          className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary hover:bg-primary hover:text-black transition-colors"
+                        >
+                          <FaPlus size={11} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
 
           {/* Right Column: Checkout Summary */}
@@ -884,7 +905,9 @@ const BulkBooking = () => {
                         <span className="w-5 h-5 bg-white/5 rounded flex items-center justify-center text-[10px] font-bold">{car.quantity}x</span>
                         {car.name}
                       </div>
-                      <span className="text-white font-semibold">₹{(car.price * car.quantity * formData.days * (formData.distance || 0)).toLocaleString()}</span>
+                      <span className="text-white font-semibold">
+                        ₹{Math.round((car.price * car.quantity * formData.days * (formData.distance || 0) * (formData.tripType === 'RoundTrip' ? 2 : 1)) * areaMultiplier).toLocaleString()}
+                      </span>
                     </div>
                   ))}
 
@@ -895,6 +918,8 @@ const BulkBooking = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Area Surcharge is now applied directly to car rates */}
 
                 {/* Added: Smaller Marketplace Offer inside Summary */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
