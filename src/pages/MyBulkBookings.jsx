@@ -331,7 +331,7 @@ const MyBulkBookings = () => {
 
                                             {/* Price + ID */}
                                             <div className="text-right shrink-0">
-                                                <p className="text-xl font-black text-primary">₹{booking.offeredPrice.toLocaleString()}</p>
+                                                <p className="text-xl font-black text-primary">₹{(booking.totalPriceWithTax || booking.offeredPrice).toLocaleString()}</p>
                                                 {booking.startOtp && (
                                                     <div className="mt-1 bg-primary/20 border border-primary/30 rounded px-2 py-0.5 inline-block">
                                                         <p className="text-[10px] text-primary font-black tracking-[0.15em] uppercase">OTP: {booking.startOtp}</p>

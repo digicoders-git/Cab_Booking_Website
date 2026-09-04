@@ -981,20 +981,35 @@ const BulkBooking = () => {
 
                 <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 mb-8 relative overflow-hidden">
                   <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
+                  
                   <div className="flex justify-between items-center mb-1 font-bold relative z-10">
-                    <span className="text-white/40 text-[10px] uppercase tracking-widest">Total Offer</span>
+                    <span className="text-white/40 text-[10px] uppercase tracking-widest">Base Offer</span>
                     <div className="flex items-center gap-2">
                       {discountAmount > 0 && (
-                        <span className="text-lg font-black text-white/30 line-through tracking-tighter">
+                        <span className="text-sm font-black text-white/30 line-through tracking-tighter">
                           ₹{getUiTotal().toLocaleString()}
                         </span>
                       )}
-                      <span className="text-primary text-3xl italic">
+                      <span className="text-white text-lg">
                         ₹{Math.max(0, getUiTotal() - discountAmount).toLocaleString()}
                       </span>
                     </div>
                   </div>
-                  <p className="text-[9px] text-white/30 text-right uppercase tracking-tighter relative z-10">*Final marketplace bid</p>
+
+                  <div className="flex justify-between items-center mb-1 font-bold relative z-10">
+                    <span className="text-white/40 text-[10px] uppercase tracking-widest">GST (5%)</span>
+                    <span className="text-white/70 text-sm">
+                      + ₹{Math.round(Math.max(0, getUiTotal() - discountAmount) * 0.05).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center mt-3 pt-3 border-t border-primary/20 font-bold relative z-10">
+                    <span className="text-white/80 text-[12px] uppercase tracking-widest">Total Payable</span>
+                    <span className="text-primary text-3xl italic">
+                      ₹{Math.round(Math.max(0, getUiTotal() - discountAmount) * 1.05).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-white/30 text-right uppercase tracking-tighter relative z-10 mt-2">*Includes 2.5% CGST & 2.5% SGST</p>
                 </div>
 
                 {error && (

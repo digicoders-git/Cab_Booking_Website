@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaTaxi, FaMapMarkerAlt, FaCalendarAlt, FaClock,
   FaChevronRight, FaCheckCircle, FaHistory, FaTimesCircle,
-  FaSpinner, FaUser, FaShieldAlt, FaArrowRight, FaDotCircle, FaFingerprint
+  FaSpinner, FaUser, FaShieldAlt, FaArrowRight, FaDotCircle, FaFingerprint, FaDownload
 } from 'react-icons/fa';
 import PageHeader from '../components/PageHeader';
 import { Link } from 'react-router-dom';
@@ -29,6 +29,33 @@ const MyBooking = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Upcoming');
   const [rateModalBooking, setRateModalBooking] = useState(null);
+
+  const generateReceipt = async (booking, isPackageBooking = false) => {
+      try {
+          const token = localStorage.getItem('token');
+          const url = isPackageBooking 
+            ? `${API_BASE_URL}/fixed-routes/bookings/${booking._id}/receipt`
+            : `${API_BASE_URL}/bookings/receipt/${booking._id}`;
+            
+          const res = await fetch(url, {
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!res.ok) {
+              return Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to download receipt.', background: '#111', color: '#fff' });
+          }
+        const blob = await res.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `Receipt_${booking._id.slice(-6).toUpperCase()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error("Receipt error:", err);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Something went wrong.', background: '#111', color: '#fff' });
+    }
+  };
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -416,6 +443,14 @@ const MyBooking = () => {
                                 <FaStar className="text-primary text-[10px]" /> Rated {booking.driverRating}/5
                             </div>
                           )}
+                            {(booking.bookingStatus || booking.status || '').toLowerCase() === 'completed' && (
+                              <button
+                                onClick={() => generateReceipt(booking, isPackage)}
+                                className="px-5 py-2.5 rounded-xl border border-primary/20 text-primary hover:bg-primary hover:text-black font-black text-[9px] uppercase tracking-widest transition-all flex items-center gap-2"
+                              >
+                                <FaDownload size={9} /> Receipt
+                              </button>
+                            )}
                           {!isPackage && (
                             <Link
                               to={`/booking-details/${booking._id}`}
