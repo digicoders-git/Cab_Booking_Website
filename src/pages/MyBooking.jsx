@@ -164,24 +164,38 @@ const MyBooking = () => {
     }
   };
 
-  const handlePayment = async (bookingId) => {
+  const handlePayment = async (bookingId, isPkg = true) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE_URL}/fixed-routes/bookings/${bookingId}/pay`, {
+      const url = isPkg 
+        ? `${API_BASE_URL}/fixed-routes/bookings/${bookingId}/pay`
+        : `${API_BASE_URL}/trips/execute/${bookingId}/select-payment`;
+        
+      const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: isPkg ? null : JSON.stringify({ paymentMethod: 'Online' })
       });
       const data = await res.json();
       if (!data.success) {
         return Swal.fire('Error', data.message || 'Failed to initialize payment', 'error');
       }
 
-      if (data.session && data.session.payment_links && data.session.payment_links.web) {
-          window.location.href = data.session.payment_links.web;
+      const webLink = 
+        data.session?.payment_links?.web || 
+        data.paymentLinks?.web || 
+        data.paymentLinks?.payment_links?.web;
+
+      if (webLink) {
+          window.location.href = webLink;
       } else {
           Swal.fire('Error', 'Invalid payment link from server', 'error');
       }
     } catch (err) {
+      console.error(err);
       Swal.fire('Error', 'Server connection failed', 'error');
     }
   };
@@ -192,7 +206,7 @@ const MyBooking = () => {
     if (activeTab === 'Upcoming') {
       return ['pending', 'accepted', 'ongoing', 'confirmed', 'driver_assigned', 'accepted_by_driver'].includes(status);
     } else if (activeTab === 'Past Rides') {
-      return ['completed', 'cancelled', 'expired', 'rejected', 'timeout'].includes(status);
+      return ['completed', 'cancelled', 'expired', 'rejected', 'timeout', 'payment_pending'].includes(status);
     }
     return false;
   });
@@ -203,7 +217,7 @@ const MyBooking = () => {
     if (activeTab === 'Upcoming Packages') {
       return ['marketplace', 'accepted', 'started'].includes(status);
     } else if (activeTab === 'Past Packages') {
-      return ['completed', 'cancelled'].includes(status);
+      return ['completed', 'cancelled', 'payment_pending'].includes(status);
     }
     return false;
   });
@@ -219,6 +233,7 @@ const MyBooking = () => {
     if (s === 'ongoing') return { bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-400', strip: 'bg-amber-500', icon: FaClock, label: 'Trip Live' };
     if (s === 'marketplace') return { bg: 'bg-blue-500/10 border-blue-500/20', text: 'text-blue-400', strip: 'bg-blue-500', icon: FaClock, label: 'Finding Driver' };
     if (s === 'expired') return { bg: 'bg-gray-500/10 border-gray-500/20', text: 'text-gray-400', strip: 'bg-gray-500', icon: FaHistory, label: 'Expired' };
+    if (s === 'payment_pending') return { bg: 'bg-orange-500/10 border-orange-500/20', text: 'text-orange-400', strip: 'bg-orange-500', icon: FaClock, label: 'Payment Pending' };
     return { bg: 'bg-primary/10 border-primary/20', text: 'text-primary', strip: 'bg-primary', icon: FaSpinner, label: 'Processing...' };
   };
 
@@ -419,8 +434,16 @@ const MyBooking = () => {
                           )}
                           {isPackage && (booking.status || '').toLowerCase() === 'completed' && booking.paymentMethod === 'Online' && booking.paymentStatus === 'Pending' && (
                             <button
-                              onClick={() => handlePayment(booking._id)}
+                              onClick={() => handlePayment(booking._id, true)}
                               className="px-6 py-2.5 rounded-xl bg-green-500 text-black hover:bg-green-400 font-black text-[9px] uppercase tracking-widest shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all flex items-center gap-2 mr-auto animate-pulse"
+                            >
+                              Pay ₹{fare} Now
+                            </button>
+                          )}
+                          {!isPackage && (booking.bookingStatus || booking.status || '').toLowerCase() === 'payment_pending' && (
+                            <button
+                              onClick={() => handlePayment(booking._id, false)}
+                              className="px-6 py-2.5 rounded-xl bg-orange-500 text-black hover:bg-orange-400 font-black text-[9px] uppercase tracking-widest shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all flex items-center gap-2 mr-auto animate-pulse"
                             >
                               Pay ₹{fare} Now
                             </button>
