@@ -433,12 +433,25 @@ const BulkBooking = () => {
     });
   };
 
-  const calculateTotal = () => {
-    // Formula: Rate (KM) * Quantity * Days * Distance (KM)
-    // Multiplier for Round Trip
+  const calculateCarPrice = (car) => {
     const distanceMultiplier = formData.tripType === 'RoundTrip' ? 2 : 1;
+    const catDetails = categories.find(c => c._id === car.id);
+    const minKmPerDay = catDetails?.minKmPerDay || 250;
+    const driverAllowancePerDay = catDetails?.driverAllowancePerDay || 300;
+    const actualKm = (formData.distance || 0) * distanceMultiplier;
+    
+    if (formData.tripType === 'RoundTrip') {
+        const minimumKmRequired = minKmPerDay * formData.days;
+        const chargeableKm = Math.max(actualKm, minimumKmRequired);
+        const totalDriverAllowance = driverAllowancePerDay * formData.days;
+        return ((chargeableKm * car.price) + totalDriverAllowance) * car.quantity * areaMultiplier;
+    } else {
+        return car.price * car.quantity * actualKm * areaMultiplier;
+    }
+  };
 
-    const baseTotal = selectedCars.reduce((acc, car) => acc + (car.price * car.quantity * formData.days * ((formData.distance || 0) * distanceMultiplier) * areaMultiplier), 0);
+  const calculateTotal = () => {
+    const baseTotal = selectedCars.reduce((acc, car) => acc + calculateCarPrice(car), 0);
     const modified = baseTotal + (baseTotal * (formData.priceModifier / 100));
     return Math.round(modified);
   };
@@ -780,39 +793,16 @@ const BulkBooking = () => {
                   </motion.div>
                 )}
 
-                <div>
-                  <label className="text-white/40 text-xs uppercase font-bold mb-2 block">Number of Days</label>
-                  <div className="relative flex items-center bg-white/5 border border-white/10 rounded-xl">
-                    {formData.tripType === 'OneWay' ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, days: Math.max(1, formData.days - 1) })}
-                          className="w-14 h-14 flex items-center justify-center text-white/40 hover:text-white"
-                        >
-                          <FaMinus size={12} />
-                        </button>
-                        <input
-                          type="number"
-                          value={formData.days}
-                          readOnly
-                          className="flex-1 bg-transparent text-center text-white font-bold outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, days: formData.days + 1 })}
-                          className="w-14 h-14 flex items-center justify-center text-white/40 hover:text-white"
-                        >
-                          <FaPlus size={12} />
-                        </button>
-                      </>
-                    ) : (
-                      <div className="flex-1 py-4 text-center text-white font-bold bg-white/10 rounded-xl">
-                        {formData.days} Day(s) <span className="text-[10px] text-primary block mt-0.5">Calculated from dates</span>
-                      </div>
-                    )}
+                {formData.tripType === 'RoundTrip' && (
+                  <div>
+                    <label className="text-white/40 text-xs uppercase font-bold mb-2 block">Number of Days</label>
+                    <div className="relative flex items-center bg-white/5 border border-white/10 rounded-xl">
+                        <div className="flex-1 py-4 text-center text-white font-bold bg-white/10 rounded-xl">
+                          {formData.days} Day(s) <span className="text-[10px] text-primary block mt-0.5">Calculated from dates</span>
+                        </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div>
                   <label className="text-white/40 text-xs uppercase font-bold mb-2 block">Total Distance (KM)</label>
@@ -906,7 +896,7 @@ const BulkBooking = () => {
                         {car.name}
                       </div>
                       <span className="text-white font-semibold">
-                        ₹{Math.round((car.price * car.quantity * formData.days * (formData.distance || 0) * (formData.tripType === 'RoundTrip' ? 2 : 1)) * areaMultiplier).toLocaleString()}
+                        ₹{Math.round(calculateCarPrice(car)).toLocaleString()}
                       </span>
                     </div>
                   ))}

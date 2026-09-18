@@ -166,6 +166,33 @@ const MyBooking = () => {
 
   const handlePayment = async (bookingId, isPkg = true) => {
     try {
+      let chosenMethod = 'Online';
+
+      if (!isPkg) {
+        const result = await Swal.fire({
+          title: 'Select Payment Method',
+          text: 'How would you like to pay for this ride?',
+          icon: 'question',
+          showDenyButton: true,
+          showCancelButton: true,
+          confirmButtonText: 'Online (Card/UPI)',
+          denyButtonText: 'Cash',
+          cancelButtonText: 'Cancel',
+          background: '#111',
+          color: '#fff',
+          confirmButtonColor: '#22c55e',
+          denyButtonColor: '#eab308'
+        });
+
+        if (result.isConfirmed) {
+          chosenMethod = 'Online';
+        } else if (result.isDenied) {
+          chosenMethod = 'Cash';
+        } else {
+          return; // Cancelled
+        }
+      }
+
       const token = localStorage.getItem('token');
       const url = isPkg 
         ? `${API_BASE_URL}/fixed-routes/bookings/${bookingId}/pay`
@@ -177,11 +204,17 @@ const MyBooking = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: isPkg ? null : JSON.stringify({ paymentMethod: 'Online' })
+        body: isPkg ? null : JSON.stringify({ paymentMethod: chosenMethod })
       });
       const data = await res.json();
       if (!data.success) {
         return Swal.fire('Error', data.message || 'Failed to initialize payment', 'error');
+      }
+
+      if (!isPkg && chosenMethod === 'Cash') {
+        Swal.fire('Success', data.message || 'Driver notified for cash payment', 'success');
+        fetchBookings(); // Refresh UI
+        return;
       }
 
       const webLink = 
