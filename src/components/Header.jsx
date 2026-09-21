@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logo.png';
+const LOGO = '/logo2.png';
 import {
   FaTaxi, FaEnvelope, FaPhoneAlt, FaClock,
   FaSignInAlt, FaUser, FaFacebookF, FaTwitter,
@@ -74,7 +75,7 @@ const Header = () => {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 z-50 shrink-0">
-            <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
+            <img src={LOGO} alt="KwikCabs Logo" className="h-20 w-auto object-contain" />
           </Link>
 
           {/* Desktop Nav */}
@@ -178,7 +179,7 @@ const Header = () => {
               {/* Logo + Close */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <Link to="/" onClick={() => setIsOffcanvasOpen(false)}>
-                  <img src={logo} alt="KwikCabs Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain' }} />
+                  <img src={LOGO} alt="KwikCabs Logo" style={{ height: '64px', width: 'auto', objectFit: 'contain' }} />
                 </Link>
                 <button
                   onClick={() => setIsOffcanvasOpen(false)}

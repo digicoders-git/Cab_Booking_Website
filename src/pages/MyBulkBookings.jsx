@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 import logo from '../assets/logo.png';
+const LOGO = '/logo2.png';
 import Swal from 'sweetalert2';
 import {
     FaTruck, FaMapMarkerAlt, FaCalendarAlt, FaClock,

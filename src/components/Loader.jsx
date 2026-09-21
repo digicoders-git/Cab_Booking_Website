@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import logo from '../assets/logo.png';
+const LOGO = '/logo2.png';
 
 const Loader = () => {
   return (
@@ -45,7 +45,7 @@ const Loader = () => {
 
       {/* Logo */}
       <motion.img
-        src={logo}
+        src={LOGO}
         alt="KwikCabs "
         className="h-16 w-auto object-contain mb-4"
         animate={{ opacity: [0.6, 1, 0.6] }}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logo.png';
+const LOGO = '/logo2.png';
 import {
   FaTaxi, FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram, FaWhatsapp,
   FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaCaretRight, FaPaperPlane, FaArrowUp
@@ -24,7 +25,7 @@ const Footer = () => {
           {/* Brand */}
           <div className="flex flex-col items-center text-center sm:items-start sm:text-left space-y-6">
             <Link to="/" className="flex items-center justify-center sm:justify-start">
-              <img src={logo} alt="KwikCabs  Logo" className="h-20 w-auto object-contain" />
+              <img src={LOGO} alt="KwikCabs Logo" className="h-20 w-auto object-contain" />
             </Link>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
               Fast, safe, and reliable cab service available 24/7. Your comfort is our priority — KwikCabs .

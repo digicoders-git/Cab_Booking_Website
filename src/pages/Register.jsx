@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaEnvelope, FaUser, FaPhoneAlt, FaShieldAlt, FaArrowRight, FaBolt, FaCheckCircle, FaTaxi, FaStar, FaIdCard } from 'react-icons/fa';
 import { API_BASE_URL } from '../config/api';
 import logo from '../assets/logo.png';
+const LOGO = '/logo2.png';
 import Swal from 'sweetalert2';
 
 const Register = () => {
@@ -218,7 +219,7 @@ const Register = () => {
             {/* Logo */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
               <Link to="/">
-                <img src={logo} alt="KwikCabs Logo" className="h-14 w-auto object-contain" />
+                <img src={LOGO} alt="KwikCabs Logo" className="h-14 w-auto object-contain" />
               </Link>
             </motion.div>
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import logo from '../assets/logo.png';
+const LOGO = '/logo2.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaCar, FaCalendarAlt, FaClock, FaMapMarkerAlt,
@@ -35,7 +36,7 @@ const BulkBooking = () => {
 
     // 🛡️ WATERMARK (LOGO)
     const img = new Image();
-    img.src = logo;
+    img.src = LOGO;
     doc.saveGraphicsState();
     doc.setGState(new doc.GState({ opacity: 0.05 }));
     doc.addImage(img, 'PNG', 45, 110, 120, 120);
@@ -50,7 +51,7 @@ const BulkBooking = () => {
     
     // 3. Company Branding (Logo + Name)
     const topLogo = new Image();
-    topLogo.src = logo;
+    topLogo.src = LOGO;
     doc.addImage(topLogo, 'PNG', 92, 18, 25, 25); // Top Centered Logo
     
     doc.setFontSize(28);
