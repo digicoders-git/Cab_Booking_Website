@@ -375,6 +375,12 @@ const Booking = () => {
                 ))}
               </div>
 
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-2.5 mb-5 text-left">
+                <p className="text-[11px] text-yellow-200/90 leading-tight">
+                  <span className="font-bold text-yellow-400">Note:</span> Fare ke alawa toll alag se pay karna hoga. Kisi bhi offer ride mein toll include nahi hai.
+                </p>
+              </div>
+
               <div className="flex gap-3">
                 <button onClick={() => setShowConfirm(false)}
                   className="flex-1 py-3.5 rounded-2xl text-white/40 hover:text-white text-sm font-bold border border-white/10 hover:border-white/30 transition-all">

@@ -244,11 +244,86 @@ const BulkBooking = () => {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
   const [promoMessage, setPromoMessage] = useState(null);
-  
+
+  // FIRST RIDE WELCOME DISCOUNT STATE
+  const [firstRideDiscount, setFirstRideDiscount] = useState(0);
+  const [isFirstRideEligible, setIsFirstRideEligible] = useState(false);
+  const [firstRideConfig, setFirstRideConfig] = useState(null);
+
   // NEW: Area Pricing Surcharge State
   const [areaMultiplier, setAreaMultiplier] = useState(1);
 
   const location = useLocation();
+  const pickupRef = useRef();
+  const dropRef = useRef();
+
+  const calculateCarPrice = (car) => {
+    const distanceMultiplier = formData.tripType === 'RoundTrip' ? 2 : 1;
+    const catDetails = categories.find(c => c._id === car.id);
+    const minKmPerDay = catDetails?.minKmPerDay || 250;
+    const driverAllowancePerDay = catDetails?.driverAllowancePerDay || 300;
+    const actualKm = (formData.distance || 0) * distanceMultiplier;
+    
+    if (formData.tripType === 'RoundTrip') {
+        const minimumKmRequired = minKmPerDay * formData.days;
+        const chargeableKm = Math.max(actualKm, minimumKmRequired);
+        const totalDriverAllowance = driverAllowancePerDay * formData.days;
+        return ((chargeableKm * car.price) + totalDriverAllowance) * car.quantity * areaMultiplier;
+    } else {
+        return car.price * car.quantity * actualKm * areaMultiplier;
+    }
+  };
+
+  const calculateTotal = () => {
+    const baseTotal = selectedCars.reduce((acc, car) => acc + calculateCarPrice(car), 0);
+    const modified = baseTotal + (baseTotal * (formData.priceModifier / 100));
+    return Math.round(modified);
+  };
+
+  const getUiTotal = () => {
+      const base = calculateTotal();
+      const totalTax = estimatedTax * selectedCars.reduce((a, c) => a + c.quantity, 0);
+      return formData.isOutstation ? base + totalTax : base;
+  };
+
+  useEffect(() => {
+    const checkFirstRideEligibility = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/settings/first-ride-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.enabled && data.isEligible) {
+          setIsFirstRideEligible(true);
+          setFirstRideConfig(data);
+        } else {
+          setIsFirstRideEligible(false);
+          setFirstRideDiscount(0);
+        }
+      } catch (err) {
+        console.error("First ride check error in bulk booking:", err);
+      }
+    };
+    checkFirstRideEligibility();
+  }, []);
+
+  useEffect(() => {
+    if (isFirstRideEligible && firstRideConfig) {
+      const total = getUiTotal();
+      let disc = 0;
+      if (firstRideConfig.discountType === 'PERCENTAGE') {
+        disc = Math.round((total * (firstRideConfig.discountAmount || 0)) / 100);
+        if (firstRideConfig.maxDiscount && disc > firstRideConfig.maxDiscount) disc = firstRideConfig.maxDiscount;
+      } else {
+        disc = firstRideConfig.discountAmount || 0;
+      }
+      setFirstRideDiscount(Math.min(disc, total));
+    } else {
+      setFirstRideDiscount(0);
+    }
+  }, [isFirstRideEligible, firstRideConfig, selectedCars, formData.days, formData.distance, formData.priceModifier, areaMultiplier]);
 
   // 🚀 Fetch Area Surcharge when Pickup Coords change
   useEffect(() => {
@@ -278,9 +353,6 @@ const BulkBooking = () => {
       window.history.replaceState({}, '', '/bulk-booking');
     }
   }, [location]);
-
-  const pickupRef = useRef();
-  const dropRef = useRef();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -434,34 +506,7 @@ const BulkBooking = () => {
     });
   };
 
-  const calculateCarPrice = (car) => {
-    const distanceMultiplier = formData.tripType === 'RoundTrip' ? 2 : 1;
-    const catDetails = categories.find(c => c._id === car.id);
-    const minKmPerDay = catDetails?.minKmPerDay || 250;
-    const driverAllowancePerDay = catDetails?.driverAllowancePerDay || 300;
-    const actualKm = (formData.distance || 0) * distanceMultiplier;
-    
-    if (formData.tripType === 'RoundTrip') {
-        const minimumKmRequired = minKmPerDay * formData.days;
-        const chargeableKm = Math.max(actualKm, minimumKmRequired);
-        const totalDriverAllowance = driverAllowancePerDay * formData.days;
-        return ((chargeableKm * car.price) + totalDriverAllowance) * car.quantity * areaMultiplier;
-    } else {
-        return car.price * car.quantity * actualKm * areaMultiplier;
-    }
-  };
 
-  const calculateTotal = () => {
-    const baseTotal = selectedCars.reduce((acc, car) => acc + calculateCarPrice(car), 0);
-    const modified = baseTotal + (baseTotal * (formData.priceModifier / 100));
-    return Math.round(modified);
-  };
-
-  const getUiTotal = () => {
-      const base = calculateTotal();
-      const totalTax = estimatedTax * selectedCars.reduce((a, c) => a + c.quantity, 0);
-      return formData.isOutstation ? base + totalTax : base;
-  };
 
   const getTodayDate = () => {
     const today = new Date();
@@ -550,7 +595,7 @@ const BulkBooking = () => {
         numberOfDays: formData.days,
         totalDistance: formData.distance,
         carsRequired: selectedCars.map(c => ({ category: c.id, quantity: c.quantity })),
-        offeredPrice: Math.max(0, calculateTotal() - discountAmount),
+        offeredPrice: Math.max(0, calculateTotal() - firstRideDiscount - discountAmount),
         notes: formData.notes,
         isOutstation: formData.isOutstation,
         offerCode: discountAmount > 0 ? promoCode.trim() : null
@@ -970,19 +1015,33 @@ const BulkBooking = () => {
                   )}
                 </div>
 
+                {/* FIRST RIDE WELCOME DISCOUNT BANNER */}
+                {firstRideDiscount > 0 && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">🎉</span>
+                      <div>
+                        <p className="text-emerald-400 font-bold text-xs uppercase tracking-wide">First Ride Welcome Discount</p>
+                        <p className="text-white/40 text-[10px]">Applied automatically on your 1st booking</p>
+                      </div>
+                    </div>
+                    <span className="text-emerald-400 font-bold text-sm">-₹{firstRideDiscount}</span>
+                  </div>
+                )}
+
                 <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 mb-8 relative overflow-hidden">
                   <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/10 rounded-full blur-xl" />
                   
                   <div className="flex justify-between items-center mb-1 font-bold relative z-10">
                     <span className="text-white/40 text-[10px] uppercase tracking-widest">Base Offer</span>
                     <div className="flex items-center gap-2">
-                      {discountAmount > 0 && (
+                      {(discountAmount > 0 || firstRideDiscount > 0) && (
                         <span className="text-sm font-black text-white/30 line-through tracking-tighter">
                           ₹{getUiTotal().toLocaleString()}
                         </span>
                       )}
                       <span className="text-white text-lg">
-                        ₹{Math.max(0, getUiTotal() - discountAmount).toLocaleString()}
+                        ₹{Math.max(0, getUiTotal() - firstRideDiscount - discountAmount).toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -990,14 +1049,14 @@ const BulkBooking = () => {
                   <div className="flex justify-between items-center mb-1 font-bold relative z-10">
                     <span className="text-white/40 text-[10px] uppercase tracking-widest">GST (5%)</span>
                     <span className="text-white/70 text-sm">
-                      + ₹{Math.round(Math.max(0, getUiTotal() - discountAmount) * 0.05).toLocaleString()}
+                      + ₹{Math.round(Math.max(0, getUiTotal() - firstRideDiscount - discountAmount) * 0.05).toLocaleString()}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center mt-3 pt-3 border-t border-primary/20 font-bold relative z-10">
                     <span className="text-white/80 text-[12px] uppercase tracking-widest">Total Payable</span>
                     <span className="text-primary text-3xl italic">
-                      ₹{Math.round(Math.max(0, getUiTotal() - discountAmount) * 1.05).toLocaleString()}
+                      ₹{Math.round(Math.max(0, getUiTotal() - firstRideDiscount - discountAmount) * 1.05).toLocaleString()}
                     </span>
                   </div>
                   <p className="text-[9px] text-white/30 text-right uppercase tracking-tighter relative z-10 mt-2">*Includes 2.5% CGST & 2.5% SGST</p>

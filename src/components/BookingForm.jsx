@@ -68,6 +68,41 @@ const BookingForm = () => {
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
   const [promoMessage, setPromoMessage] = useState(null);
 
+  // FIRST RIDE WELCOME DISCOUNT STATE
+  const [firstRideDiscount, setFirstRideDiscount] = useState(0);
+
+  useEffect(() => {
+    const checkFirstRideEligibility = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/settings/first-ride-status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.enabled && data.isEligible) {
+          const baseFare = Math.round((confirmedCar?.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1));
+          let disc = 0;
+          if (data.discountType === 'PERCENTAGE') {
+            disc = Math.round((baseFare * (data.discountAmount || 0)) / 100);
+            if (data.maxDiscount && disc > data.maxDiscount) disc = data.maxDiscount;
+          } else {
+            disc = data.discountAmount || 0;
+          }
+          setFirstRideDiscount(Math.min(disc, baseFare));
+        } else {
+          setFirstRideDiscount(0);
+        }
+      } catch (err) {
+        console.error("First ride check error:", err);
+      }
+    };
+
+    if (showFinalSummaryModal && confirmedCar) {
+      checkFirstRideEligibility();
+    }
+  }, [showFinalSummaryModal, confirmedCar, rideType, selectedSeatNames]);
+
   useEffect(() => {
     if (!window.google) return;
 
@@ -1621,78 +1656,80 @@ const BookingForm = () => {
               </div>
 
               {/* Right Side: Details Section (BLACK & YELLOW THEME) */}
-              <div className="w-full md:w-[40%] flex flex-col bg-[#0a0a0a] h-full overflow-y-auto p-4 sm:p-10 custom-scrollbar">
-                <div className="hidden md:block mb-8">
-                  <h3 className="text-white font-black text-3xl mb-1 tracking-tighter">Final Step</h3>
-                  <p className="text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">Review your ride details</p>
-                </div>
-
-                {/* Mobile-only Header - Simple and Straight Style */}
-                <div className="md:hidden mb-8 text-center pt-2">
-                  <h3 className="text-white font-black text-2xl mb-1 tracking-tight uppercase">Confirm Pickup</h3>
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                    <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] italic">Your Location is Verified</p>
+              <div className="w-full md:w-[40%] flex flex-col bg-[#0a0a0a] h-full overflow-hidden border-t md:border-t-0 border-white/10">
+                {/* Scrollable Content Area */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar">
+                  {/* Header */}
+                  <div className="hidden md:block mb-2">
+                    <h3 className="text-white font-black text-2xl mb-0.5 tracking-tighter">Final Step</h3>
+                    <p className="text-white/30 text-[10px] font-bold uppercase tracking-[0.25em]">Review your ride details</p>
                   </div>
-                </div>
 
-                <div className="space-y-6 flex-1">
-                  {/* Location Details - Hidden on mobile to save space */}
-                  <div className="hidden md:block space-y-4">
-                    <div className="flex gap-4 items-start">
-                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0">
-                        <FaDotCircle className="text-primary text-xs" />
-                      </div>
-                      <div>
-                        <p className="text-white/20 text-[9px] font-black uppercase tracking-widest mb-1">Pickup</p>
-                        <p className="text-white text-sm font-bold leading-tight">{formData.pickup}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 items-start">
-                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0">
-                        <FaMapMarkerAlt className="text-red-500 text-xs" />
-                      </div>
-                      <div>
-                        <p className="text-white/20 text-[9px] font-black uppercase tracking-widest mb-1">Destination</p>
-                        <p className="text-white text-sm font-bold leading-tight">{formData.dropoff}</p>
-                      </div>
+                  {/* Mobile-only Header */}
+                  <div className="md:hidden mb-2 text-center pt-1">
+                    <h3 className="text-white font-black text-xl mb-0.5 tracking-tight uppercase">Confirm Pickup</h3>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                      <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] italic">Your Location is Verified</p>
                     </div>
                   </div>
 
-                  {/* Car Card - COMPACT - Hidden on mobile */}
-                  <div className="hidden md:flex bg-white/5 p-4 rounded-[2rem] border border-white/5 items-center gap-4 relative overflow-hidden mt-4 md:mt-6">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-black/40 rounded-xl p-2 z-10 flex items-center justify-center">
+                  {/* Location Details */}
+                  <div className="hidden md:block space-y-3 bg-white/[0.03] p-3.5 rounded-2xl border border-white/5">
+                    <div className="flex gap-3 items-start">
+                      <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0 mt-0.5">
+                        <FaDotCircle className="text-primary text-[10px]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/30 text-[8px] font-black uppercase tracking-widest">Pickup</p>
+                        <p className="text-white text-xs font-bold leading-snug truncate">{formData.pickup}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 items-start">
+                      <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0 mt-0.5">
+                        <FaMapMarkerAlt className="text-red-500 text-[10px]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/30 text-[8px] font-black uppercase tracking-widest">Destination</p>
+                        <p className="text-white text-xs font-bold leading-snug truncate">{formData.dropoff}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Car Card - COMPACT */}
+                  <div className="hidden md:flex bg-white/[0.03] p-3 rounded-2xl border border-white/5 items-center gap-3">
+                    <div className="w-12 h-12 bg-black/40 rounded-xl p-1.5 flex items-center justify-center flex-shrink-0">
                       <img
                         src={confirmedCar.image ? `${BASE_URL}/uploads/${confirmedCar.image}` : `https://cdn-icons-png.flaticon.com/512/3202/3202926.png`}
                         alt={confirmedCar.name}
                         className="w-full h-full object-contain"
                       />
                     </div>
-                    <div className="hidden md:block flex-1 z-10">
-                      <h4 className="text-white font-black text-lg mb-0.5">{confirmedCar.name}</h4>
-                      <p className="text-primary text-[8px] font-black uppercase tracking-[0.2em] opacity-80">{rideType} Ride</p>
-                      <div className="flex items-center gap-2 mt-2 text-white/40 text-[8px] font-bold">
-                        <span className="flex items-center gap-1"><FaUsers size={9} /> {rideType === 'shared' ? selectedSeatNames.length : confirmedCar.seatCapacity} Seats</span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-white font-black text-sm leading-none">{confirmedCar.name}</h4>
+                      <p className="text-primary text-[8px] font-black uppercase tracking-[0.2em] opacity-80 mt-1">{rideType} Ride</p>
+                      <div className="flex items-center gap-2 mt-1 text-white/40 text-[8px] font-bold">
+                        <span className="flex items-center gap-1"><FaUsers size={8} /> {rideType === 'shared' ? selectedSeatNames.length : confirmedCar.seatCapacity} Seats</span>
                         <div className="w-0.5 h-0.5 rounded-full bg-white/10" />
-                        <span className="italic">{distance} distance</span>
+                        <span className="italic">{distance}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* PROMO CODE SECTION */}
-                  <div className="block mt-6">
-                    <div className="flex gap-2 mb-2">
+                  <div>
+                    <div className="flex gap-2">
                       <input 
                         type="text" 
                         placeholder="Enter Promo Code"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all uppercase tracking-wide font-bold placeholder:font-normal placeholder:normal-case placeholder:text-white/30"
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs outline-none focus:border-primary transition-all uppercase tracking-wide font-bold placeholder:font-normal placeholder:normal-case placeholder:text-white/30"
                       />
                       <button 
                         onClick={handleApplyPromo}
                         disabled={isApplyingPromo || !promoCode.trim()}
-                        className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all disabled:opacity-50"
+                        className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
                       >
                         {isApplyingPromo ? '...' : 'Apply'}
                       </button>
@@ -1704,36 +1741,57 @@ const BookingForm = () => {
                     )}
                   </div>
 
-                  {/* Fare Summary - MORE COMPACT */}
-                  <div className="flex p-5 bg-primary rounded-[2rem] shadow-2xl shadow-primary/20 justify-between items-center mt-4">
+                  {/* FIRST RIDE WELCOME DISCOUNT BANNER */}
+                  {firstRideDiscount > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🎉</span>
+                        <div>
+                          <p className="text-emerald-400 font-black text-xs uppercase tracking-wide">First Ride Welcome Discount</p>
+                          <p className="text-white/40 text-[9px]">Applied automatically on your 1st booking</p>
+                        </div>
+                      </div>
+                      <span className="text-emerald-400 font-black text-sm">-₹{firstRideDiscount}</span>
+                    </div>
+                  )}
+
+                  {/* Fare Summary (Clickable as well) */}
+                  <div 
+                    onClick={handleBookNow}
+                    className="flex p-4 bg-primary rounded-2xl shadow-xl shadow-primary/20 justify-between items-center cursor-pointer hover:brightness-105 active:scale-[0.99] transition-all group"
+                    title="Click to Confirm Booking"
+                  >
                     <div>
                       <p className="text-black/60 text-[9px] font-black uppercase tracking-widest mb-0.5">Total Payable</p>
                       <div className="flex items-center gap-2">
-                        {discountAmount > 0 && (
-                          <span className="text-lg font-black text-black/40 line-through tracking-tighter">
+                        {(discountAmount > 0 || firstRideDiscount > 0) && (
+                          <span className="text-base font-black text-black/40 line-through tracking-tighter">
                             ₹{Math.round((confirmedCar.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1))}
                           </span>
                         )}
-                        <h2 className="text-3xl font-black text-black tracking-tighter italic">
-                          ₹{Math.max(0, Math.round((confirmedCar.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1)) - discountAmount)}
+                        <h2 className="text-2xl font-black text-black tracking-tighter italic">
+                          ₹{Math.max(0, Math.round((confirmedCar.fare || 0) * (rideType === 'shared' ? (selectedSeatNames.length || 1) : 1)) - firstRideDiscount - discountAmount)}
                         </h2>
                       </div>
                     </div>
-                    <FaCheckCircle className="text-black/20 text-4xl" />
+                    <div className="flex items-center gap-1.5 bg-black/15 px-3.5 py-2 rounded-xl border border-black/10 group-hover:bg-black/25 transition-all">
+                      <span className="text-black font-black text-xs uppercase tracking-wider">Book Now</span>
+                      <FaArrowRight className="text-black text-xs group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
                 </div>
 
-                {/* Footer Buttons - CLEAN & PROFESSIONAL (Static instead of Sticky) */}
-                <div className="flex flex-col sm:flex-row gap-4 mt-12 mb-4 bg-[#0a0a0a] pt-8 border-t border-white/5 pb-2">
+                {/* Sticky Bottom Footer Buttons - ALWAYS VISIBLE */}
+                <div className="flex gap-3 p-4 bg-[#0a0a0a] border-t border-white/10 flex-shrink-0 z-20">
                   <button
                     onClick={() => setShowFinalSummaryModal(false)}
-                    className="order-2 sm:order-1 px-8 py-3.5 border-2 border-white/10 rounded-2xl text-white/70 font-black text-[10px] uppercase tracking-wide hover:text-white hover:border-white/20 transition-all text-center flex-1"
+                    className="px-5 py-3.5 border border-white/15 rounded-2xl text-white/70 font-bold text-xs uppercase tracking-wide hover:text-white hover:border-white/30 transition-all text-center flex-1 cursor-pointer"
                   >
                     Back
                   </button>
                   <button
                     onClick={handleBookNow}
-                    className="order-1 sm:order-2 flex-[2.5] bg-primary text-black font-black py-4 rounded-2xl text-[11px] sm:text-xs tracking-wide hover:bg-yellow-400 shadow-2xl shadow-primary/30 transition-all uppercase flex items-center justify-center gap-3 active:scale-95 group"
+                    className="flex-[2.5] bg-primary text-black font-black py-3.5 rounded-2xl text-xs sm:text-sm tracking-wide hover:bg-yellow-400 shadow-xl shadow-primary/20 transition-all uppercase flex items-center justify-center gap-2 active:scale-95 group cursor-pointer"
                   >
                     Confirm Booking <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
                   </button>

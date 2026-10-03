@@ -41,6 +41,8 @@ import BulkBooking from './pages/BulkBooking';
 import MyBulkBookings from './pages/MyBulkBookings';
 import MyTransactions from './pages/MyTransactions';
 import Offers from './pages/Offers';
+import Rentals from './pages/Rentals';
+import MyRentals from './pages/MyRentals';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -198,6 +200,8 @@ function App() {
           <Route path="my-bulk-bookings" element={<MyBulkBookings />} />
           <Route path="my-transactions" element={<MyTransactions />} />
           <Route path="offers" element={<Offers />} />
+          <Route path="rentals" element={<Rentals />} />
+          <Route path="my-rentals" element={<MyRentals />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

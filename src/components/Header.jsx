@@ -18,9 +18,25 @@ const navLinks = [
   { name: 'Our Fleet', path: '/fleet', hasDropdown: false },
   { name: 'Services', path: '/services', hasDropdown: false },
   { name: 'Offers', path: '/offers', hasDropdown: false },
-  { name: 'Bulk Booking', path: '/bulk-booking', hasDropdown: false },
+  { 
+    name: 'Rental Booking', 
+    path: '#', 
+    hasDropdown: true,
+    subItems: [
+      { name: 'Book Rentals', path: '/rentals', icon: <FaCar /> },
+      { name: 'My Rental Bookings', path: '/my-rentals', icon: <FaClock /> }
+    ]
+  },
+  { 
+    name: 'Bulk Booking', 
+    path: '#', 
+    hasDropdown: true,
+    subItems: [
+      { name: 'Book Bulk Ride', path: '/bulk-booking', icon: <FaTaxi /> },
+      { name: 'My Bulk Bookings', path: '/my-bulk-bookings', icon: <FaMapMarkerAlt /> }
+    ]
+  },
   { name: 'My Rides', path: '/my-booking', hasDropdown: false },
-  { name: 'My Bulk Rides', path: '/my-bulk-bookings', hasDropdown: false },
   { name: 'Wallet History', path: '/my-transactions', hasDropdown: false },
   { name: 'Support', path: '/support', hasDropdown: false },
   { name: 'Driver Register', path: 'https://driver.kwikcabs.in/driver/register', isExternal: true, hasDropdown: false },

@@ -447,6 +447,11 @@ const MyBooking = () => {
                                 Base ₹{booking.price} + Extra ₹{booking.extraTimeCharges}
                               </p>
                             )}
+                            {isPackage && (
+                              <p className="text-yellow-400 text-[10px] font-semibold mt-1">
+                                ⚠️ Toll tax not included (pay separately)
+                              </p>
+                            )}
                           </div>
                         </div>
 

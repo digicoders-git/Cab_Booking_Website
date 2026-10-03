@@ -108,12 +108,13 @@
   margin-top: 5px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
   font-family: "Plus Jakarta Sans", sans-serif !important;
-  z-index: 11000 !important;
+  z-index: 99999 !important;
   min-width: 150px !important;
   width: auto !important;
   max-width: 92vw !important;
   max-height: 250px !important;
   overflow-y: auto !important;
+  pointer-events: auto !important;
 }
 
 .pac-item {
