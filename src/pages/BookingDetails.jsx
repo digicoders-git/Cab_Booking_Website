@@ -867,6 +867,38 @@ const BookingDetails = () => {
                                         )}
                                     </div>
 
+                                    {/* Share Live Status Button */}
+                                    {['accepted', 'ongoing'].includes((booking.bookingStatus || booking.status || '').toLowerCase()) && (
+                                        <div className="mt-4 pt-4 border-t border-white/5">
+                                            <button
+                                                onClick={() => {
+                                                    const trackingUrl = `${window.location.origin}/track/${booking._id}`;
+                                                    if (navigator.share) {
+                                                        navigator.share({
+                                                            title: 'Live Ride Tracking',
+                                                            text: 'Track my cab ride live!',
+                                                            url: trackingUrl
+                                                        }).catch(err => console.log('Error sharing', err));
+                                                    } else {
+                                                        navigator.clipboard.writeText(`Track my cab ride live: ${trackingUrl}`);
+                                                        Swal.fire({
+                                                            icon: 'success',
+                                                            title: 'Link Copied!',
+                                                            text: 'Tracking link copied to clipboard. You can paste it in WhatsApp or SMS.',
+                                                            toast: true,
+                                                            position: 'top-end',
+                                                            showConfirmButton: false,
+                                                            timer: 3000
+                                                        });
+                                                    }
+                                                }}
+                                                className="w-full bg-blue-600/20 border border-blue-500/30 text-blue-400 font-black uppercase tracking-widest py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 text-xs"
+                                            >
+                                                <FaShieldAlt size={14} /> Share Live Location
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {/* Pay Now Section for Payment_Pending Rides */}
                                     {(booking.bookingStatus || booking.status || '') === 'Payment_Pending' && (
                                         <div className="mt-4 pt-4 border-t border-white/5">

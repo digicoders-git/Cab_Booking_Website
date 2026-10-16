@@ -9,15 +9,32 @@ import {
   FaInstagram, FaLinkedinIn, FaSearch, FaChevronDown,
   FaBars, FaTimes, FaBell, FaCheckCircle,
   FaMapMarkerAlt, FaCalendarAlt, FaCar, FaHashtag,
-  FaExclamationCircle, FaGift, FaRoute, FaThumbsUp, FaUserCircle
+  FaExclamationCircle, FaGift, FaRoute, FaThumbsUp, FaUserCircle, FaTag, FaTicketAlt
 } from 'react-icons/fa';
 
 const navLinks = [
   { name: 'Home', path: '/', hasDropdown: false },
   { name: 'About', path: '/about', hasDropdown: false },
   { name: 'Our Fleet', path: '/fleet', hasDropdown: false },
-  { name: 'Services', path: '/services', hasDropdown: false },
-  { name: 'Offers', path: '/offers', hasDropdown: false },
+  { 
+    name: 'Services', 
+    path: '#', 
+    hasDropdown: true,
+    subItems: [
+      { name: 'All Services', path: '/services', icon: <FaTaxi /> },
+      { name: 'Subscriptions', path: '/subscriptions', icon: <FaRoute /> },
+      { name: 'My Subscriptions', path: '/my-subscriptions', icon: <FaTicketAlt /> }
+    ]
+  },
+  { 
+    name: 'Offers', 
+    path: '#', 
+    hasDropdown: true,
+    subItems: [
+      { name: 'Promotional Offers', path: '/offers', icon: <FaGift /> },
+      { name: 'Fixed Packages', path: '/offers?tab=packages', icon: <FaTag /> }
+    ]
+  },
   { 
     name: 'Rental Booking', 
     path: '#', 

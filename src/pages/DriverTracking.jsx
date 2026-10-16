@@ -33,21 +33,56 @@ const DriverTracking = () => {
 
     const backendServer = API_BASE_URL.replace(/\/api$/, '');
 
-    // 1. Fetch Latest Booking Data
+    // 1. Fetch Latest Booking Data (Public or Authenticated)
     const fetchBookingDetails = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (data.success) {
-                setBooking(data.booking);
-                if (data.booking.driverLocation) {
-                    setDriverLocation(data.booking.driverLocation);
+            // Try public tracking endpoint first so family/friends can view without login
+            let res = await fetch(`${API_BASE_URL}/trips/public/track/${bookingId}`);
+            let data = await res.json();
+
+            if (data.success && data.bookingDetails) {
+                const b = data.bookingDetails;
+                setBooking({
+                    _id: b._id || bookingId,
+                    bookingStatus: b.status,
+                    rideType: b.rideType,
+                    pickup: b.pickup,
+                    drop: b.drop,
+                    assignedDriver: {
+                        _id: b.driverDetails?._id,
+                        name: b.driverDetails?.name,
+                        phone: b.driverDetails?.phone,
+                        image: b.driverDetails?.profileImage,
+                        carDetails: {
+                            carModel: b.driverDetails?.carModel,
+                            carNumber: b.driverDetails?.carNumber
+                        }
+                    },
+                    driverLocation: b.driverLocation,
+                    fareEstimate: b.fareEstimate,
+                    actualFare: b.actualFare,
+                    paymentMethod: b.paymentMethod
+                });
+                if (b.driverLocation) {
+                    setDriverLocation(b.driverLocation);
+                }
+            } else if (token) {
+                // Fallback to standard authenticated endpoint if user is logged in
+                const authRes = await fetch(`${API_BASE_URL}/bookings/${bookingId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const authData = await authRes.json();
+                if (authData.success) {
+                    setBooking(authData.booking);
+                    if (authData.booking.driverLocation) {
+                        setDriverLocation(authData.booking.driverLocation);
+                    }
+                } else {
+                    setError(authData.message || "Booking Not Found");
                 }
             } else {
-                setError(data.message || "Booking Not Found");
+                setError(data.message || "Booking Not Found or Completed");
             }
         } catch (err) {
             setError("Failed to connect to server");
@@ -142,24 +177,46 @@ const DriverTracking = () => {
         socketRef.current.on('connect', () => {
             setIsConnected(true);
             const userId = localStorage.getItem('userId');
-            if (userId) socketRef.current.emit('join_room', { userId, role: 'user' });
+            // Always join the dedicated tracking room for this booking
+            socketRef.current.emit('join_room', { 
+                userId: userId || `public_${socketRef.current.id}`, 
+                role: userId ? 'user' : 'tracker',
+                bookingRoom: `tracking_${bookingId}`
+            });
         });
 
         socketRef.current.on('driver_location_update', (data) => {
-            console.log("🚗 [User Panel] Received Live Data:", data); // debugging ke liye
+            console.log("🚗 [User Panel] Received Live Data:", data);
             if (data.bookingId === bookingId || data.driverId === booking?.assignedDriver?._id) {
                 setDriverLocation({ latitude: data.latitude, longitude: data.longitude, heading: data.heading });
                 
-                // Real-time Marker Update
-                if (driverMarker.current) {
+                // Real-time Marker Update & Creation
+                if (googleMap.current) {
                     const newPos = new window.google.maps.LatLng(data.latitude, data.longitude);
-                    driverMarker.current.setPosition(newPos);
+                    if (!driverMarker.current) {
+                        driverMarker.current = new window.google.maps.Marker({
+                            position: newPos,
+                            map: googleMap.current,
+                            icon: {
+                                url: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png',
+                                scaledSize: new window.google.maps.Size(42, 42),
+                                anchor: new window.google.maps.Point(21, 21)
+                            }
+                        });
+                    } else {
+                        driverMarker.current.setPosition(newPos);
+                    }
+
+                    // Pan smoothly to driver position
+                    googleMap.current.panTo(newPos);
                     
-                    // Simple ETA Calc: assume 20km/h
-                    const pickup = { lat: booking.pickup.latitude, lng: booking.pickup.longitude };
-                    const dist = window.google.maps.geometry.spherical.computeDistanceBetween(newPos, new window.google.maps.LatLng(pickup.lat, pickup.lng));
-                    const mins = Math.max(1, Math.round((dist / 1000) / 20 * 60));
-                    setEta(mins);
+                    // Simple ETA Calc
+                    if (booking?.pickup?.latitude && booking?.pickup?.longitude) {
+                        const pickup = { lat: booking.pickup.latitude, lng: booking.pickup.longitude };
+                        const dist = window.google.maps.geometry.spherical.computeDistanceBetween(newPos, new window.google.maps.LatLng(pickup.lat, pickup.lng));
+                        const mins = Math.max(1, Math.round((dist / 1000) / 20 * 60));
+                        setEta(mins);
+                    }
                 }
             }
         });

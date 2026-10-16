@@ -1063,15 +1063,7 @@ const BookingForm = () => {
                   <span className="text-sm">+</span> Add Stop
                 </motion.button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  onClick={() => navigate('/bulk-booking')}
-                  className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full flex items-center gap-2 text-primary hover:bg-primary hover:text-black transition-all text-[9px] font-black uppercase tracking-widest ml-auto"
-                >
-                  <FaExchangeAlt size={10} /> Round Trip
-                </motion.button>
+
               </div>
               <div className="flex-1 border-t border-dashed border-white/5 mx-4 hidden sm:block" />
             </div>

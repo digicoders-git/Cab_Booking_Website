@@ -43,7 +43,10 @@ import MyTransactions from './pages/MyTransactions';
 import Offers from './pages/Offers';
 import Rentals from './pages/Rentals';
 import MyRentals from './pages/MyRentals';
+import MonthlyCommute from './pages/MonthlyCommute';
+import MySubscriptions from './pages/MySubscriptions';
 import NotFound from './pages/NotFound';
+import PublicTracking from './pages/PublicTracking';
 
 function App() {
   const [loading, setLoading] = useState(() => !sessionStorage.getItem('visited'));
@@ -202,8 +205,11 @@ function App() {
           <Route path="offers" element={<Offers />} />
           <Route path="rentals" element={<Rentals />} />
           <Route path="my-rentals" element={<MyRentals />} />
+          <Route path="subscriptions" element={<MonthlyCommute />} />
+          <Route path="my-subscriptions" element={<MySubscriptions />} />
           <Route path="*" element={<NotFound />} />
         </Route>
+        <Route path="/track/:id" element={<PublicTracking />} />
       </Routes>
     </Router>
   );
