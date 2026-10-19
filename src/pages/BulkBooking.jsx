@@ -268,9 +268,9 @@ const BulkBooking = () => {
         const minimumKmRequired = minKmPerDay * formData.days;
         const chargeableKm = Math.max(actualKm, minimumKmRequired);
         const totalDriverAllowance = driverAllowancePerDay * formData.days;
-        return ((chargeableKm * car.price) + totalDriverAllowance) * car.quantity * areaMultiplier;
+        return Math.round(((chargeableKm * car.price) + totalDriverAllowance) * car.quantity * (areaMultiplier || 1));
     } else {
-        return car.price * car.quantity * actualKm * areaMultiplier;
+        return Math.round(car.price * car.quantity * actualKm * (areaMultiplier || 1));
     }
   };
 
@@ -595,7 +595,7 @@ const BulkBooking = () => {
         numberOfDays: formData.days,
         totalDistance: formData.distance,
         carsRequired: selectedCars.map(c => ({ category: c.id, quantity: c.quantity })),
-        offeredPrice: Math.max(0, calculateTotal() - firstRideDiscount - discountAmount),
+        offeredPrice: Math.round(Math.max(0, calculateTotal() - firstRideDiscount - discountAmount)),
         notes: formData.notes,
         isOutstation: formData.isOutstation,
         offerCode: discountAmount > 0 ? promoCode.trim() : null
@@ -893,7 +893,7 @@ const BulkBooking = () => {
                         />
                         <div className="min-w-0">
                           <h4 className="text-white font-bold text-sm truncate">{cat.name}</h4>
-                          <p className="text-primary text-[10px] font-bold mt-0.5">Rate: ₹{(cat.bulkBookingBasePrice || 0) * areaMultiplier} / KM</p>
+                          <p className="text-primary text-[10px] font-bold mt-0.5">Rate: ₹{Number(((cat.bulkBookingBasePrice || 0) * (areaMultiplier || 1)).toFixed(2))} / KM</p>
                         </div>
                       </div>
 
