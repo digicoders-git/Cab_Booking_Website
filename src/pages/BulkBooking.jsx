@@ -252,6 +252,27 @@ const BulkBooking = () => {
 
   // NEW: Area Pricing Surcharge State
   const [areaMultiplier, setAreaMultiplier] = useState(1);
+  const [isBulkOneWayEnabled, setIsBulkOneWayEnabled] = useState(true);
+
+  // Fetch App Settings for Bulk One-Way toggle
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/settings`);
+        const data = await res.json();
+        if (data.success && data.settings) {
+          const oneWayOn = data.settings.isBulkOneWayEnabled !== false;
+          setIsBulkOneWayEnabled(oneWayOn);
+          if (!oneWayOn) {
+            setFormData(prev => ({ ...prev, tripType: 'RoundTrip' }));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching settings in bulk booking:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const location = useLocation();
   const pickupRef = useRef();
@@ -589,9 +610,9 @@ const BulkBooking = () => {
           latitude: formData.dropCoords.lat,
           longitude: formData.dropCoords.lng
         },
-        pickupDateTime: `${formData.date}T${formData.time}`,
+        pickupDateTime: `${formData.date}T${formData.time || "10:00"}:00+05:30`,
         tripType: formData.tripType,
-        returnDateTime: formData.tripType === 'RoundTrip' ? `${formData.returnDate}T${formData.time}` : null,
+        returnDateTime: formData.tripType === 'RoundTrip' ? `${formData.returnDate}T${formData.time || "10:00"}:00+05:30` : null,
         numberOfDays: formData.days,
         totalDistance: formData.distance,
         carsRequired: selectedCars.map(c => ({ category: c.id, quantity: c.quantity })),
@@ -736,13 +757,15 @@ const BulkBooking = () => {
               </div>
 
               {/* Trip Type Selector */}
-              <div className="flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-8 max-w-sm">
-                <button
-                  onClick={() => setFormData({ ...formData, tripType: 'OneWay' })}
-                  className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.tripType === 'OneWay' ? 'bg-primary text-black' : 'text-white/60 hover:text-white'}`}
-                >
-                  One Way
-                </button>
+              <div className={`flex p-1 bg-white/5 border border-white/10 rounded-2xl mb-8 ${isBulkOneWayEnabled ? 'max-w-sm' : 'max-w-[200px]'}`}>
+                {isBulkOneWayEnabled && (
+                  <button
+                    onClick={() => setFormData({ ...formData, tripType: 'OneWay' })}
+                    className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.tripType === 'OneWay' ? 'bg-primary text-black' : 'text-white/60 hover:text-white'}`}
+                  >
+                    One Way
+                  </button>
+                )}
                 <button
                   onClick={() => setFormData({ ...formData, tripType: 'RoundTrip' })}
                   className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${formData.tripType === 'RoundTrip' ? 'bg-primary text-black' : 'text-white/60 hover:text-white'}`}
