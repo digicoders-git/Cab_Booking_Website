@@ -258,7 +258,8 @@ const BulkBooking = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/settings`);
+        const endpoint = `${API_BASE_URL.replace(/\/api\/?$/, '')}/api/settings`;
+        const res = await fetch(endpoint);
         const data = await res.json();
         if (data.success && data.settings) {
           const oneWayOn = data.settings.isBulkOneWayEnabled !== false;
